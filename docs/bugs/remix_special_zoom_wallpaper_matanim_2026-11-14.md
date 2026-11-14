@@ -39,7 +39,12 @@ zoom:
 - after: purple, then the ray burst, then almost white before the stage comes back, across the whole wide frame.
   No "stale token" or "UNHANDLED" line in the log;
 - Flash Guard on: the zoom runs with no background;
-- pause during the zoom in Training: the menu opens over the running background and the match resumes.
+- pause during the zoom in Training: the menu opens over the running background and the match resumes;
+- two zooms in a row (Training quick reset with D-pad left after the first, then the same smash): the second zoom
+  plays the whole background sequence like the first;
+- quick reset during a zoom: the zoom ends, the scene resets with no leftover background, and a new zoom plays;
+- Training with Camera Mode FIXED: the camera keeps the fixed wide view during the zoom (the camera function runs
+  every frame in Training, as at asm 493-494), so the fighters stay small over the background.
 
 Magnifier, in a VS match (`SSB64_REMIX_PANEL="Damage.2=300"`, forward smash, START during the zoom, START again 74
 frames later) under gdb with a watchpoint on both bytes: `ftRemixSpecialZoomApply` clears `is_magnify_display`,
@@ -50,4 +55,3 @@ pause shows the pause frame over the zoom.
 
 - Stamina: the asm turns the zoom off on every screen when the VS rule is Stamina; the port only does it in a
   Stamina battle (`docs/remix/deviations.md` 5.10).
-- Two zooms in a row, and the Training camera with a Camera Mode other than NORMAL, were not run.

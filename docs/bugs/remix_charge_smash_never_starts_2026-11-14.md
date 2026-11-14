@@ -56,16 +56,21 @@ Damage of Mario's forward smash on Kirby (`[remix-fighter] hit`):
 | Giant (`SSB64_REMIX_PANEL="Size.1=1"`) | 22 (17 x 1.3) |
 | Tiny (`Size.1=2`) | 12 (17 x 0.7) |
 
+Down smash on Kirby, normal / Giant / Tiny: Fox 14 / 18 / 10, Marina 16 / 21 / 11. A Giant forward smash passes over
+Kirby, so the down smash was used there.
+
 Other runs:
 
 - Screenshots every 2 frames of a charge: the fighter pulses yellow, with the shake and the dust.
 - Item swings with A held (item dropped on the fighter): Fan 29 to 88 frames and Star Rod 59 to 118 with the toggle
   on; Home-Run Bat 79 frames with and without it, as in the asm, where the Bat is left out.
+- Beam Sword, taken from the Training pause menu (Item row) and picked up with A, swung at Kirby with A held: 25
+  damage with the toggle off, 35 (25 x 1.4) with it on, and the fighter pulses yellow during the charge.
 - A jab landing on a fighter held in an UNLIMITED charge: it goes to the damage status, no shake or colour is left,
   and its next smash has the normal length.
 - Two four-CPU matches (level 9, values 1 and 2, 2400 frames): 13 smashes each, none stuck, no error.
 
 ## Not checked
 
-The Beam Sword swing (the pickup failed in the test), and rollback: `sFTRemixChargeStates` is a file static outside
-`FTStruct`, as in the asm, and is not part of the state hash.
+Rollback: `sFTRemixChargeStates` is a file static outside `FTStruct`, as in the asm, and is not part of the state
+hash. The port has no netplay.

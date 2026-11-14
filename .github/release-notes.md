@@ -1,24 +1,24 @@
 ## Highlights
 
-- **All platforms: settings changed in the game are kept after a restart**
-  ([#6](https://github.com/lucasliet/BattleShip-remix/issues/6)). The game rejected its own save at every launch and
-  wrote the defaults back, so sound, screen adjust, VS and 1P records, unlocks and Remix bonus records were lost each
-  time. A save written by an older build is reset to the defaults once more at the first launch of this release;
-  from then on it is kept. Item Switch and the VS rules (handicap and the like) are not part of the save in the original
-  game or in Smash Remix, so they still start from their defaults. Port Menu settings were never affected.
-- **All platforms: Remix settings changed inside the game are saved right away.** The stage select hazard mode, the
-  Training menu, the CSS panel, the Remix modes and the profile loaders only reached `BattleShip.cfg.json` when
-  something else saved it, so closing the game from the system (PS5 button, swiping the app away on Android) lost them.
-- **All platforms: the Remix text drawn over the screen fits the widescreen picture.** With widescreen on, the CSS
-  panel menu text (Shield, Player Tag, Visibility...) of the 1P and 4P cards spilled into the next card; it now sits
-  inside its card, and the other Remix labels drawn the same way follow.
-- **Conker's up special: the tail spins and stays on the body**
-  ([#7](https://github.com/lucasliet/BattleShip-remix/issues/7)). The same cause broke other Remix specials, now
-  fixed too: Marina's neutral special drew her head apart from the body, Dragon King sank into the floor during his
-  down special, and Banjo's down special and Dedede's and Peach's neutral specials showed a wrong pose.
-- **macOS, Linux and Windows: the ROM extractor is a separate program again.** The app, the AppImage and the Windows
-  zip carry the `torch` program next to the game, as up to `v2.0.1-port.10`. The extracted files are the same, and an
-  `.o2r` you already have is kept.
+- **All platforms: a match no longer shows only the stage backdrop.** Now and then a match was drawn with the backdrop
+  and nothing else (no stage, fighters or HUD) for its whole length, depending on where the system placed the game's
+  memory. The renderer took a valid list of drawing commands for a runaway one and dropped the rest of every frame.
+- **Charge Smashes work** ([#8](https://github.com/lucasliet/BattleShip-remix/issues/8)). With the setting on, holding
+  A on a smash attack never started the charge. Now the fighter freezes, shakes and flashes yellow while A is held, the
+  charge ends after one second (never with UNLIMITED CHARGE), and the hit does up to 40% more damage, as in Smash
+  Remix. The Beam Sword, Fan and Star Rod smashes charge too; the Home-Run Bat does not, as in Smash Remix.
+- **Giant and tiny fighters deal 1.3x and 0.7x damage with every attack.** Smash Remix scales the damage of every
+  hitbox of a fighter whose size was changed (the size option of the CSS panel, Super and Poison Mushrooms). The port
+  only scaled a few attacks, so most hits of a giant or tiny fighter did normal damage; now they all follow the size.
+- **Special Zoom: the background behind the zoom is animated**
+  ([#8](https://github.com/lucasliet/BattleShip-remix/issues/8)). It stayed a flat purple screen; it now plays the
+  impact flash of Smash Remix, from purple to the ray burst to white, and covers the whole picture with widescreen on.
+  The magnifying glass is hidden during the zoom and comes back after it, also when the game is paused in the middle
+  of a zoom, and in Training the camera keeps following during the slow motion.
+- **Windows: a clear message when Windows blocks the ROM extractor.** When Smart App Control or another application
+  control policy stops `torch.exe` on the first launch, the error now says so instead of only showing a code.
+- **Packaging.** The Linux AppImage uses the Smash Remix icon instead of the vanilla one, the Windows zip no longer
+  carries a loose vanilla icon file (the game keeps its icon), and the Switch zip only carries the fonts the game reads.
 
 Nothing changed in the asset pipeline: on the Switch, keep the `BattleShip-Remix.o2r` and `.recipe` you already have.
 Switch builds up to `v2.0.1-port.9` still download the bare `BattleShip-Remix.nro`, so that file stays in this release.
@@ -62,7 +62,7 @@ system).
 | `BattleShip-Remix-macos.zip` | macOS (Apple Silicon), the `.app` zipped; the in-game updater downloads it |
 | `BattleShip-Remix-x86_64.AppImage` | Linux x86_64 |
 | `BattleShip-Remix-windows-x64.zip` | Windows x64 |
-| `BattleShip-Remix-switch.zip` | Nintendo Switch homebrew (`.nro`, `f3d.o2r`, `config.yml`, `assets/`) |
+| `BattleShip-Remix-switch.zip` | Nintendo Switch homebrew (`.nro`, `f3d.o2r`, `config.yml`, the fonts in `assets/custom/fonts/`) |
 | `BattleShip-Remix.nro` | The Switch `.nro` alone, kept for builds up to `v2.0.1-port.9` (their updater downloads it); newer builds update from the Switch zip |
 | `BattleShip-Remix-android.apk` | Android arm64-v8a, Android 7+ |
 | `BattleShip-Remix-ps5-PPSA99264.zip` | PlayStation 5 homebrew title folder (`PPSA99264/`) |
