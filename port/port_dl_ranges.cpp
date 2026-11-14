@@ -63,7 +63,10 @@ thread_local size_t sHitCacheNext = 0;
 /* "Walked past" threshold: how far past a registered range do we still
  * recognise as runaway-from-that-range? One 64 KiB window comfortably
  * covers the gap to the next mmap'd allocation while staying tight
- * enough to fire on the actual walk-off cases. */
+ * enough to fire on the actual walk-off cases. The G_DL push check
+ * rejects a target anywhere in the window; gfx_step only stops on the
+ * first command after the range, because the general heap can place a
+ * legitimate list inside the window (docs/bugs/dl_walk_past_window_false_positive_2026-11-14.md). */
 constexpr size_t kWalkPastWindow = 0x10000;
 
 } /* namespace */
@@ -187,15 +190,23 @@ static int port_dl_lookup_unprofiled(uintptr_t addr, uintptr_t *range_base, size
     bool walked_past = false;
     uintptr_t gap_lo = 0;
     uintptr_t gap_hi = UINTPTR_MAX;
+    /* For WALKED_PAST: the end of the nearest range below addr whose window holds it, and where that
+     * answer stops (its window, the next range, or the end of another range in between). */
+    uintptr_t past_end = 0;
+    uintptr_t past_hi = UINTPTR_MAX;
     for (const auto &e : snapshot.sorted) {
         const uintptr_t end = e.base + e.size;
         const uintptr_t forbid_hi = (end > UINTPTR_MAX - kWalkPastWindow) ? UINTPTR_MAX : end + kWalkPastWindow;
         if ((addr >= end) && ((addr - end) < kWalkPastWindow)) {
             walked_past = true;
+            past_end = std::max(past_end, end);
             /* Don't return immediately — another registered range further
              * along could legitimately contain addr (overlapping ranges
              * are allowed at registration). Only commit to WALKED_PAST
              * after confirming addr isn't in any other range. */
+        }
+        if (end > addr) {
+            past_hi = std::min(past_hi, end);
         }
         if (forbid_hi <= addr) {
             gap_lo = std::max(gap_lo, forbid_hi);
@@ -204,6 +215,10 @@ static int port_dl_lookup_unprofiled(uintptr_t addr, uintptr_t *range_base, size
         }
     }
     if (walked_past) {
+        const uintptr_t window_hi =
+            (past_end > UINTPTR_MAX - kWalkPastWindow) ? UINTPTR_MAX : past_end + kWalkPastWindow;
+        *range_base = past_end;
+        *range_size = std::min({ window_hi, past_hi, gap_hi }) - past_end;
         return PORT_DL_WALKED_PAST;
     }
     *range_base = gap_lo;

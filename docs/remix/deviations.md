@@ -395,6 +395,14 @@ Per item:
 | KOTH hill (`ftremixaimodes.c`, MD-11) | The asm reads the hill X twice, so the target Y is X - 500; the port uses the marker Y - 500, as its comments intend. |
 | Kirby hat specials (FT-4) | The Kirby-hat half of the charge exit compares the copy word with ids 0x1E, 0x1B, 0x13 that match no copyable power, so it never fires; not ported. `set_item_detection_radius_` compares the Marina id with a register that does not hold the fighter id: no effect, not ported. |
 
+### 5.10 Special Zoom
+
+- Stamina: `SpecialZoom.asm` 139-145 reads the saved VS mode byte on every screen, so the Stamina rule left in the VS
+  menu also turns the zoom off in Training and 1P. The port only skips the zoom when the battle being played is a
+  Stamina battle (`gmRemixStaminaIsActive`), which keeps the zoom in Training and 1P.
+- Widescreen: the background plane is widened by `1 / port_widescreen_clip_x_scale()` so it covers the wide frame
+  (`gmremixspecialzoomwallpaper.c`); the asm only has the 4:3 scale.
+
 ## 6. Tests
 
 - Headless unit tests of the pure rules (Blue Shell first-place rules, Stopwatch background, Sonic classic, Smashketball and others):

@@ -22,10 +22,11 @@ extern "C" {
  * cmd has walked outside any registered range and terminate the frame
  * safely (as if G_ENDDL had been encountered).
  *
- * Three subsystems register their ranges:
+ * Two subsystems register their ranges:
  *   - taskman.c       — the 16 MiB scene arena (once on alloc)
- *   - lbreloc_bridge  — each reloc file range (on load / unload)
- *   - interpreter.cpp — libultraship's widened-DL cache (on emplace / evict)
+ *   - lbreloc_bridge  — each reloc file range (on load / unload), the Smash Remix RAM image and
+ *                       mod-private buffers
+ * libultraship's widened-DL cache is not registered: its copies live in the general heap.
  *
  * The check is conservative: an unregistered address is treated as
  * "unknown" rather than "invalid", so missing registrations don't break
@@ -52,7 +53,8 @@ int port_dl_check_addr(uintptr_t addr);
 
 /* port_dl_check_addr that also writes the span sharing addr's answer: the containing range for
  * PORT_DL_IN_RANGE, the gap between registered ranges (and their walk-past windows) for PORT_DL_UNKNOWN,
- * and an empty span otherwise. */
+ * and for PORT_DL_WALKED_PAST the part of the walk-past window around addr, starting at the end of the range
+ * addr lies after. */
 int port_dl_range_lookup(uintptr_t addr, uintptr_t *range_base, size_t *range_size);
 
 /* Diagnostic-only: write a human-readable classification (label+offset)

@@ -1720,3 +1720,6 @@ add_subdirectory(tests/remix)
 
 # Headless unit tests of the self-updater logic (tests/updater): cmake --build <build> --target run_updater_tests
 add_subdirectory(tests/updater)
+
+# Headless unit tests of the display list range registry (tests/dl_ranges): cmake --build <build> --target run_dl_ranges_tests
+add_subdirectory(tests/dl_ranges)

@@ -271,8 +271,13 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     ${CMAKE_SOURCE_DIR}/decomp/src/if/ifremixdragonkinghudrules.c
 )
 target_compile_definitions(remix_mode_tests PRIVATE PORT=1 REGION_REMIX=1)
-target_include_directories(remix_mode_tests PRIVATE ${CMAKE_SOURCE_DIR}/decomp/src ${CMAKE_SOURCE_DIR}/port/remix ${CMAKE_SOURCE_DIR}/port)
+target_include_directories(remix_mode_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stub ${CMAKE_SOURCE_DIR}/decomp/src ${CMAKE_SOURCE_DIR}/port/remix ${CMAKE_SOURCE_DIR}/port)
 set_target_properties(remix_mode_tests PROPERTIES C_STANDARD 11)
+find_library(REMIX_TESTS_MATH_LIBRARY m)
+if (REMIX_TESTS_MATH_LIBRARY)
+    # glibc keeps atan2f and sincosf in libm; macOS and Windows have them in the C library.
+    target_link_libraries(remix_mode_tests PRIVATE ${REMIX_TESTS_MATH_LIBRARY})
+endif()
 
 add_custom_target(run_remix_mode_tests
     COMMAND remix_mode_tests

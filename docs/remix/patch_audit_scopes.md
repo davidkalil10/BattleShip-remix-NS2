@@ -456,7 +456,7 @@ Format: asm file:line | scope | verdict | evidence. `n` = number of patch rows i
 - Size.asm:294 | kirby_ausp_ (n=2) | PORTED | ft/ftchar/ftkirby/ftkirbyspecialhi.c:178,182 -> ftRemixSizeKirbyAirHiScale (ftremixsize.c)
 - Size.asm:343 | initialize_base_multiplier_table_ (n=1) | STUB | Size part ported (ft/ftmanager.c:736-737 -> ftRemixSizeInitFighter). The KirbyHats part (magic_hat_on / taunt_loses_power per port, Size.asm:358-379) is not: ftmanager.c:736 says so, and ftRemixKirbyPowerSetTauntLosesPower/ftRemixKirbyPowerReset (ft/ftremix/ftremixkirbypower.c) have no caller, so a panel Kirby Hat never turns the power loss off and the magic hat never starts on.
 - Size.asm:444 | fix_size_ (n=2) | PORTED | ft/ftmain.c:270,353 (ftRemixSizeScaleHitboxSize)
-- Size.asm:471 | fix_damage_ (n=1) | PORTED | ft/ftmain.c:337 (ftRemixSizeScaleDamage + ftRemixChargeSmashScaleDamage)
+- Size.asm:471 | fix_damage_ (n=1) | PORTED | ft/ftmain.c:284, MakeAttackColl damage store (ftRemixSizeScaleDamage + ftRemixChargeSmashScaleDamage)
 - Size.asm:564 | adjust_player_walking_speed_ (n=1) | PORTED | ft/ftphysics.c:103,105
 - Size.asm:600 | adjust_player_initial_dash_speed_ (n=1) | PORTED | ft/ftcommon/ftcommondash.c:125
 - Size.asm:627 | adjust_player_dash_deceleration_ (n=1) | PORTED | ft/ftphysics.c:59
@@ -1189,9 +1189,9 @@ Format: asm:lines | scope | verdict | evidence (port file:line or reason). Rows 
 - Boot.asm:173,180 `draw_version_on_title_screen_` | PORTED | mn/mncommon/mntitle.c:83-88 (larger logo rows 0x245C8/0x3DC88) and mn/mncommon/mnremixtitleversion.c:10 (Smash Remix v2.0.1)
 - Boot.asm:188 `draw_version_on_title_screen_` | GAP | the N64 logo is skippable in the port (mnstartup.c); the asm makes it unskippable. Cosmetic, tied to the splash (low)
 - Boot.asm:196,201 `load_` | NA | boot DMA of the Remix image to 0x80400000 and Toggles.load_: the port reads the image through port/remix/remix_ram_image.cpp and keeps toggles in CVars (remix_toggles.cpp:116)
-- ChargeSmashAttacks.asm:47 `smash_attack_main` | PORTED | ft/ftmain.c:5640 ftRemixChargeSmashLogic, ft/ftremix/ftremixchargesmash.c
-- ChargeSmashAttacks.asm:298 `custom_shuffle` | PORTED | ft/ftdisplaymain.c:1398 ftRemixChargeSmashShufflePosition (table (8,0),(0,8),(-8,0),(0,-8) equals asm CUSTOM_SHUFFLE_TABLE)
-- ChargeSmashAttacks.asm:338 `custom_shuffle_item` | PORTED | lb/lbcommon.c:1913
+- ChargeSmashAttacks.asm:47 `smash_attack_main` | PORTED | ft/ftanimend.c:19 ftAnimEndSetWait (ftRemixChargeSmashHoldsAnimEnd, then ftRemixChargeSmashLogic when the wait transition is not taken), ft/ftremix/ftremixchargesmash.c
+- ChargeSmashAttacks.asm:298 `custom_shuffle` | PORTED | ft/ftdisplaymain.c:1411 ftRemixChargeSmashShufflePosition (table (8,0),(0,8),(-8,0),(0,-8) equals asm CUSTOM_SHUFFLE_TABLE)
+- ChargeSmashAttacks.asm:338 `custom_shuffle_item` | PORTED | lb/lbcommon.c:1914
 - Cheats.asm:14 `(unnamed)` | PORTED | lb/scmanager default save: sc/scmanager.c:342 (0x7F / 0x0C90)
 - Cheats.asm:20,26,32,38 `(unnamed)` | NA | every instruction of this patch is commented out in Cheats.asm (lines 19-37: `// ori`, `// slti`, `// nop`), so the patch writes nothing
 - Combo.asm:23 `improve_meter_` | PORTED | ft/ftremix/ftremixcombo.c:62, hook ft/ftmain.c:1771

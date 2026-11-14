@@ -289,7 +289,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Charge Smashes** (`charged_smashes`; 0 OFF, 1 ON, 2 UNLIMITED CHARGE; default 0)  
   Asm: ChargeSmashAttacks.asm: holding A on the charge frame of a smash (or an item swing) freezes the animation with a shake, a dust puff every 16 frames and sound 0x528; ON releases at 60 frames, UNLIMITED never.  
-  Port: `ftRemixChargeSmashLogic` (ft/ftremix/ftremixchargesmash.c:336-433) called at the end of `ftMainSetStatus` (ft/ftmain.c:5640); hold in `ftAnimEndSetWait`; shuffle in ft/ftdisplaymain.c:1398 and lb/lbcommon.c:1913. The hold is gated on the toggle (the asm takes the charging branch whenever the animation speed is 0).
+  Port: `ftRemixChargeSmashLogic` (ft/ftremix/ftremixchargesmash.c:351) called at the end of `ftMainSetStatus` (ft/ftmain.c:5766) and on every frame of `ftAnimEndSetWait` that does not go to Wait (ft/ftanimend.c:32, the fall-through of `smash_attack_main`); hold in `ftAnimEndSetWait` (`ftRemixChargeSmashHoldsAnimEnd`); shuffle in ft/ftdisplaymain.c:1411 and lb/lbcommon.c:1914; damage in `ftRemixChargeSmashScaleDamage`, at the hitbox creation (ft/ftmain.c:284); the yellow flash is the GFX routine 0x78 written to the fighter's colour script pointer. The hold is gated on the toggle (the asm takes the charging branch whenever the animation speed is 0).
 
 - **Item Containers** (`item_containers`; 0 DEFAULT, 1 OFF, 2 NEVER EXPLODE, 3 ALWAYS EXPLODE; default 0)  
   Asm: Item.asm `item_containers_*`: OFF spawns no crates, barrels or capsules (eggs spawn except on Yoshi's Island variants), NEVER EXPLODE and ALWAYS EXPLODE force the explosion outcome of hit and thrown containers.  
