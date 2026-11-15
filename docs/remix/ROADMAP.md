@@ -525,8 +525,9 @@ The asm is the reference; a deliberate difference goes to `deviations.md`.
   10. `play_music`, `random_music`, `menu_music`, `show_music_title`, `bgm_volume`, `fgm_volume`, `pokemon_voices`,
       `announcer_mode`
   11. `sss_layout`, `hazard_mode`, `whispy_mode`, `saffron_poke_rate`, `dragon_king_hud`, `camera_mode`, `yi_clouds`
-- [ ] T13.2 Fix the confirmed findings, one commit per batch, each with the in-game test that shows the asm behaviour
-  (or a unit test in `tests/remix/` for pure rules) and a `docs/bugs/` write-up for a significant one.
+- [ ] T13.2 Fix the confirmed findings, one commit per batch. Every fix needs an in-game smoke test that shows the asm
+  behaviour (before and after); a fix with pure rules also gets a unit test in `tests/remix/`, in addition to the smoke
+  test, never instead of it. A significant one gets a `docs/bugs/` write-up.
 - [ ] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
 
 ---

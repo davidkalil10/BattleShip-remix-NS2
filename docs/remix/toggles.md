@@ -278,7 +278,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Fast Fall Aerials** (`fast_fall_aerials`; 0 off, 1 on; default 0)  
   Asm: AerialAttackFastFall.asm: fast fall is allowed while an aerial attack is active.  
-  Port: ft/ftremix/ftremixaerialfastfall.c:22-44, hook ft/ftmain.c:5619.
+  Port: ft/ftremix/ftremixaerialfastfall.c, hook in `ftMainSetStatus` (ft/ftmain.c) on the AttackAirN..Lw entries of `dFTCommonActionStatusDescs`, keyed by the absolute status id (AerialAttackFastFall.asm patches those five Proc Physics words).
 
 - **Ledge Trumping** (`ledge_trump`; 0 off, 1 on; default 0)  
   Asm: LedgeTrump.asm: a fighter that jumps to an occupied ledge knocks the holder away (DamageAir3, velocity 50, 30 hitstun frames) and grabs it.  
@@ -294,7 +294,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Item Containers** (`item_containers`; 0 DEFAULT, 1 OFF, 2 NEVER EXPLODE, 3 ALWAYS EXPLODE; default 0)  
   Asm: Item.asm `item_containers_*`: OFF spawns no crates, barrels or capsules (eggs spawn except on Yoshi's Island variants), NEVER EXPLODE and ALWAYS EXPLODE force the explosion outcome of hit and thrown containers.  
-  Port: `itRemixContainersApplyToggle`, `itRemixContainerKeeps`, `itRemixContainerSmashFgm` (it/itremix/itremixcontainers.c:83-112), hooks in itmanager.c, itbox.c, itcapsule.c, ittaru.c, itegg.c.
+  Port: `itRemixContainersApplyToggle`, `itRemixContainerKeeps`, `itRemixContainerOpenFgm` (it/itremix/itremixcontainers.c; ALWAYS EXPLODE swaps the crate open sound 0x3C for the explosion, Item.asm crate_throw_sfx), hooks in itmanager.c, itbox.c, itcapsule.c, ittaru.c, itegg.c.
 
 - **Game Speed** (`game_speed`; 0 1/1, 1 1.2x, 2 1.3x, 3 1.5x, 4 1.75x, 5 2.0x, 6 3.0x, 7 1/8, 8 1/4, 9 1/3, 10 1/2, 11 2/3, 12 3/4; default 0)  
   Asm: Speed.asm `handle_rate_`: runs more or fewer `gcRunAll` frames per game frame. 2.0x and 3.0x run 2 and 3, the other values follow `waiting_time_table` (active frames out of total, for example 1.2x = 5 of 6, 1/8 = 1 of 8). The Stopwatch backfire speed replaces the toggle while active.  
