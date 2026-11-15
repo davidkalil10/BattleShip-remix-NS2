@@ -53,7 +53,7 @@ A-press routines (`port/remix/remix_toggle_actions.{h,cpp}`): in `Toggles.asm` a
 
 | Row | Asm routine | Port |
 |---|---|---|
-| BGM Volume | `update_bgm_volume` | sets the BGM volume again (only while a song plays) |
+| BGM Volume | `update_bgm_volume` | sets the BGM volume again; with nothing playing and Play Music ON, a menu screen restarts the menu music (`gmRemixMenuMusicVolumeApplied`) |
 | SFX Volume | `update_fgm_volume` | sets the sound volume and plays the test sound `0x020` |
 | Punish Failed Z-Cancel | `punish_fgm_` | plays the FGM of the chosen punishment (`gmRemixToggleActionGetPunishFgm`) |
 | Default CPU LVL (V.S.) | `set_cpu_level` | `gmRemixDefaultCPULevelRefresh` (`gm/gmremixspawnsetup.c`): a value other than 0 (DEFAULT) becomes the CPU level of the four slots at once and marks the default as set, so the once-per-boot `gmRemixDefaultCPULevelSetup` does not overwrite it |
@@ -62,7 +62,7 @@ A-press routines (`port/remix/remix_toggle_actions.{h,cpp}`): in `Toggles.asm` a
 | "Random Music Toggles:", "Random Stage Toggles:", "Toggle:" (Pokemon) title rows | `toggle_all_` | one button per title on its page ("Random Music Toggles: toggle all", "Random Stage Toggles: toggle all", "Toggle all"), `remix_toggle_action_toggle_all`: sets every toggle after the title, up to the end of the page, to the opposite of the first one (`gmRemixToggleActionGetToggleAllValue`) |
 | "Load Profile:" rows (Music and Stage pages) | `load_sub_profile_` | the INT row is hidden (its value only picked the profile) and the page lists one button per profile instead ("Load <name> music profile", "Load <name> stage profile", names from the row's string table), `remix_toggle_action_load_sub_profile`: copies `Toggles.music_profiles[n]` or `stage_profiles[n]` word by word into the toggles after the title that follows the row |
 
-Deviation, Random Music preview: the asm sets `reset_menu_music` and restarts the menu music through `play_menu_music_` when the settings screen is left. The port menu is an overlay that also opens during a match, so the first preview remembers the BGM id playing at that moment (`syAudioGetBGMPlaying`, -1 when none) and `remix_toggle_action_menu_closed`, called by `PortMenu::UpdateElement` on the visible-to-hidden change, puts that track back (or stops the music when none was playing). Pressing Menu Music after a preview forgets the remembered track: the track just chosen stays.
+Deviation, Random Music preview: the asm sets `reset_menu_music` and restarts the menu music through `play_menu_music_` when the settings screen is left. The port menu is an overlay that also opens during a match, so the first preview remembers the BGM id playing at that moment (`syAudioGetBGMPlaying`, -1 when none) and `remix_toggle_action_menu_closed`, called by `PortMenu::UpdateElement` on the visible-to-hidden change, puts that track back (or stops the music when none was playing). Pressing Menu Music after a preview forgets the remembered track: the track just chosen stays. After that restore, `remix_toggle_action_menu_closed` runs the Play Music half of `_exit_sub_menu` (`gmRemixMenuMusicSettingsClosed`: on a menu screen, Play Music OFF stops the track and silence restarts the menu music).
 
 Deviation, scope of the profile loaders: the asm loops until the chain ends and reads one word per remaining node; the port writes exactly the toggles that follow the title and stops there, so a profile table longer than the page cannot spill into another page.
 
@@ -329,7 +329,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Play Music** (`play_music`; 0 off, 1 on; default 1)  
   Asm: BGM.asm `play_music_`: OFF stops the stage BGM at the start of every track.  
-  Port: `syAudioPlayBGM` (sys/audio.c:1661) stops all BGM and returns -1; also read by gm/gmremixbgm.c:75 and gm/gmremixmusictitle.c:60.
+  Port: `syAudioPlayBGM` (sys/audio.c:1667) stops all BGM and returns -1; also read by gm/gmremixbgm.c:75, gm/gmremixmusictitle.c, and gm/gmremixmenumusic.c (`gmRemixMenuMusicPlay` stops a kept track, `gmRemixMenuMusicSettingsClosed`, `gmRemixMenuMusicVolumeApplied`).
 
 - **Random Music** (`random_music`; 0 off, 1 on; default 0/0/1/0)  
   Asm: BGM.asm `random_music_`: picks the stage BGM uniformly from the tracks whose Random Music toggle is on (empty list keeps the stage song). Holding a C button on the stage load also selects the alternate songs and blocks the random pick.  
@@ -341,11 +341,11 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Menu Music** (`menu_music`; 0 DEFAULT, 1 64, 2 MELEE, 3 MELEE MENU 2, 4 BRAWL, 5 GOLDENEYE 007, 6 MARIO TENNIS, 7 SUPER MARIO 64, 8 BLAST CORPS, 9 DIDDY KONG RACING, 10 MARIO KART 64, 11 SNOWBOARD KIDS, 12 MARIO PARTY, 13 MARIO ARTIST, 14 PERFECT DARK, 15 CRASH TEAM RACING, 16 KIRBY 64, 17 BOMBERMAN 64, 18 SONIC R, 19 RANDOM, 20 RANDOM CLASSICS, 21 RANDOM ALL, 22 OFF; default 0/0/1/0)  
   Asm: BGM.asm `alt_menu_music_` and Toggles.asm `play_menu_music_`: replaces the menu BGM. 0 DEFAULT (vanilla; on the title screen 85% 64 theme, 5% each Melee, Melee Menu 2, Brawl), 1 64, 2-18 a fixed track, 19 RANDOM (tracks 1-18), 20 RANDOM CLASSICS (5-18), 21 RANDOM ALL (the Random Music list, or a hidden GameBoy song when empty), 22 OFF. A listed track already playing is not restarted.  
-  Port: `gmRemixMenuMusicPlay` and `gmRemixMenuMusicStop` (gm/gmremixmenumusic.c:261-307) at 9 play sites and 4 stop sites of the menu screens. RANDOM ALL does not include the custom MIDI tracks. The entry is not in the ImGui page (A function).
+  Port: `gmRemixMenuMusicPlay` and `gmRemixMenuMusicStop` (gm/gmremixmenumusic.c:325) at 9 play sites and 4 stop sites of the menu screens. The RANDOM values follow `gmRemixMenuMusicRulesRandomStep` (BGM.asm 636-647): a 64 menu track playing gives the screen's own track, the Data theme or silence rolls again, any other track is kept. RANDOM ALL does not include the custom MIDI tracks. The entry is not in the ImGui page (A function).
 
 - **Music Title at Match Start** (`show_music_title`; 0 off, 1 on; default 1/0/1/1)  
   Asm: BGM.asm `show_music_title_`: at the GO lights a translucent bar shows the track name and the game name; it disappears with GO!.  
-  Port: gm/gmremixmusictitle.c:60 with names from port/remix/remix_music_title.cpp, drawn through the `remix_hud_text` overlay.
+  Port: `gmRemixMusicTitleLookup` (gm/gmremixmusictitle.c:63; the title of the track playing, else the stage `bgm_id` that BGM.asm reads) with names from port/remix/remix_music_title.cpp, drawn through the `remix_hud_text` overlay.
 
 - **BGM Volume** (`bgm_volume`; 0..10; default 10)  
   Asm: BGM.asm `master_bgm_volume`: BGM volume is scaled by level/10 before the 30720 clamp.  

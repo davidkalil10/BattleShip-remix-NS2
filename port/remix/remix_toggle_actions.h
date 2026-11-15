@@ -25,7 +25,8 @@ void remix_toggle_action_apply(uint32_t entry_addr);
 /**
  * Called when the port menu closes: puts back the BGM that was playing before the first Random Music preview (or stops the
  * music when none was), and does nothing when no preview ran. Deviation from the asm, which restarts the menu music through
- * reset_menu_music when the settings screen is left.
+ * reset_menu_music when the settings screen is left. Then applies the Play Music half of Toggles.asm _exit_sub_menu
+ * (gmRemixMenuMusicSettingsClosed).
  */
 void remix_toggle_action_menu_closed(void);
 

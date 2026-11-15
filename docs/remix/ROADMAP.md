@@ -575,6 +575,14 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     Pikachu's Thunder Jolt (no hop) 0 checks and 0 reflects; forced Green Shells 7 checks and 0 reflects, Eggs 4
     checks, Bob-ombs 0 checks. The direct-hit parry (kept per hitbox, `deviations.md` 5.3) played its sound 12 times
     against jabs. All runs rc=0, screenshots read.
+  - Batch 10 (`play_music`, `menu_music`, `bgm_volume`, `music_title`): toggles set at run time from gdb on the VS
+    mode menu. Play Music OFF then closing the settings stops the kept track (71 to -1); with music off then on and a
+    close, or A on BGM Volume, the menu track restarts (-1 to 71); in a match neither starts a menu track. RANDOM and
+    RANDOM ALL with the 64 menu track playing: the VS CSS plays its own track 10 and the VS menu 44 again; the 1P,
+    Training and both Bonus CSS play 10. Back from the Data screens RANDOM, RANDOM CLASSICS and RANDOM ALL roll a new
+    track (262, 283, 334). SM64 trap: 0 of 150 RANDOM presses after three direct SM64 presses land on the trap
+    (8 of 150 before). Music title at the 1P countdown: Meta Crystal and Duel Zone now show their banner until GO.
+    All runs rc=0, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);

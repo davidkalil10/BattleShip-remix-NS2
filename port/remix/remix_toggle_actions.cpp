@@ -26,6 +26,8 @@ extern int gmRemixToggleActionGetPreviewRestoreStep(int remembered_bgm);
 /* decomp/src/gm/gmremixspawnsetup.h and gmremixmenumusic.h */
 extern void gmRemixDefaultCPULevelRefresh(void);
 extern void gmRemixMenuMusicAudition(void);
+extern void gmRemixMenuMusicSettingsClosed(void);
+extern void gmRemixMenuMusicVolumeApplied(void);
 }
 
 namespace {
@@ -43,9 +45,10 @@ constexpr int kPreviewRestoreStop = 2;
 int sPreviewRememberedBgm = kPreviewIdle;
 
 /* Toggles.asm update_bgm_volume: sets the song volume again; the setting scales it. Only while a song plays, as the BGM player
- * does not exist before the first one. */
+ * does not exist before the first one. With nothing playing and Play Music ON, a menu screen restarts its menu music. */
 void ApplyBgmVolume() {
     if (syAudioGetBGMPlaying(0) < 0) {
+        gmRemixMenuMusicVolumeApplied();
         return;
     }
     syAudioSetBGMVolume(0, kVolumeActionLevel);
@@ -150,6 +153,7 @@ extern "C" void remix_toggle_action_menu_closed(void) {
     } else if (step == kPreviewRestoreStop) {
         syAudioStopBGMAll();
     }
+    gmRemixMenuMusicSettingsClosed();
 }
 
 extern "C" void remix_toggle_action_toggle_all(uint32_t title_addr) {
