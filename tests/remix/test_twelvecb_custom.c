@@ -6,10 +6,16 @@
 
 #include "mn/mnplayers/mnremixtwelvecbcustom.h"
 #include "mn/mnplayers/mnremixtwelvecblayout.h"
+#include "remix/remix_roster_data.h"
 
 static const int sRoster[] = { 0, 1, 2, 60, 3, 4 };
 #define ROSTER_COUNT 6
 #define SANDBAG 60
+#define ROSTER_IDS 97
+#define RANDOM_SELECT_DEFAULT 0
+#define RANDOM_SELECT_BONUS 1
+#define RANDOM_SELECT_ALL_VARIANTS 2
+#define RANDOM_SELECT_VANILLA 3
 
 static int sPickCalls;
 
@@ -138,6 +144,65 @@ static void testRandomizeAsksForOneCharacterPerEntry(void)
     CHECK_EQ(mnRemixTwelveCBLayoutFkind(0, 4), mnRemixTwelveCBCustomFkind(4));
 }
 
+static int countKeptIds(int random_select)
+{
+    int kept = 0;
+    int id;
+
+    for (id = 0; id < ROSTER_IDS; id++)
+    {
+        kept += mnRemixTwelveCBCustomRandomIsKept(id, random_select, kRemixRoster[id].variant_type);
+    }
+    return kept;
+}
+
+static void testRandomKeepsTheThirtyGridFightersByDefault(void)
+{
+    CHECK_EQ(30, countKeptIds(RANDOM_SELECT_DEFAULT));
+    CHECK_EQ(1, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_PEACH, RANDOM_SELECT_DEFAULT, REMIX_VARIANT_NA));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_LUCAS, RANDOM_SELECT_DEFAULT, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_NMARIO, RANDOM_SELECT_DEFAULT, REMIX_VARIANT_POLYGON));
+}
+
+static void testRandomWithBonusAddsTheTenBonusFighters(void)
+{
+    CHECK_EQ(40, countKeptIds(RANDOM_SELECT_BONUS));
+    CHECK_EQ(1, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_LUCAS, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_METAL, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_GDONKEY, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_GBOWSER, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_SSONIC, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_MLUIGI, RANDOM_SELECT_BONUS, REMIX_VARIANT_SPECIAL));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_NMARIO, RANDOM_SELECT_BONUS, REMIX_VARIANT_POLYGON));
+}
+
+static void testRandomWithAllVariantsKeepsEveryPlayableId(void)
+{
+    CHECK_EQ(ROSTER_IDS - 4, countKeptIds(RANDOM_SELECT_ALL_VARIANTS));
+    CHECK_EQ(1, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_NMARIO, RANDOM_SELECT_ALL_VARIANTS, REMIX_VARIANT_POLYGON));
+    CHECK_EQ(1, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_METAL, RANDOM_SELECT_ALL_VARIANTS, REMIX_VARIANT_SPECIAL));
+}
+
+static void testRandomVanillaKeepsTheTwelveVanillaFighters(void)
+{
+    CHECK_EQ(12, countKeptIds(RANDOM_SELECT_VANILLA));
+    CHECK_EQ(1, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_NESS, RANDOM_SELECT_VANILLA, REMIX_VARIANT_NA));
+    CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_FALCO, RANDOM_SELECT_VANILLA, REMIX_VARIANT_NA));
+}
+
+static void testRandomNeverKeepsBossSandbagNoneOrThePlaceholder(void)
+{
+    int random_select;
+
+    for (random_select = RANDOM_SELECT_DEFAULT; random_select <= RANDOM_SELECT_VANILLA; random_select++)
+    {
+        CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_BOSS, random_select, REMIX_VARIANT_SPECIAL));
+        CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_SANDBAG, random_select, REMIX_VARIANT_SPECIAL));
+        CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_NONE, random_select, REMIX_VARIANT_UNUSED));
+        CHECK_EQ(0, mnRemixTwelveCBCustomRandomIsKept(REMIX_ID_RANDOM, random_select, REMIX_VARIANT_SPECIAL));
+    }
+}
+
 static void testInvalidPlayerChangesNothing(void)
 {
     mnRemixTwelveCBCustomReset();
@@ -226,6 +291,11 @@ void remixTestTwelveCBCustom(void)
     RUN_TEST(testPresetWalksTheFourSetsAndComesBack);
     RUN_TEST(testCopyTakesTheOpponentsEntries);
     RUN_TEST(testRandomizeAsksForOneCharacterPerEntry);
+    RUN_TEST(testRandomKeepsTheThirtyGridFightersByDefault);
+    RUN_TEST(testRandomWithBonusAddsTheTenBonusFighters);
+    RUN_TEST(testRandomWithAllVariantsKeepsEveryPlayableId);
+    RUN_TEST(testRandomVanillaKeepsTheTwelveVanillaFighters);
+    RUN_TEST(testRandomNeverKeepsBossSandbagNoneOrThePlaceholder);
     RUN_TEST(testInvalidPlayerChangesNothing);
     RUN_TEST(testRepeatCyclesAtOnceThenAfterTheDelayEveryEightFrames);
     RUN_TEST(testRepeatRestartsAfterTheButtonIsLetGo);

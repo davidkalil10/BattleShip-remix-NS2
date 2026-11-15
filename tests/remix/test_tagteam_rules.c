@@ -7,8 +7,6 @@
 #include "gm/gmremixtagteamrules.h"
 
 #define QUEUE_MAX 6
-#define FIRST_RANDOM_FIGHTER 0x3F
-#define LAST_RANDOM_FIGHTER 0x44
 
 static void testTheSlotIsTheStocksSetMinusTheStocksLeft(void)
 {
@@ -109,24 +107,6 @@ static void testASwapIsNeededForAnotherCostumeOrShade(void)
     CHECK_EQ(1, gmRemixTagTeamRulesNeedsSwap(0x1F, 0, 1, 0, 0x1F, 0, 0, 0));
 }
 
-static void testTheRandomListHasThirtyFighters(void)
-{
-    CHECK_EQ(30, gmRemixTagTeamRulesRandomCount());
-}
-
-static void testTheRandomIndexPicksTheFighterOfTheList(void)
-{
-    CHECK_EQ(FIRST_RANDOM_FIGHTER, gmRemixTagTeamRulesRandomFighter(0));
-    CHECK_EQ(0x20, gmRemixTagTeamRulesRandomFighter(1));
-    CHECK_EQ(LAST_RANDOM_FIGHTER, gmRemixTagTeamRulesRandomFighter(29));
-}
-
-static void testARandomIndexOutOfRangeIsClamped(void)
-{
-    CHECK_EQ(FIRST_RANDOM_FIGHTER, gmRemixTagTeamRulesRandomFighter(-1));
-    CHECK_EQ(LAST_RANDOM_FIGHTER, gmRemixTagTeamRulesRandomFighter(30));
-}
-
 void remixTestTagTeamRules(void)
 {
     printf("tag team rules\n");
@@ -146,7 +126,4 @@ void remixTestTagTeamRules(void)
     RUN_TEST(testASwapIsNeededOnlyForAnotherFighter);
     RUN_TEST(testASwapIsNeededForAnotherCostumeOrShade);
     RUN_TEST(testASwapIsNeededWhenClassicSonicChanges);
-    RUN_TEST(testTheRandomListHasThirtyFighters);
-    RUN_TEST(testTheRandomIndexPicksTheFighterOfTheList);
-    RUN_TEST(testARandomIndexOutOfRangeIsClamped);
 }

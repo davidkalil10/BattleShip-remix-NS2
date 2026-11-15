@@ -555,6 +555,13 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     VS match left on Dragon King (scene gkind 0x35 set from gdb) played on Dream Land puts the combo meter at y 167,
     above the damage HUD, since the battle-state gkind decides. Hazard Mode outside VS and Training and the Zebes acid
     AI keep the port's screen gate (`deviations.md` 5.7 and 5.9). All runs rc=0, screenshots read.
+  - Batch 3 (`variant_random`, `disable_hud`, `stereo_fix`): menu rolls draw like `Global.get_random_int_safe_` (game
+    RNG advanced 1 to 64 times by the frame counter). 12CB Custom D-pad Down (Custom set forced from gdb): DEFAULT only
+    grid fighters, INCLUDE BONUS adds bonus ids (66, 74, 75, 76...), VANILLA only ids up to Ness; the same presses 7
+    frames later give other fighters. Tag Team Random queue slots (stocks set to 5 from gdb): VANILLA only ids up to
+    Ness, INCLUDE BONUS bonus and variant ids, and two press timings give different queues. Positional sounds: Home-Run
+    Contest 7 of 7 and Sector Z Remix 6 of 6 with pan 0x80 (the sound's own pan), Dream Land positional (0x31 to 0x45).
+    Training pause shows "Press Z for Custom Menu" with Disable HUD PAUSE and ALL. All runs rc=0, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);

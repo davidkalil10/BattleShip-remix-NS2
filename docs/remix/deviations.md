@@ -367,6 +367,7 @@ Per item:
 |---|---|
 | Character Data emblem (`mnremixcharacters.c`) | The extended fighters' emblem reads the DObjDesc, MObjSub and MatAnimJoint offsets from `ResultsScreen.series_logo_offset/zoom/color_table[fkind]`. The asm (`extend_series_logo_offsets`) swaps only the DObjDesc and leaves the material and colour offsets at 0. The emblems match the reference capture (`build/ref-shots/chardata_lap`). |
 | VS stats page 2 (`mnremixvsstatspages.c`) | With Combo Meter off the asm skips the whole page 2 (`VsStats.asm` 989-995 branches `_combo_stats_off` to `_end`, past the `_page_2` block), so page 2 shows only the port header although nothing on it depends on the meter and the comment says "skip drawing combo stats". The port skips only the combo rows of page 1 and keeps page 2 (Z-cancel, tech, ledge and special move stats). Owner decision, 2026-11-15 (M13 batch 2). |
+| 12-Character Battle Custom randomize (`mnremixtwelvecbcustom.c`, M13 batch 3) | `TwelveCharBattle.asm` 4466-4518 `get_random_char_id_` rolls over every character id and rejects Boss, Sandbag and NONE, but its PLACEHOLDER (0x1B) test is commented out (4476-4477). 0x1B has variant type SPECIAL and is not in the Metal/Giant/Super exclusions, so with Random Select at INCLUDE BONUS or ALL VARIANTS the asm can put the Random "?" fighter, which is never fought, on a portrait. The port also rejects 0x1B (`mnRemixTwelveCBCustomRandomIsKept`). Owner policy 2026-11-15. |
 
 ### 5.7 Stages and match flow
 

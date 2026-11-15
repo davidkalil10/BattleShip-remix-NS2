@@ -144,15 +144,16 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Stereo Fix for Hit SFX** (`stereo_fix`; 0 off, 1 on; default 1)  
   Asm: Stereo.asm `fix_sfx_pan_`: inverts the hit-SFX pan (a vanilla bug) when ON; Sector Z Remix and the Home-Run Contest platform are always centred.  
-  Port: No reader, and the Remix menu page leaves it out (`IsRemixToggleWithoutPortEffect`). Deviation: the port always applies the corrected pan (lb/lbcommon.c:760-775, with the Sector Z Remix centring), because the inverted pan is an outright vanilla bug.
+  Port: No reader, and the Remix menu page leaves it out (`IsRemixToggleWithoutPortEffect`). Deviation: the port always applies the corrected pan (lb/lbcommon.c:776-783), because the inverted pan is an outright vanilla bug. Sector Z Remix and the Home-Run Contest (`sc1PRemixHrcIsActive`) store pan 0x80, as the asm does: 0x80 is the "no pan override" value, so the sound keeps its own pan.
 
 - **Random Select** (`variant_random`; 0 DEFAULT, 1 INCLUDE BONUS, 2 ALL VARIANTS, 3 VANILLA ONLY; default 0)  
   Asm: CharacterSelect.asm `get_random_char_id_`: Random Select pool. INCLUDE BONUS adds the ten bonus fighters, ALL VARIANTS turns a pick into one of its four variants one time in five, VANILLA ONLY rerolls non-vanilla fighters.  
-  Port: `mnRemixRandomPickFighterKind` and `mnRemixRandomResolveFighterKind` (mn/mnplayers/mnremixvariants.c:124, :144).
+  Also TwelveCharBattle.asm `get_random_char_id_` (12-Character Battle Custom set, D-pad Down: a roll over every character id filtered by the setting) and TagTeam.asm 603-613 (Random queue slots use the CSS roll). Every roll draws with Global.get_random_int_safe_ (game RNG advanced 1-64 times by the frame counter).  
+  Port: `mnRemixRandomPickFighterKind` and `mnRemixRandomResolveFighterKind` (mn/mnplayers/mnremixvariants.c:163, :143); 12CB Custom `mnRemixTwelveCBCustomRandomIsKept` (mn/mnplayers/mnremixtwelvecbcustom.c:189, called from mnplayersvs.c:996); Tag Team Random queue slots through `mnRemixCssRandomTokenRoll` (gm/gmremixtagteam.c:78); every draw goes through `mnRemixRandomIntSafe` (mnremixvariants.c:101).
 
 - **Disable HUD** (`disable_hud`; 0 OFF, 1 PAUSE, 2 ALL; default 0)  
-  Asm: Camera.asm `disable_hud_`/`unpause_camera_`, Training.asm and Pause.asm `disable_hud_`: ALL (bit 2) hides the match HUD after GO, after unpausing and in Training (the Training menu stays reachable); PAUSE and ALL hide the pause legends (Render groups 0xE-0x10). With the setting OFF, D-pad Left on the pause toggles the legends.  
-  Port: `ifRemixHudDisabledAll` (if/ifremixhud.c:16), gm/gmremixcamerapause.c, sc/sc1pmode/sc1ptrainingremixlegend.c:88, if/ifremixpauselegend.c:150-213 (`ifRemixPauseLegend*`).
+  Asm: Camera.asm `disable_hud_`/`unpause_camera_`, Training.asm and Pause.asm `disable_hud_`: ALL (bit 2) hides the match HUD after GO, after unpausing and in Training (the Training menu stays reachable); PAUSE and ALL hide the VS pause legends (Render groups 0xE-0x10, Pause.asm only; the Training pause keeps its Z menu prompt). With the setting OFF, D-pad Left on the pause toggles the legends.  
+  Port: `ifRemixHudDisabledAll` (if/ifremixhud.c:16), gm/gmremixcamerapause.c, sc/sc1pmode/sc1ptrainingremixlegend.c:84 (the prompt ignores the setting), if/ifremixpauselegend.c:150-213 (`ifRemixPauseLegend*`).
 
 - **Disable Anti-Aliasing** (`disable_aa`; 0 off, 1 on; default 0)  
   Asm: AA.asm: clears the VI anti-alias bits.  
@@ -439,7 +440,7 @@ These are port registries over the Remix CSS and Training menus, not `Toggles.as
 | Player Tags | same file | `gRemix.Panel.TagName.<1..20>` | `SSB64_REMIX_TAG_NAMES="2=afk"` | Names of the 20 custom tags (`css/PlayerTag.asm`). A port shows the name when its PlayerTag option selects the tag. The tag text `afk` enables the 1P AFK helpers (`sc/sc1pmode/sc1premixenemyafk.h`); `cube` (Kirby Cube) has no counterpart. |
 | Training | `port/remix/remix_training.cpp` (`remix_training_get`) | `gRemix.Training.<Key>` | `SSB64_REMIX_TRAINING="ShieldBreak=1;Oos=3;SpamPractice=7"` | Keys ShieldBreak, Oos, Music, StageBg, Tech, DiType, DiStrength, DiDirection, DiFirstHit, Dpad, DiPractice, SpamPractice, SpamInterval, SpamRandom, Percent1..4, ResetSetsPercent1..4, Type1..4, Character1..4, Costume1..4, Spawn1..4 (`Training.asm` 3899-3913). |
 | Modes | `port/remix/remix_modes.cpp` | `gRemix.Modes.SmashketballType` (0 basketball, 1 soccer) | none | The Smashketball type toggle of the VS character select. |
-| Tag Team | same file | `remix_modes_tagteam_cvars()` | none | Fighters 2..6 of each port's Tag Team queue (slot 1 is the CSS pick). |
+| Tag Team | same file | `remix_modes_tagteam_cvars()` | none | Fighters 2..6 of each port's Tag Team queue (slot 1 is the CSS pick). A Random slot (or a CSS RANDOM token) rolls through `mnRemixCssRandomTokenRoll`, so it follows Random Select and the recent-randoms reroll. |
 
 ## 8. Behaviour outside the registry
 

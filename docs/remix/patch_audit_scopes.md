@@ -1320,7 +1320,7 @@ Format: asm:lines | scope | verdict | evidence (port file:line or reason). Rows 
 - Speed.asm:58 `handle_rate_` | PORTED | if/ifcommon.c:3412 ftRemixSpeedRunFrames, sc1ptrainingmode.c:791
 - SpotDodge.asm:9 `check_input` | PORTED | ft/ftremix/ftremixspotdodge.c
 - StaleMoves.asm:40,178,181 `stale_moves` | PORTED | ft/ftremix/ftremixstalemoves.c via ft/ftparam.c
-- Stereo.asm:16 `fix_sfx_pan_` | PORTED | lb/lbcommon.c:775
+- Stereo.asm:16 `fix_sfx_pan_` | PORTED | lb/lbcommon.c:776-783
 - StockMode.asm:49 `set_initial_stock_count_` | PORTED | gm/gmremixstockmode.c, sc/sccommon/scvsbattle.c:365
 - Toggles.asm:89 `disable_options_functionality_` | ADAPTED | the Remix settings are the ImGui menu (port/gui/PortMenu.cpp:1368 AddMenuRemix); the Options screen stays vanilla (ROADMAP decision T4.2)
 - Toggles.asm:111,114,117,122,125,128,131,134,137,140,143,148,151,154,157 `add_mode_select_remix_button_` | ADAPTED | 5th Mode Select button replaced by the ImGui menu (PortMenu.cpp:1368; ROADMAP:355). Gap inside: nothing clears the 1P Remix mode when leaving Mode Select (Toggles.asm:272-276 clears singleplayer_mode_flag; gSC1PRemixMode is only set in mn/mn1pmode/mnremix1pmode.c:164)
