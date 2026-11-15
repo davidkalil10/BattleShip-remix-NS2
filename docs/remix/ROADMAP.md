@@ -51,8 +51,9 @@ open. The closed milestones are summarised in
 | M0 to M10 | closed; open leftovers: T9.1b and T10.2 (user) |
 | **M11 Finalization** | Phases R, 1 to 8 done (Phase 8 on 2026-11-06) |
 | **M12 Platforms and releases** | PS5, Android, updater and the releases `v2.0.1-port.4` to `port.9` shipped (see **M12**) |
+| **M13 Toggle parity audit** | open (started 2026-11-14) |
 
-- **Next step:** none for the lead; the user passes T9.1b and T10.2. Phase 5b closed on 2026-11-06: every ledger
+- **Next step:** M13, toggle parity audit against the asm (T13.1 first). Phase 5b closed on 2026-11-06: every ledger
   item is `done` or `n/a`, `parity.md` regenerated (no `partial` row).
 - **Depends on the user:** T9.1b (listening and visual pass) and T10.2 (Switch hardware).
 - **Last checkpoint:** CP12 (2026-11-05, Phases 4 and 5 closed; outer `e8faa57`, decomp `be259fe8b`).
@@ -496,6 +497,37 @@ Not part of the Remix port itself; recorded here so the plan matches what ships.
 - [x] Asset recipe: the Torch revision is pinned in `tools/torch_extract_rev.txt`, so unrelated Torch commits do not force a re-extraction; the Switch error screen tells a missing `.recipe` from a mismatch.
 - [x] Logs hold only the last run (`ssb64.log`, `logs/BattleShip-Remix.log`, PS5 `boot.txt`).
 - [x] Bug reports go through `.github/ISSUE_TEMPLATE/bug_report.yml`.
+
+### M13. Toggle parity audit against the asm (opened 2026-11-14)
+
+Issue #8 showed that a toggle can be `ported` in the ledger and still differ from the asm in ways no smoke test caught:
+Charge Smashes ran its logic on the wrong frame and scaled damage on the wrong motion event, Special Zoom called the
+joint animation instead of the material animation and wrote the magnifier byte next to the right one
+(`docs/bugs/remix_charge_smash_never_starts_2026-11-14.md`, `docs/bugs/remix_special_zoom_wallpaper_matanim_2026-11-14.md`).
+M13 repeats that comparison for every other toggle of `toggles.md`: every asm site that reads the toggle against every
+port site, looking for a wrong hook site or call frequency, field, constant, condition, vanilla function or value mapping.
+The asm is the reference; a deliberate difference goes to `deviations.md`.
+
+- [ ] T13.1 Audit, read-only, one auditor per batch and one skeptic per finding (only findings confirmed on both sides
+  count). Batches (registry keys):
+  1. `skip_results_screen`, `hold_to_pause`, `css_panel_menu`, `practice_overlay`, `cinematic_entry`, `flash_on_z_cancel`
+  2. `model_display`, `special_model`, `advanced_hurtbox`, `hold_to_exit_training`, `improved_combo_meter`,
+     `tech_chase_combo_meter`, `combo_meter`, `1v1_combo_meter_swap`
+  3. `neutral_spawns`, `salty_runback`, `preserve_salty_song`, `stereo_fix`, `variant_random`, `disable_hud`,
+     `full_results`, `skip_start_cheer`
+  4. `default_cpu_level`, `puff_sing_anim`, `l_random_char`, `dpad_css_control`, `pk_thunder_reflect_crash_fix`,
+     `flash_guard`, `screenshake`, `blastzone_gfx`
+  5. `hitstun`, `hitlag`, `di`, `japanese_sounds`, `j_stun_sleep`, `momentum_slide`
+  6. `shieldstun`, `z_cancel_opts`, `punish_on_failed_z_cancel`, `tripping`, `rage`, `footstool`
+  7. `air_dodge`, `jab_lock`, `ledge_jump`, `perfect_shield`, `parry`, `spot_dodge`
+  8. `fast_fall_aerials`, `ledge_trump`, `wall_teching`, `item_containers`, `game_speed`, `blastzone_warp`
+  9. `single_button_mode`, `item_dropping`, `move_staling`, `stopwatch_behaviour`, `improved_ai`
+  10. `play_music`, `random_music`, `menu_music`, `show_music_title`, `bgm_volume`, `fgm_volume`, `pokemon_voices`,
+      `announcer_mode`
+  11. `sss_layout`, `hazard_mode`, `whispy_mode`, `saffron_poke_rate`, `dragon_king_hud`, `camera_mode`, `yi_clouds`
+- [ ] T13.2 Fix the confirmed findings, one commit per batch, each with the in-game test that shows the asm behaviour
+  (or a unit test in `tests/remix/` for pure rules) and a `docs/bugs/` write-up for a significant one.
+- [ ] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
 
 ---
 
