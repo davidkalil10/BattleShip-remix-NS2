@@ -366,6 +366,7 @@ Per item:
 | Screen | Deviation |
 |---|---|
 | Character Data emblem (`mnremixcharacters.c`) | The extended fighters' emblem reads the DObjDesc, MObjSub and MatAnimJoint offsets from `ResultsScreen.series_logo_offset/zoom/color_table[fkind]`. The asm (`extend_series_logo_offsets`) swaps only the DObjDesc and leaves the material and colour offsets at 0. The emblems match the reference capture (`build/ref-shots/chardata_lap`). |
+| VS stats page 2 (`mnremixvsstatspages.c`) | With Combo Meter off the asm skips the whole page 2 (`VsStats.asm` 989-995 branches `_combo_stats_off` to `_end`, past the `_page_2` block), so page 2 shows only the port header although nothing on it depends on the meter and the comment says "skip drawing combo stats". The port skips only the combo rows of page 1 and keeps page 2 (Z-cancel, tech, ledge and special move stats). Owner decision, 2026-11-15 (M13 batch 2). |
 
 ### 5.7 Stages and match flow
 
