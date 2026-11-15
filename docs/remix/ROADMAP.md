@@ -7,7 +7,7 @@ is indexed in [`README.md`](README.md).
 
 ## How to use (work protocol)
 
-1. At the start of each session, read **Current position** and **Open items**.
+1. At the start of each session, read **Current position** and any open milestone.
 2. Work only on the first open item of the current milestone. A blocked item gets `BLOCKED: <reason>` and the next one is
    done. New work (a bug batch, an audit) opens a new milestone after the last one, with its tasks, before any code
    changes.
@@ -50,23 +50,23 @@ is indexed in [`README.md`](README.md).
 ## Current position
 
 **Every milestone is closed (M0 to M13; M13 on 2026-11-15).** The Remix is playable on every platform the releases
-ship, and the owner validated the listening pass, the Switch hardware and the updaters on 2026-11-15. The only open
-item is the next release: see **Open items**.
+ship, and the owner validated the listening pass, the Switch hardware and the updaters on 2026-11-15. Nothing is
+open. Releases are not tracked here: they follow `AGENTS.md` ("Releases") and `build_and_roms.md`.
 
 | Milestone | State |
 |---|---|
 | M0 to M10 | closed; their user passes T9.1b and T10.2 validated by the owner (2026-11-15) |
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
-| M12 Platforms and releases | releases `v2.0.1-port.1` to `port.12` from `release-remix.yml` (desktop, Switch, PS5, Android) |
+| M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
 
-- **Next step:** the release `v2.0.1-port.13` (notes ready), when the owner says so.
+- **Next step:** none; new work opens a milestone here first.
 - **Last checkpoint:** M13 closed (2026-11-15; outer `8332d12`, decomp `3413abab6`).
 - **Overall estimate:** 100% by the table at the end of this file.
 
-## Open items
+## Owner validations
 
-Nothing else is open.
+The passes only the owner or a console can do; all closed on 2026-11-15.
 
 - [x] T9.1b Listening and visual pass by the owner (the lead cannot hear): stages, victory songs, Sound Test, hit SFX,
   menu graphics; `t9_1b_checklist.md`. Done: validated by the owner (2026-11-15).
@@ -75,8 +75,6 @@ Nothing else is open.
   for the `gfx_step: walked past registered DL range` stutter. Metal Mario tiny on the Training CSS was never
   reproduced.
 - [x] M12 updaters on a real install: the Switch zip update and the macOS in-place update. Done: validated by the owner (2026-11-15).
-- [ ] Release `v2.0.1-port.13` (`.github/release-notes.md` already covers the display-list fix, issue #8 and M13): tag
-  when the owner says so, then close issue #8 with the release link.
 
 ---
 
@@ -171,7 +169,7 @@ Finding: the 30 Remix fighters used the parent's attack list (`remix_roster.cpp`
 
 ### M9. Final desktop verification
 - [x] T9.1 Full sweep: the automatable part is done (sweeps, 4-player matches in six modes, Training through the CSS); the regression pass is M11 Phase 8. Defect fixed: Salty Runback/R+L combo needed the held state **equal** to the mask (`Joypad.check_buttons_all_`); `gmremixgameendinputrules.*`.
-- [x] T9.1b Listening pass by the user: validated by the owner (2026-11-15) (see **Open items**).
+- [x] T9.1b Listening pass by the user: validated by the owner (2026-11-15) (see **Owner validations**).
 - [x] T9.2 Vanilla `REGION_US` builds and plays: CMake of `us`/`jp` skips Remix-only sources (`ft/ftremix`, `gr/grremix`, `it/itremix`, `port/remix/`, keeping `remix_debug`); `REGION_REMIX` guards in `ftport.c`, `port.cpp`.
 - [x] T9.3 Report to the user in Portuguese ("Remix playable"), 2026-11-06 after Phase 8; adaptations listed in
   `deviations.md` and the `adapted` rows of `parity.md`.
@@ -346,7 +344,7 @@ Closed phases:
 
 Not part of the Remix port itself; recorded here so the plan matches what ships. Reference: `build_and_roms.md`, `AGENTS.md` ("Releases", "Asset extraction fingerprint", "Logs").
 
-- [x] Releases: a `v*` tag on `feature/remix-port` runs `.github/workflows/release-remix.yml` (macOS `.dmg`, Linux AppImage, Windows zip, Switch zip and bare `.nro`, macOS app zip, Android arm64 APK, PS5 title zip, `SHA256SUMS.txt`) and opens a draft whose body is `.github/release-notes.md`. Tags `v2.0.1-port.1` to `port.12`. The inherited upstream workflows are disabled.
+- [x] Releases: a `v*` tag on `feature/remix-port` runs `.github/workflows/release-remix.yml` (macOS `.dmg`, Linux AppImage, Windows zip, Switch zip and bare `.nro`, macOS app zip, Android arm64 APK, PS5 title zip, `SHA256SUMS.txt`) and opens a draft whose body is `.github/release-notes.md`. The inherited upstream workflows are disabled.
 - [x] PS5 native title `PPSA99264` (`scripts/ps5/`, `port/ps5/`), with its zip updater.
 - [x] Android arm64 APK (`dev.lucasliet.battleship.remix`), with its own boot-time updater (`AppUpdater`, `UpdatePrompt`, a `PackageInstaller` session).
 - [x] Updater: start-up popup on desktop and Switch with restart after install; Switch swaps the running `.nro`.
