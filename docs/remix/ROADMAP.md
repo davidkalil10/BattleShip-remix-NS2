@@ -49,9 +49,9 @@ is indexed in [`README.md`](README.md).
 
 ## Current position
 
-**Every milestone is closed (M0 to M13; M13 on 2026-11-15).** The Remix is playable on every platform the releases
-ship, and the owner validated the listening pass, the Switch hardware and the updaters on 2026-11-15. Nothing is
-open. Releases are not tracked here: they follow `AGENTS.md` ("Releases") and `build_and_roms.md`.
+**M14 is open (equivalence audit of the non-toggle logic, 2026-11-15); M0 to M13 are closed.** The Remix is playable
+on every platform the releases ship, and the owner validated the listening pass, the Switch hardware and the updaters
+on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases") and `build_and_roms.md`.
 
 | Milestone | State |
 |---|---|
@@ -59,10 +59,12 @@ open. Releases are not tracked here: they follow `AGENTS.md` ("Releases") and `b
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
 | M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
+| M14 Equivalence audit of the non-toggle logic | open: the pilot confirmed 23 differences (T14.1); the rest of the audit is T14.2 |
 
-- **Next step:** none; new work opens a milestone here first.
+- **Next step:** T14.1 lot A (hazards).
 - **Last checkpoint:** M13 closed (2026-11-15; outer `8332d12`, decomp `3413abab6`).
-- **Overall estimate:** 100% by the table at the end of this file.
+- **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
+  equivalence of the non-toggle logic is what M14 measures.
 
 ## Owner validations
 
@@ -468,6 +470,102 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
 - [x] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
   Done with each batch commit; the release notes have the M13 highlights (Combo Meter, settings checked against Smash
   Remix).
+
+### M14. Equivalence audit of the non-toggle logic (opened 2026-11-15)
+
+M11 checked that every asm patch has a port hook (presence); M13 checked that the hook does what the asm does, but only
+for the settings toggles. The rest of the hand-ported logic (fighter specials, stage hazards, modes, items, shared
+gameplay patches) never had that equivalence check. A read-only pilot on 2026-11-15 (one auditor per area, one skeptic
+per finding, the same method as T13.1) sampled six areas and confirmed 23 differences:
+
+| Area sampled | Routines equal to the asm | Confirmed differences |
+|---|---|---|
+| Marth (`MarthSpecial.asm`, `Marth.asm` logic) | 27 | 0 |
+| Sonic and Super Sonic (`SonicSpecial.asm`, `SSonic.asm`, `Sonic.asm` logic) | 56 | 2 |
+| Hazards of Pirate Land, Rainbow Road, Metallic Madness, Spawned Fear (`Hazards.asm`) | 19 | 10 |
+| King of the Hill and Smashketball (`KingOfTheHill.asm`, `Smashketball.asm`) | 24 | 8 (4 more already documented) |
+| Items Blue Shell, Stopwatch, Waddle Dee, Boomerang | 38 | 2 |
+| `Damage.asm` and the shared fighter files | 40 | 1 |
+
+Fighters show few differences; hazards, modes and items about one per two or three routines, the M13 rate. Acceptance
+of every fix as in M13 (T13.2): an in-game smoke test that shows the asm behaviour before and after, rerun by the lead
+on the build that will be committed; a unit test as well when the fix is a pure rule; a `deviations.md` row when the
+asm is the one that is wrong (owner policy, 2026-11-15). One commit per lot.
+
+- [ ] T14.1 Fix the pilot findings (asm paths under `.toolchain/pkgs/smashremix-src/src/`; line numbers of 2026-11-15).
+  - Lot A, hazards:
+    - [ ] A1 Pirate Land cannon DObjs get no transform XObj (asm 0x1C TraRotRpyRSca): the barrel never moves to
+      -128/0/+128, the 1.125 fire pulse and the cannon animation are missing, the parts sit at the parent origin.
+      `Hazards.asm:3770-3780` / `grremixpiratecannon.c:81,299-300`.
+    - [ ] A2 Pirate Land: no muzzle effect (`0x80100480`, white sparkle) when a cannonball spawns.
+      `Hazards.asm:4179-4183` / `grremixpiratecannonball.c:84-105`.
+    - [ ] A3 Pirate Land: the cannonball's second transform is 0x48 (billboard with scale) in the asm, 0x47 in the port.
+      `Hazards.asm:4326` / `grremixpiratecannonball.c:48-51`.
+    - [ ] A4 Rainbow Road: the Chain Chomp has no per-frame `gcPlayAnimAll` process, so it stays on its first animation
+      frame at the spawn point instead of charging along the track. `Hazards.asm:5737-5743` /
+      `grremixrainbow.c:75-85,131-138`.
+    - [ ] A5 Rainbow Road: the Chomp draws on display link 6 with the z-buffer; the asm uses link 0x11 with
+      `grDisplayLayer0PriProcDisplay` (no z-buffer, drawn over the track). `Hazards.asm:5683,5707-5715` /
+      `grremixrainbow.c:148`.
+    - [ ] A6 Rainbow Road start sequence: the asm plays 0x403 five times and 0x404 at 0xAC8 (delay-slot decrement);
+      the port plays four and 0x404 at 0xA8C, so one beep is missing and the cycle is 60 frames short (fix `hazards.md`
+      too). `Hazards.asm:5953-5965` / `grremixrainbow.c:28-29,106-118`.
+    - [ ] A7 Rainbow Road: the Chomp growl window reads GObj+0x0E (`frame_draw_last`, a global 8-bit counter), so it
+      reopens every 256 frames for the Chomp's whole life; the port opens it only in its first 15 frames.
+      `Hazards.asm:6081-6095` / `grremixrainbowchomp.c:61-75`.
+    - [ ] A8 Metallic Madness: `shrink_timer_` clears the laser shrink when the player has an active Super or Poison
+      Mushroom; the port lets the 900-tic timer run and then overwrites the mushroom size.
+      `Hazards.asm:4746-4760` / `grremixmetallic.c:216-224`.
+    - [ ] A9 Spawned Fear: the Cacodemon factory timer goes back to 0 (delay slot) even when a Cacodemon is alive; the
+      port keeps counting, so a new one can appear right after the last dies, and a forced frame 3000 with one alive is
+      never retried. `Hazards.asm:8641-8646` / `grremixcacodemonfactory.c:63-68`.
+    - [ ] A10 Spawned Fear: the Thunderball lacks the 0x47 billboard transform and the `wpMainVelSetModelPitch` call at
+      spawn. `Hazards.asm:9235,9032-9039` / `grremixthunderball.c:70-74,153-171`.
+  - Lot B, modes:
+    - [ ] B1 KOTH: every frame with no king (empty or contested hill) resets the 3.5 s win countdown of every team; the
+      port freezes it. `KingOfTheHill.asm:1292-1305,1375-1381` / `gmremixkothking.c:123-127`.
+    - [ ] B2 KOTH: the meter frame sprite uses the `Color.damage_icon` tints (FFA0A0, B4B4FF, E6E678, A0FFA0, DCDCDC),
+      not the darker bar colours. `KingOfTheHill.asm:1555-1558,1596,1623-1632` / `gmremixkothhud.c:81-83`.
+    - [ ] B3 KOTH: the hill re-pick retries invalid lines forever and only counts repeats of the current hill (4
+      draws); the port spends one of 3 draws on every invalid line and keeps the old hill.
+      `KingOfTheHill.asm:974-990,1005-1037` / `gmremixkoth.c:134-141`, `gmremixkothhill.c:92-100`.
+    - [ ] B4 KOTH hidden hill: the asm moves the hill as soon as the hidden marker leaves the blast zone, else on the
+      121st hidden frame, and resets `hidden_frames` only there; the port skips the blast-zone check, moves one frame
+      early and resets on every change. `KingOfTheHill.asm:1127-1148` / `gmremixkoth.c:164-168`.
+    - [ ] B5 KOTH: each full bar has its own flash starting at alpha 0; the port runs one shared phase from match start.
+      `KingOfTheHill.asm:1459-1473` / `gmremixkothhud.c:87-95,102,116`.
+    - [ ] B6 Smashketball streak chant: the asm passes `FTStruct.player_num`, the port the port index (wrong or no
+      chant when the ports used are not contiguous). `Smashketball.asm:897-899` /
+      `gmremixsmashketballscore.c:67,75`.
+    - [ ] B7 Smashketball forced chant keeps the same-player check: one chant per streak, not one per basket from the
+      third on. `Smashketball.asm:1136-1142` / `ftpublic.c:100-107`.
+    - [ ] B8 Smashketball CPU ball seek reads the item DObj translate; the port uses the owner's hand position while
+      the ball is held (check in game first; low confidence). `Smashketball.asm:1175-1179` /
+      `ftremixaimodes.c:37,60`.
+  - Lot C, items, fighters and shared patches:
+    - [ ] C1 Blue Shell: the rolling shell refreshes the first-place fighter every 8 frames and runs the red shell
+      follow routine (`0x8017A3A0`) toward it; the port keeps the throw velocity. `items/BlueShell.asm:873-876,
+      1349-1429` / `itremixblueshell.c:437-453,342-352`.
+    - [ ] C2 Blue Shell: when the interact counter runs out while rolling, the asm keeps the shell (its destroy branch
+      falls into `_end`, which clears v0); the port destroys it. Likely an asm bug: keep the port and add a
+      `deviations.md` row, after confirming. `items/BlueShell.asm:1174-1182,1238-1239` /
+      `itremixblueshell.c:480-484`.
+    - [ ] C3 Sonic spring: the asm turns only Tumble into JumpF (`sltu` against FallSpecial); the port's inclusive range
+      also frees a helpless (FallSpecial) fighter. `Sonic/SonicSpecial.asm:1747-1752` / `ftremixsonicusp.c:311-314,
+      447-450`.
+    - [ ] C4 Super Sonic `end_invisibility_` only toggles the invisibility bit; the port also writes the moveset env
+      colour, which hides the player tag for a few frames at the end of the teleport (same pattern in Sheik and Mewtwo:
+      check them too). `Sonic/SonicSpecial.asm:3456-3467` / `ftremixssonicusp.c:68-72`.
+    - [ ] C5 Bury timer: the asm rounds 0.7 × percent to nearest (`cvt.w.s`), the port truncates (one frame shorter
+      about half the time). `Damage.asm:385-397,434-446` / `ftremixbury.c:52-57`.
+- [ ] T14.2 Audit the rest, read-only, same method as the pilot (only findings confirmed by the skeptic count), one
+  batch per area: the hazards of every other stage (`hazards.md`); the other modes (Tag Team, Stamina, Tug of War, 12CB,
+  Training, the 1P modes: Remix 1P, Multi-Man, Cruel, HRC, Bonus 3, All-Star); the other 29 items; the other fighters
+  (specials and fighter-specific routines); the remaining shared files that are not toggles. Each batch adds its findings
+  as items under T14.3.
+- [ ] T14.3 Fix the T14.2 findings, one lot per batch, with the T14.1 acceptance.
+- [ ] T14.4 Update `hazards.md`, the mode docs, `deviations.md`, `patch_audit_scopes.md` and the release notes for what
+  changed.
 
 ---
 
