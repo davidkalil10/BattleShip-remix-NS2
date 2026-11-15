@@ -214,7 +214,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Japanese Sounds** (`japanese_sounds`; 0 DEFAULT, 1 ALWAYS, 2 NEVER; default 0/0/0/1)  
   Asm: Japan.asm `japanese_sfx_*`: swaps hit, beam sword and projectile hit sounds to the Japanese ids. DEFAULT only for fighters of sound type J, ALWAYS for all, NEVER for none. No guard.  
-  Port: `ftRemixJapaneseMotionSoundFgm`, `ftRemixJapaneseProjectileSoundFgm`, item/weapon sound conversion (ft/ftremix/ftremixjapanesesounds.c:52; hooks ft/ftmain.c:417, :2743, wp/wpmanager.c:245, it/itmanager.c:371). Sound type from `kRemixRoster[fkind].sound_type`, not from the RAM table.
+  Port: `ftRemixJapaneseMotionSoundFgm`, `ftRemixJapaneseProjectileSoundFgm`, item/weapon sound conversion and `ftRemixJapaneseHitCollisionFgm` (Character.asm apply_sound_type_: the Punch and Kick rows of the melee hit sound table, in `ftMainPlayHitSFX`) in ft/ftremix/ftremixjapanesesounds.c, toggle mapping and the J hit rows in ftremixjapanesesoundsrules.c (unit test tests/remix/test_japanese_sounds_rules.c); hooks in ft/ftmain.c, wp/wpmanager.c, it/itmanager.c. Sound type from `kRemixRoster[fkind].sound_type`, not from the RAM table.
 
 - **Japanese Stun/Sleep** (`j_stun_sleep`; 0 off, 1 on; default 0/0/0/1)  
   Asm: Japan.asm `japanese_stun_mash`/`japanese_sleep_mash`: Fura-Fura breakout wait minus 30, Fura-Sleep minus 35 (60 and 40 frames of base wait instead of 90 and 75). Single-player guard.  

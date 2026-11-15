@@ -551,7 +551,7 @@ Format: asm file:line, scope, verdict, evidence.
 - Character.asm:1925 f_thrown_action_fix_ and 1949 b_thrown_action_fix_ ADAPTED ft/ftcommon/ftcommonthrow.c:100 (clamp to Mario row, deviation noted above)
 - Character.asm:1977, 2001 falcon_dive_x/y_fix_ PORTED ft/ftcommon/ftcommoncapturecaptain.c:20 (`ftRemixFalconDiveOffsetRow`)
 - Character.asm:2025-2050 get_extended_inhale_struct_ (6 patches) PORTED ft/ftremix/ftremixkirbycopy.c:35; ftkirbyspecialn.c:242; ftcommoncapturekirby.c:524
-- Character.asm:2483 apply_sound_type_ PORTED ft/ftmain.c:2442, ft/ftremix/ftremixjapanesesounds.c
+- Character.asm:2483 apply_sound_type_ PORTED ft/ftmain.c ftMainPlayHitSFX via `ftRemixJapaneseHitCollisionFgm` (ft/ftremix/ftremixjapanesesounds.c, rules in ftremixjapanesesoundsrules.c: the Punch and Kick rows of the hit sound table become the J ids). Ported in M13 batch 5; before it the melee hit sounds stayed U.
 - Character.asm:2995 on_action_changed_hook PORTED for `ChargeSmashAttacks.smash_attack_start` (ft/ftremix/ftremixchargesmash.c). The per-character table has no user outside Character.asm.
 - Character.asm:3117 replace_action NA: `action_replace_map.table` has no entry set anywhere in the Remix source (the Kirby clone swap is separate: kirby/ftremixkirbyclone.c)
 

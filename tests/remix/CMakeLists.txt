@@ -84,6 +84,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     test_dpad_map_rules.c
     test_grounded_rules.c
     test_ftmain_rules.c
+    test_japanese_sounds_rules.c
     test_chargeflash_rules.c
     test_capturecargo_rules.c
     test_alternatevoice_rules.c
@@ -182,6 +183,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixmainrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixsandbagrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixhitrecoilrules.c
+    ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixjapanesesoundsrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixmagichatrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixcommandrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/ft/ftremix/ftremixchargeflashrules.c

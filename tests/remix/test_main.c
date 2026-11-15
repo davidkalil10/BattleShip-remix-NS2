@@ -88,6 +88,7 @@ extern void remixTestStageGridRules(void);
 extern void remixTestDpadMapRules(void);
 extern void remixTestGroundedRules(void);
 extern void remixTestFtMainRules(void);
+extern void remixTestJapaneseSoundsRules(void);
 extern void remixTestChargeFlashRules(void);
 extern void remixTestCaptureCargoRules(void);
 extern void remixTestAlternateVoiceRules(void);
@@ -207,6 +208,7 @@ int main(void)
     remixTestDpadMapRules();
     remixTestGroundedRules();
     remixTestFtMainRules();
+    remixTestJapaneseSoundsRules();
     remixTestChargeFlashRules();
     remixTestCaptureCargoRules();
     remixTestAlternateVoiceRules();
