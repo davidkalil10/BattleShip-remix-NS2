@@ -566,8 +566,10 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     the matrices [Tra, 0x2E] on 176 frames with the ring centred on her; the scale takes 130 values with the toggle on
     and stays 1.0 with it off. VS CSS with L random: after picking Mario, three L presses give Ness, Kirby and Crash;
     a CPU panel keeps its fighter (fkind 73 on all three samples). D-pad cursor while P1 carries P2's CPU token: the
-    cursor leaves x=78 only 30 frames after D-pad Right (asm delay), and the token moves from Ness to Kirby. All runs
-    rc=0, screenshots read.
+    cursor leaves x=78 only 30 frames after D-pad Right (asm delay), and the token moves from Ness to Kirby. 1P, Bonus
+    and Training CSS (gdb on each cursor update, D-pad Right held from the same frame): with the own token held over a
+    portrait the cursor first moves 29 updates later than with the token placed (228 against 199 on all three screens).
+    All runs rc=0, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);
