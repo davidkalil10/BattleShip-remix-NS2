@@ -506,7 +506,7 @@ joint animation instead of the material animation and wrote the magnifier byte n
 (`docs/bugs/remix_charge_smash_never_starts_2026-11-14.md`, `docs/bugs/remix_special_zoom_wallpaper_matanim_2026-11-14.md`).
 M13 repeats that comparison for every other toggle of `toggles.md`: every asm site that reads the toggle against every
 port site, looking for a wrong hook site or call frequency, field, constant, condition, vanilla function or value mapping.
-The asm is the reference; a deliberate difference goes to `deviations.md`.
+The asm is the reference, except where it is itself wrong: an asm bug, a missing piece or something the port already does better is kept or fixed in the port, never copied, and recorded in `deviations.md` (owner policy, 2026-11-15).
 
 - [ ] T13.1 Audit, read-only, one auditor per batch and one skeptic per finding (only findings confirmed on both sides
   count). Batches (registry keys):
@@ -527,7 +527,18 @@ The asm is the reference; a deliberate difference goes to `deviations.md`.
   11. `sss_layout`, `hazard_mode`, `whispy_mode`, `saffron_poke_rate`, `dragon_king_hud`, `camera_mode`, `yi_clouds`
 - [ ] T13.2 Fix the confirmed findings, one commit per batch. Every fix needs an in-game smoke test that shows the asm
   behaviour (before and after); a fix with pure rules also gets a unit test in `tests/remix/`, in addition to the smoke
-  test, never instead of it. A significant one gets a `docs/bugs/` write-up.
+  test, never instead of it. A significant one gets a `docs/bugs/` write-up. Sign-off: the worker's report is not
+  enough; the lead reruns the smoke test of every fix on the build that will be committed (skill `remix-smoke-tests`),
+  looks at the screenshots and logs, records the evidence under the batch below, and only then commits.
+  Evidence per batch (lead sign-off):
+  - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
+    `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
+    calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);
+    Onett (73) 4899 grounded calls, none out of bounds (before the fix the call was air-only, 0 grounded calls).
+    J Pikachu and E Pikachu (with Mario and Fox, Dream Land) now reach the vanilla Pikachu gate: 3568 calls of
+    `ftRemixAiRecoveryKeepsPikachuVanilla` with Improved AI off, all on the vanilla side; 3106 with it on, none on
+    the vanilla side (before, only fkind 9 reached it). Results screens normal, no abort or assert in the logs. The
+    PK Thunder ledge table indexing (`port * 4` in the asm) is an asm bug, kept per port (`deviations.md` 5.9).
 - [ ] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
 
 ---

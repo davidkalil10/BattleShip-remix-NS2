@@ -7,6 +7,7 @@
 
 #include "ft/ftremix/ftremixaicombatrules.h"
 #include "ft/ftremix/ftremixairecoveryrules.h"
+#include "remix/remix_roster_data.h"
 
 static void testStarTimerAtLimitIsInvulnerable(void)
 {
@@ -148,6 +149,19 @@ static void testPikachuRemixDispatchWhenImprovedAiOn(void)
     CHECK_EQ(0, ftRemixAiRecoveryKeepsPikachuVanilla(0, 1));
 }
 
+static void testPikachuFamilyIncludesTheClones(void)
+{
+    CHECK_TRUE(ftRemixAiRecoveryIsPikachuFamily(REMIX_ID_PIKACHU));
+    CHECK_TRUE(ftRemixAiRecoveryIsPikachuFamily(REMIX_ID_JPIKA));
+    CHECK_TRUE(ftRemixAiRecoveryIsPikachuFamily(REMIX_ID_EPIKA));
+}
+
+static void testPikachuFamilyExcludesOtherFighters(void)
+{
+    CHECK_EQ(0, ftRemixAiRecoveryIsPikachuFamily(REMIX_ID_MARIO));
+    CHECK_EQ(0, ftRemixAiRecoveryIsPikachuFamily(REMIX_ID_WOLF));
+}
+
 void remixTestAiCombatRules(void)
 {
     printf("ai combat rules\n");
@@ -179,4 +193,6 @@ void remixTestAiCombatRules(void)
     RUN_TEST(testPikachuVanillaInClassicMode);
     RUN_TEST(testPikachuVanillaWhenImprovedAiOff);
     RUN_TEST(testPikachuRemixDispatchWhenImprovedAiOn);
+    RUN_TEST(testPikachuFamilyIncludesTheClones);
+    RUN_TEST(testPikachuFamilyExcludesOtherFighters);
 }

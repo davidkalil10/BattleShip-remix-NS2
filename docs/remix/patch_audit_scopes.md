@@ -816,8 +816,8 @@ AI.asm:22 | force_default_cpu_lvl_setup | PORTED | gm/gmremixspawnsetup.c:243 (c
 AI.asm:57 | size_multiplier_check_ | PORTED | decomp/src/ft/ftremix/ftremixaisize.c:14, ftcomputer.c:4194
 AI.asm:95 | evade_fix_ | STUB | decomp/src/ft/ftremix/ftremixaicombat.c:19, ftcomputer.c:3911; Remix 1P test missing (sc1PRemix1PIsActive now exists)
 AI.asm:134 | recovery_fix_ | STUB | decomp/src/ft/ftremix/ftremixairecovery.c:34, ftcomputer.c:5346; Remix 1P test missing
-AI.asm:183 | fix_target_pos_x | PORTED | decomp/src/ft/ftremix/ftremixairecovery.c:50, ftcomputer.c:5473
-AI.asm:241 | fix_remix_recovery | PORTED | decomp/src/ft/ftremix/ftremixairecovery.c:114,127, ftcomputer.c:6835-6860
+AI.asm:183 | fix_target_pos_x | PORTED | decomp/src/ft/ftremix/ftremixairecovery.c:58, ftcomputer.c:5325 (before the ground/air split, M13 batch 9)
+AI.asm:241 | fix_remix_recovery | PORTED | decomp/src/ft/ftremix/ftremixairecovery.c:47 (Pikachu, J Pikachu, E Pikachu), ftcomputer.c:6941
 AI.asm:385 | custom_recovery_logic | GAP | dispatch ftcomputer.c:6863-6874 reads registry ai_recovery_routine, which no code ever assigns (see table)
 AI.asm:444 | random_teching_ | STUB | decomp/src/ft/ftremix/ftremixaiteching.c:150, ftcommondamage.c:298; SBM block and sandbag miss count differ from asm
 AI.asm:668 | z_cancel_ | PORTED | decomp/src/ft/ftremix/ftremixaiteching.c:190, ftcommonattackair.c:73
