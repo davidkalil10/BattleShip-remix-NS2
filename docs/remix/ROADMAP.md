@@ -583,6 +583,19 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     track (262, 283, 334). SM64 trap: 0 of 150 RANDOM presses after three direct SM64 presses land on the trap
     (8 of 150 before). Music title at the 1P countdown: Meta Crystal and Duel Zone now show their banner until GO.
     All runs rc=0, screenshots read.
+  - Follow-up checks on the final build:
+    - RANDOM token (0x1B set from gdb before START) on the VS, 1P and Training CSS: VANILLA gives ids up to Ness (10,
+      4, 10, 7, 11, 10), INCLUDE BONUS gives bonus ids (65), and a 7-frame later START changes the fighter.
+    - Combo meter in 1P: set up once, its update ran 2636 times.
+    - Settings close through `PortMenu::UpdateElement` (menu opened with `SSB64_PORT_MENU_OPEN`, hidden from gdb):
+      the hook ran, Play Music OFF stopped track 71, and Play Music ON restarted it from silence.
+    - Camera BONUS on Planet Zebes: the default and Zebes slots hold the Mushroom Kingdom routine, which the camera
+      runs.
+    - Controls: with Perfect Shielding off, the check returns at entry and fireballs are never reflected. A level-9
+      CPU with Improved AI and Z-Cancel DISABLED lands in 219 twice and 215 once, with 3 laughs.
+    - Regression: stage sweep (0 to 16 and 41 to 215, 159 stages, no crash, no blank screen), special matrix of 24
+      fighters (72 runs), CPU item sweep (5 kinds); all rc=0 with no abort or assert. Ids 17 to 40 are the bonus
+      stages, which the VS shortcut cannot load.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);
