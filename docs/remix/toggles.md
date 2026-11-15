@@ -266,12 +266,12 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
   Port: ft/ftremix/ftremixledgejump.c:28, :49 (cliff wait and climb procs in ft/ftcommon/ftcommoncliffcatchwait.c, ftcommoncliffclimb.c).
 
 - **Perfect Shielding** (`perfect_shield`; 0 off, 1 on; default 0)  
-  Asm: PerfectShield.asm: a hit on the first frames of the shield (status tics < 2) causes no shield stun, a swirl effect, and reflects projectiles and items back to the shielder (reflect multiplier 0.5).  
-  Port: ft/ftremix/ftremixperfectshield.c:112-158, hooks ft/ftmain.c:4413, wp/wpprocess.c:507, it/itprocess.c:1111.
+  Asm: PerfectShield.asm: a hit on the first frames of the shield (status tics < 2) causes no shield stun, a swirl effect, and reflects projectiles and items back to the shielder (only hop-capable ones in the air: the patch sits on the hop angle test, past the `can_hop` and air filters) (reflect multiplier 0.5).  
+  Port: ft/ftremix/ftremixperfectshield.c:112-158, hooks ft/ftmain.c:4413, wp/wpprocess.c:489, it/itprocess.c:1094 (inside the can_hop and air test, before the hop angle test, as in the asm).
 
 - **Parrying (BETA)** (`parry`; 0 off, 1 on; default 0)  
   Asm: Parry.asm (BETA): releasing the shield within 5 frames of raising it while a hitbox reaches the shield parries (ClangRecoil, intangible hurtbox, sound 0x5BB, attacker hitlag +14, no shield damage); works for direct hits, projectiles and items.  
-  Port: ft/ftremix/ftremixparry.c:75, :319; hooks ft/ftmain.c:3593, :3768, :3983, :4486. Kept from the asm on purpose: the previous hitbox position is always used for direct and projectile hits, and a multi-hitbox projectile can be parried by a hitbox outside the shield range.
+  Port: ft/ftremix/ftremixparry.c:75, :319; hooks ft/ftmain.c:3593, :3768, :3983, :4486. The direct-hit parry tests every enabled hitbox of the attacker, where the asm tests only the last one left in `s1` (`deviations.md` 5.3). Kept from the asm on purpose: the previous hitbox position is always used for direct and projectile hits, and a multi-hitbox projectile can be parried by a hitbox outside the shield range.
 
 - **Spot Dodging** (`spot_dodge`; 0 off, 1 on; default 0)  
   Asm: SpotDodge.asm: down-slam of the stick while holding Z on the ground is a spot dodge (DamageHigh2 with intangible moveset); on a soft platform above -52 it is a platform drop.  

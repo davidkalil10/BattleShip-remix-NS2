@@ -1271,8 +1271,8 @@ Format: asm:lines | scope | verdict | evidence (port file:line or reason). Rows 
 - Pause.asm:165 `show_legend_helper_` | PORTED | if/ifremixpauselegend.c:238 (R legend)
 - Pause.asm:410 `extra_camera_controls_` | GAP | Camera.extended_movement_ (A/B zoom, D-pad/C pan in pause, camera_pan_offsets_) is not in the port (docs notes toggles.md toggles.md record it as skipped)
 - PerfectShield.asm:24 `shield_stun_action_change_skip` | PORTED | ft/ftmain.c:4413 ftRemixPerfectShieldHandlesGuardSetOff
-- PerfectShield.asm:58 `shield_reflect_projectiles` | PORTED | wp/wpprocess.c:507
-- PerfectShield.asm:145 `shield_reflect_items` | PORTED | it/itprocess.c:1111
+- PerfectShield.asm:58 `shield_reflect_projectiles` | PORTED | wp/wpprocess.c:489
+- PerfectShield.asm:145 `shield_reflect_items` | PORTED | it/itprocess.c:1094
 - Poison.asm:17 `star_fix` | PORTED | ft/ftremix/ftremixpoison.c (ftMainProcUpdateInterrupt hook)
 - Poison.asm:36 `poison_hook` | PORTED | ftremixpoison.c ftRemixPoisonUpdate
 - PokemonAnnouncer.asm:19 `there_goes_` | PORTED | if/ifcommon.c:3831 ifRemixAnnouncerGameSetFgm

@@ -290,6 +290,12 @@ test `tests/remix/test_sonic_classic_rules.c`. The state is read and written onl
 - **Japanese item sounds.** `ftremixjapanesesounds.c` takes the item's owner from the spawning fighter (`ITEM_FLAG_PARENT_FIGHTER`) and no
   owner otherwise; the asm reads stack slot 0x20(sp) of `itManagerMakeItem`, which that function never writes (DEVIATION in code). Toggle
   Always and Never behave as in the asm.
+- **Parry on a direct hit.** `Parry.asm` 66-122 (`direct_hit_parry_bubble_check`, hook 0x800E4D38) walks the attacker's four hitboxes
+  with `t8` but tests and registers `s1` on every pass (position 0x44/0x50, size 0x24, group 0x4, damage 0xC, shield damage 0x38).
+  In `ftMainSearchHitFighter` `s1` is the attacker's last enabled hitbox (0x800E499C/0x800E49BC), or the last one the clank loop
+  visited (0x800E4C70), so a move whose hitbox reaching the parry sphere is not that one is not parried and its group and damage
+  can come from another hitbox. The unused loop register shows the intent: `ftRemixParryFindFighterHit` (`ftremixparry.c`) tests each
+  enabled hitbox and registers the one that reaches the sphere. Owner policy 2026-11-15.
 
 ### 5.4 Entry effects and polygon fighters
 
