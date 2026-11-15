@@ -531,6 +531,23 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
   enough; the lead reruns the smoke test of every fix on the build that will be committed (skill `remix-smoke-tests`),
   looks at the screenshots and logs, records the evidence under the batch below, and only then commits.
   Evidence per batch (lead sign-off):
+  - Batch 2 (`combo_meter`, `special_model_display`): four level-9 CPUs with Combo Meter on show COMBO+2 to COMBO+8
+    above the damage HUD in the attacker's colour. Sudden death (VS shortcut, `SSB64_VS_TIME=1`, game rules set to TIME
+    from gdb at the first setup): `ifRemixComboMeterSetup` runs again with `is_suddendeath=1` and the records go from
+    4 hits to 0. Smashketball overtime (`SSB64_REMIX_MODE=smashketball`, four CPUs): the second setup has
+    `gmRemixSmashketballKeepsMatchStats()=1` and the records stay 2,0,2,2. Training (scene 54, D-pad Down, exit to the
+    Training CSS and back): hitbox models in the first Training, normal models in the second, and the cfg file only
+    changed the window position.
+  - Batch 5 (`japanese_sounds`): gdb printed the id passed to `ftRemixCommandPlayHitFGM` for five jab and tilt hits.
+    Mario with the toggle at 0 sends 0x28/0x20, at 1 sends 0x93/0x8F; J Mario at 0 and 1 sends 0x93/0x92/0x8F, at 2
+    sends 0x28/0x26/0x20, as in `Character.asm` `apply_sound_type_`.
+  - Batch 6 (`footstool`, `z_cancel`): the footstool with no jump left plays FGM 1200 twice and puts P2 in status 32
+    twice (0 with the toggle off). A level-10 CPU with Z-Cancel DISABLED lands its aerials in LandingAirNull (219) four
+    times with four laugh FGMs (1316); with Z-Cancel at DEFAULT no laugh and normal landings.
+  - Batch 8 (`fast_fall_aerials`, `item_containers`): Mario's nair with stick down lands at battle tic 64 with the
+    toggle on and 81 with it off (frame 460: on the ground against still in the air). Crates with ALWAYS EXPLODE play
+    0x3B 21 times and 0x3C never (DEFAULT: 25 and 23).
+  - All runs: rc=0, no abort or assert in the logs, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);
