@@ -230,7 +230,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Z-Cancel** (`z_cancel_opts`; 0 DEFAULT, 1 DISABLED, 2 MELEE (7 frames), 3 AUTO, 4 GLIDE MODE; default 0)  
   Asm: ZCancel.asm `_z_cancel_opts`: window of 11 frames (DEFAULT), never (DISABLED), 7 frames (MELEE), always (AUTO), or a missed Z-cancel keeps gliding without landing lag (GLIDE MODE).  
-  Port: `ftRemixZCancelResult` and `ftRemixZCancelAttackAirLanding` (ft/ftremix/ftremixzcancel.c:220, :303), replacing the landing branch of `ftCommonAttackAirProcMap`. The port's Auto Z-Cancel enhancement still turns every miss into a normal landing.
+  Port: `ftRemixZCancelResult` and `ftRemixZCancelAttackAirLanding` (ft/ftremix/ftremixzcancel.c), replacing the landing branch of `ftCommonAttackAirProcMap`. DISABLED also makes a CPU fail after its Improved AI roll (ZCancel.asm _cpu_z_cancel). The port's Auto Z-Cancel enhancement still turns every miss into a normal landing.
 
 - **Punish Failed Z-Cancel** (`punish_on_failed_z_cancel`; 0 OFF, 1 7% Damage, 2 Lava Floor, 3 Shield-Break, 4 Instant K.O., 5 Force Taunt, 6 Bury, 7 Laugh Track, 8 Egg, 9 Sleep, 10 Trip, 11 Random; default 0)  
   Asm: ZCancel.asm `_cruel_z_cancel`: 11 punishments on a failed Z-cancel (7% damage, lava floor, shield break, instant KO, forced taunt, bury, laugh track, egg, sleep, trip) plus RANDOM (rolls 1..10). Instant KO is skipped in the 1P final stage.  
@@ -250,7 +250,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Footstool Jumping** (`footstool`; 0 off, 1 on; default 0)  
   Asm: FootStool.asm: a mid-air jump press over another fighter footstools it (victim to Tumble or LandingHeavy at fall speed -25, FGM 0x4B0, jumper gets a JumpSquat); jumps are not reset when leaving the ground. No guard.  
-  Port: `ftRemixFootStoolTryAerialJump` and helpers (ft/ftremix/ftremixfootstool.c:278), hooks in ft/ftcommon/ftcommonjumpaerial.c:373-436 and mp/mpcommon.c:925. The asm team check reads the jumper's GObj byte 0x0C, ported literally.
+  Port: `ftRemixFootStoolTryAerialJump` and helpers (ft/ftremix/ftremixfootstool.c:278), hooks in ft/ftcommon/ftcommonjumpaerial.c (in the generic branch before the jumps-left test, so a footstool works with no jump left, FootStool.asm aerial_jump_check; the Kirby and Jigglypuff branches after it) and mp/mpcommon.c:925. The asm team check reads the jumper's GObj byte 0x0C, ported literally.
 
 - **Air Dodging** (`air_dodge`; 0 OFF, 1 Melee, 2 Ultimate, 3 Air Dash; default 0)  
   Asm: AirDodge.asm: Melee (directional air dodge), Ultimate (neutral dodge that drifts) and Air Dash (one dash per air time) replace the aerial shield press.  
