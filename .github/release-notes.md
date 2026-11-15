@@ -15,6 +15,26 @@
   impact flash of Smash Remix, from purple to the ray burst to white, and covers the whole picture with widescreen on.
   The magnifying glass is hidden during the zoom and comes back after it, also when the game is paused in the middle
   of a zoom, and in Training the camera keeps following during the slow motion.
+- **The Combo Meter shows up.** With the setting on (the default in most profiles), no COMBO counter ever appeared in
+  VS or 1P matches, so the 20-hit and Pokemon combo calls never played and the combo rows of the match stats stayed
+  at 0. It now sits above the damage of the attacker, also in sudden death.
+- **Remix settings checked one by one against Smash Remix.** Every setting was compared with the original code and
+  the differences were fixed:
+  - Japanese Sounds now covers punches and kicks.
+  - Footstool works with no jump left.
+  - Fast Fall Aerials lets you fast fall during an aerial.
+  - Crates set to always explode no longer play the open sound.
+  - Z-Cancel DISABLED also applies to the CPUs.
+  - Camera Mode works on Planet Zebes and Mushroom Kingdom and no longer carries into the next match.
+  - Rainbow Road's Chain Chomp follows Hazard Mode.
+  - Random Select filters the 12-Character Battle and Tag Team random picks.
+  - L random rolls again after a pick.
+  - Jigglypuff's Sing ring is centred.
+  - Perfect Shield reflects only projectiles that would bounce off the shield.
+  - Random menu music follows each screen.
+  - Several CPU recovery details match the original.
+
+  Where Smash Remix itself has a bug, the port keeps the corrected behaviour.
 - **Windows: a clear message when Windows blocks the ROM extractor.** When Smart App Control or another application
   control policy stops `torch.exe` on the first launch, the error now says so instead of only showing a code.
 - **Packaging.** The Linux AppImage uses the Smash Remix icon instead of the vanilla one, the Windows zip no longer

@@ -51,10 +51,10 @@ open. The closed milestones are summarised in
 | M0 to M10 | closed; open leftovers: T9.1b and T10.2 (user) |
 | **M11 Finalization** | Phases R, 1 to 8 done (Phase 8 on 2026-11-06) |
 | **M12 Platforms and releases** | PS5, Android, updater and the releases `v2.0.1-port.4` to `port.9` shipped (see **M12**) |
-| **M13 Toggle parity audit** | open (started 2026-11-14) |
+| **M13 Toggle parity audit** | closed 2026-11-15: 35 findings confirmed in 10 of the 11 batches, all fixed or kept as recorded deviations |
 
-- **Next step:** M13, toggle parity audit against the asm (T13.1 first). Phase 5b closed on 2026-11-06: every ledger
-  item is `done` or `n/a`, `parity.md` regenerated (no `partial` row).
+- **Next step:** tag and publish the next release (the notes already cover M13). M13 closed on 2026-11-15: every
+  confirmed finding is fixed with a lead smoke test or kept as a `deviations.md` row (owner policy).
 - **Depends on the user:** T9.1b (listening and visual pass) and T10.2 (Switch hardware).
 - **Last checkpoint:** CP12 (2026-11-05, Phases 4 and 5 closed; outer `e8faa57`, decomp `be259fe8b`).
 - **Overall estimate:** ~99% by the table at the end of this file (2026-11-06; only the user passes are open).
@@ -508,7 +508,7 @@ M13 repeats that comparison for every other toggle of `toggles.md`: every asm si
 port site, looking for a wrong hook site or call frequency, field, constant, condition, vanilla function or value mapping.
 The asm is the reference, except where it is itself wrong: an asm bug, a missing piece or something the port already does better is kept or fixed in the port, never copied, and recorded in `deviations.md` (owner policy, 2026-11-15).
 
-- [ ] T13.1 Audit, read-only, one auditor per batch and one skeptic per finding (only findings confirmed on both sides
+- [x] T13.1 Audit, read-only, one auditor per batch and one skeptic per finding (only findings confirmed on both sides
   count). Batches (registry keys):
   1. `skip_results_screen`, `hold_to_pause`, `css_panel_menu`, `practice_overlay`, `cinematic_entry`, `flash_on_z_cancel`
   2. `model_display`, `special_model`, `advanced_hurtbox`, `hold_to_exit_training`, `improved_combo_meter`,
@@ -525,7 +525,7 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
   10. `play_music`, `random_music`, `menu_music`, `show_music_title`, `bgm_volume`, `fgm_volume`, `pokemon_voices`,
       `announcer_mode`
   11. `sss_layout`, `hazard_mode`, `whispy_mode`, `saffron_poke_rate`, `dragon_king_hud`, `camera_mode`, `yi_clouds`
-- [ ] T13.2 Fix the confirmed findings, one commit per batch. Every fix needs an in-game smoke test that shows the asm
+- [x] T13.2 Fix the confirmed findings, one commit per batch. Every fix needs an in-game smoke test that shows the asm
   behaviour (before and after); a fix with pure rules also gets a unit test in `tests/remix/`, in addition to the smoke
   test, never instead of it. A significant one gets a `docs/bugs/` write-up. Sign-off: the worker's report is not
   enough; the lead reruns the smoke test of every fix on the build that will be committed (skill `remix-smoke-tests`),
@@ -591,7 +591,9 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     `ftRemixAiRecoveryKeepsPikachuVanilla` with Improved AI off, all on the vanilla side; 3106 with it on, none on
     the vanilla side (before, only fkind 9 reached it). Results screens normal, no abort or assert in the logs. The
     PK Thunder ledge table indexing (`port * 4` in the asm) is an asm bug, kept per port (`deviations.md` 5.9).
-- [ ] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
+- [x] T13.3 Update `toggles.md`, `patch_audit_scopes.md` and `deviations.md` for what changed, and the release notes.
+  Done with each batch commit; the release notes have the M13 highlights (Combo Meter, settings checked against Smash
+  Remix).
 
 ---
 
