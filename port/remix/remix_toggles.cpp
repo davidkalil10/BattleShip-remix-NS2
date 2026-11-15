@@ -267,6 +267,40 @@ extern "C" void remix_toggle_set(uint32_t entry_addr, int value) {
     remix_cvar_set_saved(toggle.cvar.c_str(), Clamp(toggle, value));
 }
 
+extern "C" void remix_toggle_set_runtime(uint32_t entry_addr, int value) {
+    using namespace remix_toggles;
+
+    const auto found = sByAddress.find(entry_addr);
+    if (found == sByAddress.end()) {
+        return;
+    }
+    sOverrides[found->second] = Clamp(sToggles[found->second], value);
+}
+
+extern "C" int remix_toggle_get_runtime(uint32_t entry_addr, int *value) {
+    using namespace remix_toggles;
+
+    const auto found = sByAddress.find(entry_addr);
+    if (found == sByAddress.end()) {
+        return 0;
+    }
+    const auto override = sOverrides.find(found->second);
+    if (override == sOverrides.end()) {
+        return 0;
+    }
+    *value = override->second;
+    return 1;
+}
+
+extern "C" void remix_toggle_clear_runtime(uint32_t entry_addr) {
+    using namespace remix_toggles;
+
+    const auto found = sByAddress.find(entry_addr);
+    if (found != sByAddress.end()) {
+        sOverrides.erase(found->second);
+    }
+}
+
 extern "C" void remix_toggles_load_profile(int profile) {
     using namespace remix_toggles;
 

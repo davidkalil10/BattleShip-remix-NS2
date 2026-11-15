@@ -30,6 +30,24 @@ int remix_toggle_get(uint32_t entry_addr);
 /** Sets that toggle, clamped to its range, and stores it in its CVar. */
 void remix_toggle_set(uint32_t entry_addr, int value);
 
+/**
+ * Sets that toggle for this run only, clamped to its range, without storing it in its CVar: the asm writes the value of
+ * Toggles.entry_* in RAM, which reaches the SRAM only through the settings menu.
+ */
+void remix_toggle_set_runtime(uint32_t entry_addr, int value);
+
+/**
+ * Reads the run-only value of that toggle (set by remix_toggle_set_runtime or SSB64_REMIX_TOGGLES).
+ *
+ * @param entry_addr REMIX_SYM_Toggles__entry_* address.
+ * @param value Receives the run-only value when there is one.
+ * @return 1 when the toggle has a run-only value, 0 when it reads its CVar.
+ */
+int remix_toggle_get_runtime(uint32_t entry_addr, int *value);
+
+/** Drops the run-only value of that toggle, so it reads its CVar again. */
+void remix_toggle_clear_runtime(uint32_t entry_addr);
+
 /** Sets every toggle to the defaults of profile 0 (CE), 1 (TE), 2 (NE) or 3 (JP). */
 void remix_toggles_load_profile(int profile);
 
