@@ -476,6 +476,16 @@ static void testMenuCursorReadsThePreviousFrameDpadAndKeepsTheStick(void)
     CHECK_EQ(FTREMIX_DPAD_MENU_BUTTON_R, (int)sample.hold);
 }
 
+static void testMenuCursorDelayNeedsATokenInHandAndAFighterOnTheOwnPanel(void)
+{
+    const int null_fkind = 0x1C;
+
+    CHECK_EQ(0, ftRemixDpadMenuIsTokenOverFighter(-1, 0, null_fkind));
+    CHECK_EQ(0, ftRemixDpadMenuIsTokenOverFighter(0, null_fkind, null_fkind));
+    CHECK_EQ(1, ftRemixDpadMenuIsTokenOverFighter(0, 0, null_fkind));
+    CHECK_EQ(1, ftRemixDpadMenuIsTokenOverFighter(1, 8, null_fkind));
+}
+
 void remixTestDpadControlRules(void)
 {
     printf("dpad control rules\n");
@@ -525,4 +535,5 @@ void remixTestDpadControlRules(void)
     RUN_TEST(testMenuCursorKeepsMovingOnceTheDelayIsOver);
     RUN_TEST(testMenuCursorRightAndUpWinOverLeftAndDown);
     RUN_TEST(testMenuCursorReadsThePreviousFrameDpadAndKeepsTheStick);
+    RUN_TEST(testMenuCursorDelayNeedsATokenInHandAndAFighterOnTheOwnPanel);
 }

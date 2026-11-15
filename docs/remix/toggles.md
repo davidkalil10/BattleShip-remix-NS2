@@ -173,15 +173,15 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Jigglypuff Sing GFX Anims** (`puff_sing_anim`; 0 off, 1 on; default 0)  
   Asm: Size.asm: ON keeps the animated scale of Jigglypuff's sing effect; OFF forces scale 1.0.  
-  Port: `efRemixPurinSingProcUpdate` (ef/efremixpuffsing.c, the sing effect's update): the second joint uses matrix kind 0x2E every frame and, unless the toggle is on, its scale is reset to 1.0 (IT-9).
+  Port: `efRemixPurinSingProcUpdate` (ef/efremixpuffsing.c, the sing effect's update): the second matrix of the second joint (`xobjs[1]`, the 0x46 one; Size.asm `0x005C`) is forced to kind 0x2E every frame and, unless the toggle is on, its scale is reset to 1.0 (IT-9).
 
 - **'L' Selects Random Character** (`l_random_char`; 0 off, 1 on; default 0)  
   Asm: CharacterSelect.asm:6569: L selects a random character with the token.  
-  Port: mn/mnplayers/mnplayersvs.c:5388 (VS CSS).
+  Port: mn/mnplayers/mnplayersvs.c:5486 (VS CSS) through `mnRemixCssLRandomRolls`: human panels only (CharacterSelect.asm 2418-2420); L rolls with no token in hand, so it rolls again once a fighter is placed, or with the own token held over no fighter (2411-2417).
 
 - **Dpad CSS Cursor Control** (`dpad_css_control`; 0 off, 1 on; default 0)  
   Asm: css/DpadControl.asm `css_cursor_and_dpad_controls_`: the D-pad moves the CSS cursor.  
-  Port: `ftRemixDpadMenu` screen state (ft/ftremix/ftremixdpadmenu.c:105): on a CSS with the Player Panel D-pad option off, the toggle turns on the D-pad cursor. The match-side D-pad options live in the Player Panel (ft/ftremix/ftremixdpad*.c).
+  Port: `ftRemixDpadMenu` screen state (ft/ftremix/ftremixdpadmenu.c:105): on a CSS with the Player Panel D-pad option off, the toggle turns on the D-pad cursor. The 30-frame menu-cursor delay applies while the cursor's port holds a token and its own panel has a fighter (`ftRemixDpadMenuSetHeldToken`, set per cursor port by each CSS, VS 12CB included; DpadControl.asm `_check_token_state_vs/_1p`). The match-side D-pad options live in the Player Panel (ft/ftremix/ftremixdpad*.c).
 
 - **PK Thunder Reflect Crash Fix** (`pk_thunder_reflect_crash_fix`; 0 off, 1 on; default 1)  
   Asm: nessshared.asm: marks the PK Thunder trail objects as discarded when the head is reflected and fixes the trail rotation.  

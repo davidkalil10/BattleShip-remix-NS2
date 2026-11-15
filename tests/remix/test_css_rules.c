@@ -246,6 +246,20 @@ static void testHasVariantsNeedsOnlyOneVariant(void)
     CHECK_EQ(0, mnRemixCssHasVariants(nothing, none));
 }
 
+static void testLRandomRollsAgainWithNoTokenInHand(void)
+{
+    CHECK_EQ(1, mnRemixCssLRandomRolls(0, -1, 1));
+    CHECK_EQ(1, mnRemixCssLRandomRolls(2, -1, 0));
+}
+
+static void testLRandomWithATokenInHandNeedsTheOwnTokenOverNoFighter(void)
+{
+    CHECK_EQ(1, mnRemixCssLRandomRolls(1, 1, 0));
+    CHECK_EQ(0, mnRemixCssLRandomRolls(1, 1, 1));
+    CHECK_EQ(0, mnRemixCssLRandomRolls(1, 2, 0));
+    CHECK_EQ(0, mnRemixCssLRandomRolls(1, 2, 1));
+}
+
 void remixTestCssRules(void)
 {
     RUN_TEST(testCostumeButtonsAlwaysWorkWithoutTeams);
@@ -269,4 +283,6 @@ void remixTestCssRules(void)
     RUN_TEST(testHandicapIconLevelsRunOneToFivePerSource);
     RUN_TEST(testHandicapLevelColors);
     RUN_TEST(testHasVariantsNeedsOnlyOneVariant);
+    RUN_TEST(testLRandomRollsAgainWithNoTokenInHand);
+    RUN_TEST(testLRandomWithATokenInHandNeedsTheOwnTokenOverNoFighter);
 }

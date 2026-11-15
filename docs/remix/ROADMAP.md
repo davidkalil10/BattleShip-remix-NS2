@@ -562,6 +562,12 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     Ness, INCLUDE BONUS bonus and variant ids, and two press timings give different queues. Positional sounds: Home-Run
     Contest 7 of 7 and Sector Z Remix 6 of 6 with pan 0x80 (the sound's own pan), Dream Land positional (0x31 to 0x45).
     Training pause shows "Press Z for Custom Menu" with Disable HUD PAUSE and ALL. All runs rc=0, screenshots read.
+  - Batch 4 (`puff_sing_anim`, `l_random_char`, `dpad_css_control`): Jigglypuff's Sing (gdb on the effect update) has
+    the matrices [Tra, 0x2E] on 176 frames with the ring centred on her; the scale takes 130 values with the toggle on
+    and stays 1.0 with it off. VS CSS with L random: after picking Mario, three L presses give Ness, Kirby and Crash;
+    a CPU panel keeps its fighter (fkind 73 on all three samples). D-pad cursor while P1 carries P2's CPU token: the
+    cursor leaves x=78 only 30 frames after D-pad Right (asm delay), and the token moves from Ness to Kirby. All runs
+    rc=0, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);
