@@ -50,30 +50,31 @@ is indexed in [`README.md`](README.md).
 ## Current position
 
 **Every milestone is closed (M0 to M13; M13 on 2026-11-15).** The Remix is playable on every platform the releases
-ship. What is left needs the owner (listening pass, console hardware) or is the next release: see **Open items**.
+ship, and the owner validated the listening pass, the Switch hardware and the updaters on 2026-11-15. The only open
+item is the next release: see **Open items**.
 
 | Milestone | State |
 |---|---|
-| M0 to M10 | closed; their two user passes are under **Open items** |
+| M0 to M10 | closed; their user passes T9.1b and T10.2 validated by the owner (2026-11-15) |
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
 | M12 Platforms and releases | releases `v2.0.1-port.1` to `port.12` from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
 
 - **Next step:** the release `v2.0.1-port.13` (notes ready), when the owner says so.
 - **Last checkpoint:** M13 closed (2026-11-15; outer `8332d12`, decomp `3413abab6`).
-- **Overall estimate:** ~99% by the table at the end of this file; the rest is the owner's passes.
+- **Overall estimate:** 100% by the table at the end of this file.
 
 ## Open items
 
-Each one needs the owner or a console; nothing else is open.
+Nothing else is open.
 
-- [ ] T9.1b Listening and visual pass by the owner (the lead cannot hear): stages, victory songs, Sound Test, hit SFX,
-  menu graphics; `t9_1b_checklist.md`.
-- [ ] T10.2 Switch hardware validation (`docs/switch_port_2026-10-12.md`, rounds R1 to R6 under **M10**). Open finding:
-  the `gfx_step: walked past registered DL range` stutter; the display-list walk fix of 2026-11-14
-  (`docs/bugs/dl_walk_past_window_false_positive_2026-11-14.md`) may be the same bug, to confirm on the console. Metal
-  Mario tiny on the Training CSS was not reproduced.
-- [ ] M12 updaters on a real install: the Switch zip update and the macOS in-place update.
+- [x] T9.1b Listening and visual pass by the owner (the lead cannot hear): stages, victory songs, Sound Test, hit SFX,
+  menu graphics; `t9_1b_checklist.md`. Done: validated by the owner (2026-11-15).
+- [x] T10.2 Switch hardware validation (`docs/switch_port_2026-10-12.md`, rounds R1 to R6 under **M10**). Done: validated by the owner (2026-11-15),
+  after the display-list walk fix of 2026-11-14 (`docs/bugs/dl_walk_past_window_false_positive_2026-11-14.md`), the fix
+  for the `gfx_step: walked past registered DL range` stutter. Metal Mario tiny on the Training CSS was never
+  reproduced.
+- [x] M12 updaters on a real install: the Switch zip update and the macOS in-place update. Done: validated by the owner (2026-11-15).
 - [ ] Release `v2.0.1-port.13` (`.github/release-notes.md` already covers the display-list fix, issue #8 and M13): tag
   when the owner says so, then close issue #8 with the release link.
 
@@ -170,18 +171,18 @@ Finding: the 30 Remix fighters used the parent's attack list (`remix_roster.cpp`
 
 ### M9. Final desktop verification
 - [x] T9.1 Full sweep: the automatable part is done (sweeps, 4-player matches in six modes, Training through the CSS); the regression pass is M11 Phase 8. Defect fixed: Salty Runback/R+L combo needed the held state **equal** to the mask (`Joypad.check_buttons_all_`); `gmremixgameendinputrules.*`.
-- T9.1b Listening pass by the user: open, see **Open items**.
+- [x] T9.1b Listening pass by the user: validated by the owner (2026-11-15) (see **Open items**).
 - [x] T9.2 Vanilla `REGION_US` builds and plays: CMake of `us`/`jp` skips Remix-only sources (`ft/ftremix`, `gr/grremix`, `it/itremix`, `port/remix/`, keeping `remix_debug`); `REGION_REMIX` guards in `ftport.c`, `port.cpp`.
 - [x] T9.3 Report to the user in Portuguese ("Remix playable"), 2026-11-06 after Phase 8; adaptations listed in
   `deviations.md` and the `adapted` rows of `parity.md`.
 
 ### M10. Switch
 - [x] T10.1 `scripts/switch/build.sh remix` (`BattleShip-Remix.nro`; fix: `<math.h>` before `<ft/fighter.h>` in `ftremixaipostsheik.c`) and `scripts/switch/pack.sh`.
-- T10.2 Hardware validation by the user (`docs/switch_port_2026-10-12.md`), open under **Open items**; six rounds of findings, fixed except the two listed last:
+- [x] T10.2 Hardware validation by the user (`docs/switch_port_2026-10-12.md`), validated by the owner (2026-11-15); six rounds of findings:
   - R1 black screen/slow audio: `gfx_vtx_addr_is_unresolved` rejected pointers below 4 GB (`libultraship/src/fast/interpreter.cpp`). R2/R3 title offsets (`mntitle.c`); the odd 1P Game was Classic Co-op, now off by default in `REGION_REMIX`.
   - R4/R5 CSS `menu_zoom` (`tools/gen_remix_roster.py`), entry statuses from `Character.entry_action.table`, default save masks (`scmanager.c`), watchdog/slow-frame logs (`port/port.cpp`).
   - R6 Tag Team crash: `sSCVSBattleStatusBuffer[100]` (`scvsbattlefiles.c`) overflowed with 24-fighter queues; 1024 under `REGION_REMIX` plus a critical log in `lbreloc_bridge.cpp`.
-  - Open: the `gfx_step: walked past registered DL range` stutter and Metal Mario tiny in the Training CSS (not reproduced); see **Open items**.
+  - Last two: the `gfx_step: walked past registered DL range` stutter (display-list walk fix of 2026-11-14) and Metal Mario tiny in the Training CSS (never reproduced).
 
 ---
 
@@ -352,7 +353,7 @@ Not part of the Remix port itself; recorded here so the plan matches what ships.
 - [x] Switch updater installs the full switch zip: it unpacks into `update-pending/`, swaps the `.nro` and applies the other files at the next boot; `.o2r` and `.recipe` stay manual. The bare `.nro` asset stays for one transitional release.
 - [x] macOS updater installs the zipped `.app` in place (new `BattleShip-Remix-macos.zip` release asset; the new app is swapped in on restart).
 - [x] Windows updater script fixed for the Remix executable name (`update_game.bat` named `BattleShip.exe`).
-- Hardware validation of the Switch zip update and of the macOS in-place update on a real install: open, see **Open items**.
+- [x] Hardware validation of the Switch zip update and of the macOS in-place update on a real install: validated by the owner (2026-11-15).
 - [x] Asset recipe: the Torch revision is pinned in `tools/torch_extract_rev.txt`, so unrelated Torch commits do not force a re-extraction; the Switch error screen tells a missing `.recipe` from a mismatch.
 - [x] Logs hold only the last run (`ssb64.log`, `logs/BattleShip-Remix.log`, PS5 `boot.txt`).
 - [x] Bug reports go through `.github/ISSUE_TEMPLATE/bug_report.yml`.
@@ -482,7 +483,7 @@ area (patch counts of the ledger groups; an S-effort item weighs as much as an L
 | Fighters (roster, specials, projectiles, entries, shared patches, per-fighter tables) | 35% | 100% (every GP, SH, FT, CT item `done` or `n/a`) |
 | Items and Size | 10% | 100% (IT) |
 | Stages (loader, select, hazards, camera, surfaces) | 20% | 100% (ST) |
-| Audio | 10% | 100% (MS audio scopes; listening left to T9.1b) |
+| Audio | 10% | 100% (MS audio scopes; listening pass T9.1b done) |
 | Settings, menus, modes | 20% | 100% (MN, MD, OP, MS) |
-| Final verification | 5% | ~80% (Phase 8, T9.3 and M13 done; T9.1b and T10.2 by the user) |
-| **Weighted total** | | **~99%** (2026-11-15, unchanged since 2026-11-06: 95 + 5×0.80 = 99; the 2026-11-05 audit estimate was ~72%) |
+| Final verification | 5% | 100% (Phase 8, T9.3, M13, T9.1b and T10.2 done) |
+| **Weighted total** | | **100%** (2026-11-15: the owner's passes closed the last 1%; the 2026-11-05 audit estimate was ~72%) |
