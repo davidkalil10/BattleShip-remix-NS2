@@ -1,6 +1,6 @@
 ---
 name: remix-smoke-tests
-description: Run headless smoke tests of the Smash Remix port (BattleShip-Remix) and read their results: VS matches with chosen fighters, stages and items, special-move matrices, full stage sweeps, CPU item sweeps, the CSS/stage-select flow, contact sheets of screenshots, crash backtraces and lldb inspection. Use whenever a Remix change needs verification in the running game (ROADMAP tasks, "teste", "smoke", "sweep", "roda o jogo", "confere em partida"), before ticking a task or committing a checkpoint.
+description: Run headless smoke tests of the Smash Remix port (BattleShip-Remix) and read their results: VS matches with chosen fighters, stages and items, special-move matrices, full stage sweeps, CPU item sweeps, the CSS/stage-select flow, contact sheets of screenshots, crash backtraces and lldb (macOS) or gdb (Linux) inspection. Use whenever a Remix change needs verification in the running game (ROADMAP tasks, "teste", "smoke", "sweep", "roda o jogo", "confere em partida"), before ticking a task or committing a checkpoint.
 ---
 
 # Remix smoke tests
@@ -45,6 +45,7 @@ Verification by running the real game headless with environment overrides, scree
 | `css.sh <input> <name> [frames]` | Character select (scene 16) flow driven by an input script. |
 | `scene.sh <scene> <input> <name> [frames]` | Same as `css.sh` with any start scene (17 is the 1P CSS: `inputs/css1p_pick_start.txt` picks and starts a 1P run). |
 | `lldb_count.sh <name> <fkinds\|-> <input> <frames> <spec>...` | The VS shortcut under lldb; prints the hit count of each probe on one `vs=` line (works with `parallel.sh custom`). Specs: `func`, `func@cond`, `file.c:line`, `ret:func@cond` (every `ret` of the function, the condition sees `$w0`, the return value). The build is Release: a line on a `return` inside an `if` often resolves to a merged line, which the summary marks `(->N)`; probe the pure rules function with `ret:` instead. Quote specs holding `>` `$` `(` `&` in a `custom` file, or the shell eats them. `crash=1` means the process stopped on a signal; a stop in `objc_msgSend` at launch with 0 frames is an lldb flake, rerun it. |
+| `gdb_count.sh <name> <fkinds\|-> <input> <frames> <spec>...` | Linux counterpart of `lldb_count.sh` (no lldb there): the VS shortcut (or `GDB_START_SCENE`) under the system gdb, hit counts on the `vs=` line (`parallel.sh` only passes `vs=` lines on). Specs: `func`, `"func if <C condition>"` (x86-64 arguments in `$rdi $rsi $rdx $rcx`, `$xmm0`; e.g. `((FTStruct*)$rdi)->ga == 0`), `"print:func;<expr>"` (prints the value at every hit into `gdb.out` after `HIT`). `GDB_PRE=<file>` adds raw gdb commands before `run` (`set var` to force a state, `commands` blocks printing several fields). The build has debug info, so static functions and C types work; a C++ member with no type info is read by its offset from the disassembly. A run once crawled at one frame per second (`slow frame ... 1000 ms` in `gdb.out`) and did not do it again: rerun it alone; `GDB_TIMEOUT` (default 900 s) caps it. |
 | Bonus stages | The BTT/BTP-class stages and the Rest Area are not VS stages (their ground needs the bonus item file): `parallel.sh stages` skips them. Run one through the 1P path: `SSB64_SPGAME_STAGE=3` (BTT) or `7` (BTP) with `SSB64_SPGAME_FKIND=<owner>` and `scene.sh 52` (Banjo 68 gives BTP_BANJO 197, Marina 63 BTT_MARINA 172, Mewtwo 57 BTP_MTWO 140, Crash 72 BTP_CRASH 206, Sonic 59 BTP_SONIC 161, Peach 73 BTT_PEACH 207). `inputs/pause_camera.txt` exercises the Remix pause camera (C pan, A/B zoom, Z+A fov, stick). |
 | `lldb_count.sh <name> <fkinds\|-> <input> <frames> <spec>...` / `lldb_first.sh <name> <fkinds\|-> <input> <frames> <function>[@cond]` | Run the VS shortcut (or `LLDB_START_SCENE`) under lldb: `lldb_count` prints the hit count of each breakpoint spec (`function`, `function@'$x0 == 52'`, `file.c:line`) on the `vs=` line; `lldb_first` prints the argument registers (x0..x2, s0, s1) at the first hit and the return registers after `finish`. Both work inside `parallel.sh custom`. Use them to prove that a rare path runs or returns the Remix value. |
 | `ai_recovery.sh [runs] [jobs] [frames]` | Level-9 CPU recovery measurement: `runs` four-CPU matches, 3 stocks, `SSB64_REMIX_AI_LOG`; prints `episodes= ok= ko= selfko= open=` per run and in total (`selfko` = KO episodes where the CPU's percent did not rise, `hit=0` in the log). Run with `bash`. |
@@ -128,6 +129,25 @@ quit
 ```
 `SSB64_START_SCENE=22 SSB64_VS_FKINDS=0,8 SSB64_MAX_FRAMES=2000 timeout 150 lldb -b -s <cmds.txt> ./BattleShip-Remix`
 from `build/`, then filter the output with `sed -n '/stop reason/,$p'`.
+
+## gdb (Linux, system gdb)
+
+`gdb_count.sh` covers counts and printed values. For a one-off session, write the commands to a file and run the game
+with the same env as the scripts, from `build/`:
+
+```
+set pagination off
+handle SIGPIPE SIGUSR1 SIGUSR2 SIG32 SIG33 nostop noprint pass
+break mnVSModeMain
+ignore 1 300                                              # stop at the 301st call
+run
+delete 1
+call (void)remix_toggle_set_runtime(0x80462AB0, 0)        # change a toggle for this run only
+printf "playing=%d\n", (int)syAudioGetBGMPlaying(0)
+continue
+```
+`SSB64_START_SCENE=9 SSB64_MAX_FRAMES=700 timeout 300 gdb -batch -x <cmds.txt> ./BattleShip-Remix`. A stop on a
+breakpoint inside C++ code can leave gdb parsing in C++ or C; cast to C structs, and use raw offsets for C++ members.
 
 ## Reporting
 
