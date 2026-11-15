@@ -7,6 +7,20 @@ generic steps for Linux, macOS and Windows are in `BUILDING.md`; this page adds 
 No ROM and no `.o2r` enters git (`*.z64`, `build/`, `build-*/` and `dist/` are in `.gitignore`). Whoever clones the repository supplies the ROMs below and
 generates the `.o2r` on the desktop.
 
+## Where each build puts its result
+
+Build trees keep the intermediate files; every finished deliverable goes to `dist/<platform>/`, under the release asset name
+(the in-game updaters download assets by that name). The vanilla build keeps its own `BattleShip-*` names.
+
+| Platform | Build tree | Deliverable in `dist/<platform>/` |
+|---|---|---|
+| macOS | `build-bundle-<version>/` (`scripts/package-macos.sh`); `build-macos-release/` (`scripts/macos/package-remix-contained.sh`) | `BattleShip-Remix.app`, `BattleShip-Remix.dmg`, `BattleShip-Remix-macos.zip`; the test package as `BattleShip-Remix-<version>-macOS-<arch>.dmg` and `.zip` |
+| Linux | `build-bundle-linux-<version>/` (`scripts/package-linux.sh`); `build-linux-release/` (`scripts/linux/package-remix-appimage.sh`, binary only) | `BattleShip-Remix.AppDir/`, `BattleShip-Remix-x86_64.AppImage`; the test package as `BattleShip-Remix-<version>-linux-x86_64.AppImage` |
+| Windows | `build-bundle-win-<version>-<flavor>\` (`scripts/package-windows.ps1`) | `BattleShip-Remix\` (staged folder), `BattleShip-Remix-windows-x64.zip` |
+| Switch | `build-switch/` (`scripts/switch/build.sh`, `scripts/switch/pack.sh`) | `SD/switch/BattleShip-Remix/` (SD card layout), `battleship-switch-sdk.tar.zst` (`pack.sh --sdk`); in CI also `BattleShip-Remix-switch.zip` and `BattleShip-Remix.nro` |
+| Android | `android/app/build/` (Gradle) | `BattleShip-Remix-android.apk` (copied by the release CI; a local Gradle build leaves the APK under `android/app/build/outputs/apk/`) |
+| PS5 | `build-ps5/` (`scripts/ps5/build.sh`; the boilerplate stage stays in `build-ps5/ps5-app/`) | `PPSA99264/` (title folder), `BattleShip-Remix-ps5-PPSA99264.zip` (its top folder is `PPSA99264/`) |
+
 ## Required ROMs
 
 They sit in the **repository root**. CMake accepts `.z64`, `.n64` and `.v64` (Torch normalizes the byte order).
@@ -108,10 +122,10 @@ body is `.github/release-notes.md`. Rewrite its `## Highlights` before tagging (
 `lucasliet/BattleShip-remix` releases (`port/enhancements/Updater.cpp`). The inherited upstream workflows (`release.yml`, `build*.yml`) are disabled in the fork.
 
 - **macOS:** first make a Release build with `-DNON_PORTABLE=ON` in `build-macos-release/`, then run `scripts/macos/package-remix-contained.sh`. It reads the `.o2r`,
-  `f3d.o2r` and the icons from `build/` and writes `dist/desktop/BattleShip-Remix.app`, `.dmg` and `.zip`. It does not use dylibbundler: it expects the static libraries of the optional macOS
+  `f3d.o2r` and the icons from `build/` and writes `dist/macos/BattleShip-Remix.app`, `.dmg` and `.zip`. It does not use dylibbundler: it expects the static libraries of the optional macOS
   setup above in `.toolchain/host/deps`. Scratch files go to `$TMPDIR` (default `build-macos-release/`) and are removed on exit.
 - **Linux x86_64 (AppImage):** run `scripts/linux/package-remix-appimage.sh [build|package|all]`. It needs podman, builds inside a container described by
-  `scripts/linux/Dockerfile.jammy` and writes to `build-linux-release/`. To run the release script `scripts/package-linux.sh` on a Linux host
+  `scripts/linux/Dockerfile.jammy`, keeps the binary in `build-linux-release/` and writes the AppImage to `dist/linux/`. To run the release script `scripts/package-linux.sh` on a Linux host
   instead, `scripts/linux/setup-appimage-tools.sh` puts the same pinned `appimagetool` and `linuxdeploy` in `.toolchain/host/bin`; then
   `PATH="$PWD/.toolchain/host/bin:$PATH" APPIMAGE_EXTRACT_AND_RUN=1 scripts/package-linux.sh`.
 - The version comes from `DIST_VERSION`, default `2.0.1-port.<short HEAD>`. Check that the `.o2r.recipe` in `build/` matches the binary's recipe hash (the `SSB64 asset recipe hash` line of the CMake configure) before packaging.
@@ -233,8 +247,8 @@ x86_64 host (or the `build-ps5` job of `release-remix.yml`) with a toolchain kep
 ```
 scripts/ps5/setup-toolchain.sh      # pinned SDK, LLVM 18, ps5-opengl, boilerplate, SDL (scripts/ps5/packages.lock)
 scripts/ps5/build-gl-sdk.sh         # ps5-opengl's GL SDK and its static SDL2
-scripts/ps5/build.sh remix          # build-ps5/ps5-app/dist/PPSA99264/ and PPSA99264.zip
-scripts/ps5/deploy.sh <ps5-ip> build-ps5/ps5-app/dist/PPSA99264   # FTP to /data/homebrew/PPSA99264, then a rescan
+scripts/ps5/build.sh remix          # dist/ps5/PPSA99264/ and dist/ps5/BattleShip-Remix-ps5-PPSA99264.zip
+scripts/ps5/deploy.sh <ps5-ip> dist/ps5/PPSA99264   # FTP to /data/homebrew/PPSA99264, then a rescan
 ```
 
 The title folder holds `eboot.bin`, `sce_sys/` (param.json, icon, `pic0.dds` from `scripts/ps5/make_title_art.py`),

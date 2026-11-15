@@ -2,7 +2,8 @@
 # BattleShip — PS5 native title build (Linux x86_64 host, contained toolchain under .toolchain/ps5).
 #
 # Cross-compiles the game into one relocatable object through cmake/toolchains/PS5.cmake, then
-# stages the title folder build-ps5/ps5-app/dist/PPSA99264 (eboot.bin, sce_sys, sce_module).
+# stages the title folder dist/ps5/PPSA99264 (eboot.bin, sce_sys, sce_module) and its zip
+# dist/ps5/BattleShip-Remix-ps5-PPSA99264.zip (BattleShip-ps5-PPSA99264.zip for us).
 # Prepare the toolchain once with scripts/ps5/setup-toolchain.sh and scripts/ps5/build-gl-sdk.sh.
 #
 # Usage: [VERSION=remix|us] [JOBS=n] scripts/ps5/build.sh [remix|us] [extra cmake args...]

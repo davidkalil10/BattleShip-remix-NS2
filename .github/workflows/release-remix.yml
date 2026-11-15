@@ -51,8 +51,8 @@ jobs:
         with:
           name: remix-macos
           path: |
-            dist/BattleShip-Remix.dmg
-            dist/BattleShip-Remix-macos.zip
+            dist/macos/BattleShip-Remix.dmg
+            dist/macos/BattleShip-Remix-macos.zip
           if-no-files-found: error
 
   build-linux:
@@ -99,7 +99,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: remix-linux
-          path: dist/BattleShip-Remix-x86_64.AppImage
+          path: dist/linux/BattleShip-Remix-x86_64.AppImage
           if-no-files-found: error
 
   build-windows:
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: remix-windows
-          path: dist/BattleShip-Remix-windows-x64.zip
+          path: dist/windows/BattleShip-Remix-windows-x64.zip
           if-no-files-found: error
 
   build-switch:
@@ -173,7 +173,7 @@ jobs:
           mkdir -p "$dir"
           cp "build-switch/$app.nro" "$dir/"
           # The bare .nro is its own release asset: the in-game updater downloads it and swaps the running file.
-          cp "build-switch/$app.nro" dist/
+          cp "build-switch/$app.nro" dist/switch/
           (cd libultraship/src/fast && cmake -E tar cf "$GITHUB_WORKSPACE/$dir/f3d.o2r" --format=zip shaders)
           cp gamecontrollerdb.txt config.yml "$dir/"
           mkdir -p "$dir/assets/custom"
@@ -188,13 +188,13 @@ jobs:
           3. Launch from the Homebrew Menu in full-memory mode (hold R while opening an installed game).
              Applet mode does not have enough memory.
           EOF
-          (cd dist/switch/SD && zip -qr "$GITHUB_WORKSPACE/dist/$app-switch.zip" switch)
+          (cd dist/switch/SD && zip -qr "$GITHUB_WORKSPACE/dist/switch/$app-switch.zip" switch)
       - uses: actions/upload-artifact@v4
         with:
           name: remix-switch
           path: |
-            dist/BattleShip-Remix-switch.zip
-            dist/BattleShip-Remix.nro
+            dist/switch/BattleShip-Remix-switch.zip
+            dist/switch/BattleShip-Remix.nro
           if-no-files-found: error
 
   build-android:
@@ -244,18 +244,18 @@ jobs:
             -Pssb64.versionName="$GITHUB_REF_NAME" -Pssb64.versionCode="$(git rev-list --count HEAD)"
       - name: Stage APK
         run: |
-          mkdir -p dist
+          mkdir -p dist/android
           shopt -s nullglob
           apk=(android/app/build/outputs/apk/release/app-release*.apk)
           if (( ${#apk[@]} == 0 )); then
             echo "::error::no APK produced under android/app/build/outputs/apk/release/"
             exit 1
           fi
-          cp "${apk[0]}" dist/BattleShip-Remix-android.apk
+          cp "${apk[0]}" dist/android/BattleShip-Remix-android.apk
       - uses: actions/upload-artifact@v4
         with:
           name: remix-android
-          path: dist/BattleShip-Remix-android.apk
+          path: dist/android/BattleShip-Remix-android.apk
           if-no-files-found: error
 
   build-ps5:
@@ -283,15 +283,12 @@ jobs:
         run: scripts/ps5/setup-toolchain.sh --offline
       - name: Build the title
         run: JOBS="$(nproc)" scripts/ps5/build.sh remix
-      - name: Package
-        run: |
-          mkdir -p dist
-          # The folder zip (PPSA99264/ at the top) goes to /data/homebrew or an external drive.
-          cp build-ps5/ps5-app/dist/PPSA99264.zip dist/BattleShip-Remix-ps5-PPSA99264.zip
+      # The build stages the folder zip (PPSA99264/ at the top) as dist/ps5/BattleShip-Remix-ps5-PPSA99264.zip;
+      # it goes to /data/homebrew or an external drive.
       - uses: actions/upload-artifact@v4
         with:
           name: remix-ps5
-          path: dist/BattleShip-Remix-ps5-PPSA99264.zip
+          path: dist/ps5/BattleShip-Remix-ps5-PPSA99264.zip
           if-no-files-found: error
 
   release:

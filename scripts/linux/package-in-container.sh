@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Runs inside the Dockerfile.jammy image: packs /out/BattleShip-Remix as an AppImage in /out.
-# Mounts: /src (repo, ro; reads build/ for the .o2r, f3d.o2r and css icons), /out (binary in, AppImage out), /work (scratch).
+# Runs inside the Dockerfile.jammy image: packs /out/BattleShip-Remix as an AppImage in /dist.
+# Mounts: /src (repo, ro; reads build/ for the .o2r, f3d.o2r and css icons), /out (binary in), /dist (AppImage out),
+# /work (scratch).
 # Env: DIST_VERSION (file name tag, default 2.0.1-port.local), ARCH_TAG (default x86_64).
 # The AppImage embeds the ROM-derived BattleShip-Remix.o2r: personal test package only, never redistributed
 # (M11 decision 6; the distributable package extracts the .o2r on first run, M11 Fase 7).
@@ -10,6 +11,7 @@ ARCH_TAG="${ARCH_TAG:-x86_64}"
 DIST_VERSION="${DIST_VERSION:-2.0.1-port.local}"
 SRC=/src
 OUT=/out
+DIST=/dist
 APPDIR=/work/AppDir
 ASSETS="${SRC}/build"
 export APPIMAGE_EXTRACT_AND_RUN=1
@@ -58,7 +60,7 @@ exec "\$HERE/usr/bin/$APP_NAME" "\$@"
 RUN
 chmod +x "$APPDIR/AppRun"
 
-OUTFILE="$OUT/${APP_NAME}-${DIST_VERSION}-linux-${ARCH_TAG}.AppImage"
+OUTFILE="$DIST/${APP_NAME}-${DIST_VERSION}-linux-${ARCH_TAG}.AppImage"
 rm -f "$OUTFILE"
 appimagetool "$APPDIR" "$OUTFILE"
 chmod +x "$OUTFILE"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds BattleShip as a Linux AppImage.
 #
-# Output: <repo-root>/dist/BattleShip-x86_64.AppImage
+# Output: <repo-root>/dist/linux/BattleShip-x86_64.AppImage
 #
 # AppDir layout produced (before appimagetool packs it):
 #   AppDir/
@@ -31,7 +31,7 @@
 # If linuxdeploy isn't in PATH the script warns and skips library
 # bundling — the resulting AppImage will only run on systems whose
 # .so versions match the build host. If appimagetool isn't available,
-# the script still produces the AppDir under dist/ for manual packing.
+# the script still produces the AppDir under dist/linux/ for manual packing.
 
 set -euo pipefail
 
@@ -45,7 +45,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VER="${SSB64_VERSION:-us}"
 [[ "$VER" == "us" || "$VER" == "jp" || "$VER" == "remix" ]] || { echo "SSB64_VERSION must be us|jp|remix" >&2; exit 1; }
 BUILD_DIR="$ROOT/build-bundle-linux-$VER"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="$ROOT/dist/linux"
 case "$VER" in
     jp) APP_NAME="BattleShip-JP" ;;
     remix) APP_NAME="BattleShip-Remix" ;;

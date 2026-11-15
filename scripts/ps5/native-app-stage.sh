@@ -9,6 +9,8 @@
 #        PS5_APP_ASSETS      directory copied as <dist>/assets (optional)
 #        PS5_APP_FILES       files copied into the title folder's root (optional)
 #        PS5_CMAKE           cmake used to zip the title folder again (default: cmake on PATH)
+#        PS5_DIST_DIR        directory that receives a copy of <TITLE_ID>/ and its zip (optional)
+#        PS5_DIST_ZIP        file name of that zip copy (default: <TITLE_ID>.zip)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -135,6 +137,13 @@ if [[ -n "${PS5_APP_FILES:-}" ]]; then
     done
     rm -f "$APP/dist/$TITLE_ID.zip"
     (cd "$APP/dist" && "${PS5_CMAKE:-cmake}" -E tar cf "$TITLE_ID.zip" --format=zip "$TITLE_ID")
+fi
+if [[ -n "${PS5_DIST_DIR:-}" ]]; then
+    mkdir -p "$PS5_DIST_DIR"
+    rm -rf "${PS5_DIST_DIR:?}/$TITLE_ID"
+    cp -a "$dist" "$PS5_DIST_DIR/$TITLE_ID"
+    cp "$APP/dist/$TITLE_ID.zip" "$PS5_DIST_DIR/${PS5_DIST_ZIP:-$TITLE_ID.zip}"
+    dist="$PS5_DIST_DIR/$TITLE_ID"
 fi
 printf 'Native app: %s\n' "$dist"
 sha256sum "$dist/eboot.bin"

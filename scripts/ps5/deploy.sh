@@ -2,7 +2,7 @@
 # Uploads a staged title folder to a jailbroken PS5 over its FTP payload and asks ShadowMountPlus
 # to rescan, so the title appears (or is replaced) on the home screen. Close the title first.
 #
-# Usage: scripts/ps5/deploy.sh <ps5-host> <dist/TITLE_ID dir> [ftp-port=2121] [smp-api-port=10101]
+# Usage: scripts/ps5/deploy.sh <ps5-host> <dist/ps5/TITLE_ID dir> [ftp-port=2121] [smp-api-port=10101]
 # The files go to /data/homebrew/<TITLE_ID>/; eboot.bin is uploaded last, as the boilerplate does,
 # so a half-uploaded folder never carries a new executable with old data.
 set -euo pipefail

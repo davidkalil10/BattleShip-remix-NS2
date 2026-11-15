@@ -1167,6 +1167,8 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "PS5")
             "PS5_EXTRA_WRAPS=pthread_create lstat getcwd realpath"
             "PS5_APP_ASSETS=${SSB64_PS5_ASSETS_DIR}"
             "PS5_CMAKE=${CMAKE_COMMAND}"
+            "PS5_DIST_DIR=${CMAKE_SOURCE_DIR}/dist/ps5"
+            "PS5_DIST_ZIP=${SSB64_APP_NAME}-ps5-${SSB64_PS5_TITLE_ID}.zip"
             "PS5_APP_FILES=${CMAKE_BINARY_DIR}/f3d.o2r ${CMAKE_SOURCE_DIR}/gamecontrollerdb.txt ${CMAKE_SOURCE_DIR}/LICENSE ${CMAKE_SOURCE_DIR}/assets/ps5/THIRD_PARTY_NOTICES.txt ${CMAKE_SOURCE_DIR}/assets/ps5/COPYING.GPL-3.0.txt"
             bash ${CMAKE_SOURCE_DIR}/scripts/ps5/native-app-stage.sh ${CMAKE_BINARY_DIR}/ps5-app
             ${SSB64_PS5_TITLE_ID} $<TARGET_FILE:${PROJECT_NAME}> ${SSB64_PS5_PARAM_JSON}

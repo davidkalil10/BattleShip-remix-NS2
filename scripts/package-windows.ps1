@@ -1,6 +1,6 @@
 # Builds BattleShip as a self-contained Windows release zip.
 #
-# Output: <repo-root>\dist\BattleShip-windows.zip (BattleShip-Remix-windows-x64.zip for the Remix build)
+# Output: <repo-root>\dist\windows\BattleShip-windows.zip (BattleShip-Remix-windows-x64.zip for the Remix build)
 #
 # Layout produced (extracted):
 #   BattleShip\
@@ -60,7 +60,7 @@ $PackageFlavor = if ($EnableScripting) { "scripting" } else { "standard" }
 # Remix: a new name, so v2.0.1-port.10 (whose update script antivirus engines flagged) finds no Windows asset.
 $ZipSuffix = if ($Ver -eq "remix") { "-windows-x64" } else { "-windows" }
 $BuildDir = Join-Path $Root "build-bundle-win-$Ver-$PackageFlavor"
-$DistDir = Join-Path $Root "dist"
+$DistDir = Join-Path $Root "dist\windows"
 $AppName = switch ($Ver) { "jp" { "BattleShip-JP" } "remix" { "BattleShip-Remix" } default { "BattleShip" } }
 $StageName = $AppName
 $StageDir = Join-Path $DistDir $StageName

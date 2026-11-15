@@ -2,7 +2,7 @@
 # BattleShip — packaging for Nintendo Switch.
 #
 # 1. dist/switch/SD layout: everything the user copies to the SD card.
-# 2. dist/battleship-switch-sdk.tar.zst: repo + .toolchain bundle for an
+# 2. dist/switch/battleship-switch-sdk.tar.zst: repo + .toolchain bundle for an
 #    offline, self-contained build on another machine.
 #
 # Usage: scripts/switch/pack.sh [--sdk]
@@ -54,7 +54,7 @@ EOF
 echo "Pacote SD: $SD"
 
 if [[ "${1:-}" == "--sdk" ]]; then
-  OUT="$ROOT/dist/battleship-switch-sdk.tar.zst"
+  OUT="$ROOT/dist/switch/battleship-switch-sdk.tar.zst"
   echo "== sdk bundle: $OUT (repo + .toolchain) =="
   tar -cJf "$OUT" -C "$ROOT" --exclude '.git' --exclude 'build*' --exclude 'dist' \
     .toolchain scripts/switch CMakeLists.txt cmake config.yml yamls tools \

@@ -8,7 +8,7 @@
 #   build-macos-release/BattleShip-Remix   Release build with -DNON_PORTABLE=ON
 #   BUILD_ASSETS_DIR (default build/)      BattleShip-Remix.o2r, .o2r.recipe, f3d.o2r,
 #                                          assets/css_icons/*.png
-# Output: dist/desktop/BattleShip-Remix.app, then the .dmg and .zip next to it.
+# Output: dist/macos/BattleShip-Remix.app, then the .dmg and .zip next to it.
 #
 # The .o2r is ROM-derived: packages produced here are for private testing,
 # not for public redistribution.
@@ -23,7 +23,7 @@ APP_NAME="BattleShip-Remix"
 APP_BUNDLE_ID="com.ssb-decomp-re.battleship-remix"
 BUILD_DIR="${BUILD_DIR:-$ROOT/build-macos-release}"
 ASSETS_DIR="${BUILD_ASSETS_DIR:-$ROOT/build}"
-OUT_DIR="${OUT_DIR:-$ROOT/dist/desktop}"
+OUT_DIR="${OUT_DIR:-$ROOT/dist/macos}"
 DIST_VERSION="${DIST_VERSION:-2.0.1-port.$(git -C "$ROOT" rev-parse --short HEAD)}"
 BUNDLE_VERSION="${DIST_VERSION%%-*}"
 ARCH="$(uname -m)"

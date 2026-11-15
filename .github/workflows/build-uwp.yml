@@ -104,11 +104,11 @@ jobs:
       - name: Stage US asset tool
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force dist/asset-tool/yamls | Out-Null
-          Copy-Item build-windows/TorchExternal/src/TorchExternal-build/Release/torch.exe dist/asset-tool/torch.exe
-          Copy-Item tools/Prepare-BattleShip-US.ps1 dist/asset-tool/
-          Copy-Item config.yml dist/asset-tool/config.yml
-          Copy-Item -Recurse yamls/us dist/asset-tool/yamls/us
+          New-Item -ItemType Directory -Force dist/windows/asset-tool/yamls | Out-Null
+          Copy-Item build-windows/TorchExternal/src/TorchExternal-build/Release/torch.exe dist/windows/asset-tool/torch.exe
+          Copy-Item tools/Prepare-BattleShip-US.ps1 dist/windows/asset-tool/
+          Copy-Item config.yml dist/windows/asset-tool/config.yml
+          Copy-Item -Recurse yamls/us dist/windows/asset-tool/yamls/us
 
       - name: Upload UWP package
         uses: actions/upload-artifact@v4
@@ -127,4 +127,4 @@ jobs:
         with:
           name: BattleShip-US-asset-tool
           if-no-files-found: error
-          path: dist/asset-tool
+          path: dist/windows/asset-tool

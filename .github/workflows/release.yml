@@ -172,7 +172,7 @@ jobs:
           # NB: GHA `a && b || c` is not a ternary — an empty-string `b`
           # is falsy and falls through to `c`. Keep the non-empty value
           # in the `&&` branch and the empty default in `||`.
-          path: dist/BattleShip${{ matrix.version == 'jp' && '-JP' || matrix.version == 'remix' && '-Remix' || '' }}.dmg
+          path: dist/macos/BattleShip${{ matrix.version == 'jp' && '-JP' || matrix.version == 'remix' && '-Remix' || '' }}.dmg
           if-no-files-found: error
 
   build-linux:
@@ -267,7 +267,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: BattleShip-linux-${{ matrix.version }}
-          path: dist/BattleShip${{ matrix.version == 'jp' && '-JP' || matrix.version == 'remix' && '-Remix' || '' }}-x86_64.AppImage
+          path: dist/linux/BattleShip${{ matrix.version == 'jp' && '-JP' || matrix.version == 'remix' && '-Remix' || '' }}-x86_64.AppImage
           if-no-files-found: error
 
   build-android:
@@ -370,7 +370,7 @@ jobs:
         # depending on signing config. Normalize per ABI so the release
         # job's files: list doesn't need a glob.
         run: |
-          mkdir -p dist
+          mkdir -p dist/android
           shopt -s nullglob
           apk=(android/app/build/outputs/apk/release/app-release*.apk)
           if (( ${#apk[@]} == 0 )); then
@@ -378,12 +378,12 @@ jobs:
             ls -la android/app/build/outputs/apk/release/ || true
             exit 1
           fi
-          cp "${apk[0]}" "dist/${{ matrix.apk_name }}"
-          ls -la dist/
+          cp "${apk[0]}" "dist/android/${{ matrix.apk_name }}"
+          ls -la dist/android/
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.apk_name }}
+          path: dist/android/${{ matrix.apk_name }}
           if-no-files-found: error
 
   build-windows:
@@ -397,15 +397,15 @@ jobs:
           - version: us
             enable_scripting: "1"
             artifact_name: BattleShip-windows-us
-            artifact_path: dist/BattleShip-windows.zip
+            artifact_path: dist/windows/BattleShip-windows.zip
           - version: jp
             enable_scripting: "0"
             artifact_name: BattleShip-windows-jp
-            artifact_path: dist/BattleShip-JP-windows.zip
+            artifact_path: dist/windows/BattleShip-JP-windows.zip
           - version: remix
             enable_scripting: "0"
             artifact_name: BattleShip-windows-remix
-            artifact_path: dist/BattleShip-Remix-windows-x64.zip
+            artifact_path: dist/windows/BattleShip-Remix-windows-x64.zip
     steps:
       - uses: actions/checkout@v4
         with:

@@ -6,15 +6,16 @@ from a Windows Server 2022 or compatible Windows 11 container host:
 
 ```powershell
 docker build -m 8GB -t battleship-uwp-build -f ci/windows/Dockerfile .
+New-Item -ItemType Directory -Force dist\windows | Out-Null
 docker run --rm -m 12GB `
   -v "${PWD}:C:\src" `
-  -v "${PWD}\dist:C:\out" `
+  -v "${PWD}\dist\windows:C:\out" `
   battleship-uwp-build
 ```
 
 The source mount must already contain recursively initialized submodules. The
 image is intentionally a build environment, not a runtime image; its output is
-a signed sideload package under `dist`. Pass `-PackageVersion`, `-SigningPfx`,
+a signed sideload package under `dist\windows`. Pass `-PackageVersion`, `-SigningPfx`,
 and `-SigningPassword` to `build-uwp.ps1` when producing upgrade-compatible
 releases; without a PFX the script intentionally makes a disposable development
 certificate.

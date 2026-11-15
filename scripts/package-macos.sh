@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Builds BattleShip as a self-contained macOS .app bundle.
 #
-# Output: <repo-root>/dist/BattleShip.app
-#         <repo-root>/dist/BattleShip.dmg           — drag-and-drop installer
-#         <repo-root>/dist/BattleShip-macos.zip     — the .app zipped for the in-game
+# Output: <repo-root>/dist/macos/BattleShip.app
+#         <repo-root>/dist/macos/BattleShip.dmg     — drag-and-drop installer
+#         <repo-root>/dist/macos/BattleShip-macos.zip — the .app zipped for the in-game
 #                                                     updater, which downloads it and
 #                                                     extracts it over the installed .app
 #
@@ -45,7 +45,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VER="${SSB64_VERSION:-us}"
 [[ "$VER" == "us" || "$VER" == "jp" || "$VER" == "remix" ]] || { echo "SSB64_VERSION must be us|jp|remix" >&2; exit 1; }
 BUILD_DIR="$ROOT/build-bundle-$VER"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="$ROOT/dist/macos"
 if [[ "$VER" == "jp" ]]; then
     APP_NAME="BattleShip-JP"
     APP_BUNDLE_ID="com.ssb-decomp-re.battleship-jp"
