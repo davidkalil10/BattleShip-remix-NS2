@@ -3,6 +3,7 @@
 # Boots into the VS character select (scene 16) and plays the input script: pick fighters, START, stage select, A.
 # Env: SHOTS (frame list, default 300).
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 ROOT="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 dir="$ROOT/build/agent-shots/vs/$2"
 mkdir -p "$dir"

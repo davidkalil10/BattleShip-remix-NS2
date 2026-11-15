@@ -62,7 +62,7 @@ while IFS= read -r line; do
   printf '%s\n' "$line" > "$JOBDIR/job_$(printf '%04d' "$n").sh"
 done < "$LIST"
 rm -f "$LIST"
-ls "$JOBDIR"/job_*.sh | xargs -P "$JOBS" -n1 bash 2>&1 | grep -E "^vs=|^css="
+ls "$JOBDIR"/job_*.sh | xargs -P "$JOBS" -n1 bash 2>&1 | grep -E "^vs=|^css=|^scene="
 rm -rf "$JOBDIR"
 if [ "$MODE" = matrix ]; then
   for f in "$@"; do for m in nsp dsp usp; do

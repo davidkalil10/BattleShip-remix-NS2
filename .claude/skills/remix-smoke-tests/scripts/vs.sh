@@ -6,6 +6,7 @@
 # Env passed through: SHOTS (frame list, default 600,900,...), SSB64_VS_STAGE, SSB64_VS_ITEMS,
 # SSB64_REMIX_FORCE_ITEM, SSB64_REMIX_FORCE_ITEM_AT_P1, SSB64_REMIX_ITEM_LOG, SSB64_DUMP_FILE_ID.
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 ROOT="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 dir="$ROOT/build/agent-shots/vs/$3"
 mkdir -p "$dir"

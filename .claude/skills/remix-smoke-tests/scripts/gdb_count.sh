@@ -17,6 +17,7 @@
 # Output files: build/agent-shots/vs/<name>/{gdb.cmds,gdb.out,ssb64.log,stdout.log}.
 # "crash=1" on the result line means the process stopped on SIGSEGV, SIGBUS or SIGABRT.
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 if [ $# -lt 5 ]; then
   echo "usage: gdb_count.sh <name> <fkinds|-> <input_script> <frames> <spec>..." >&2
   exit 2

@@ -6,6 +6,7 @@
 # through (SSB64_SPGAME_STAGE, SSB64_REMIX_1P_MODE, SSB64_REMIX_PANEL, SSB64_REMIX_TOGGLES, ...).
 # Env: SHOTS (frame list, default 300).
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 if [ $# -lt 3 ]; then
   echo "usage: scene.sh <scene> <input_script> <name> [frames] [timeout_s]" >&2
   exit 2

@@ -6,6 +6,7 @@
 # Env: LLDB_START_SCENE (default 22), LLDB_TIMEOUT seconds (default 420), SHOTS, any SSB64_* variable of the caller.
 # Full output: build/agent-shots/vs/<name>/lldb.out.
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 ROOT="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 name="$1"; fkinds="$2"; input="$3"; frames="$4"; spec="$5"; shift 5
 dir="$ROOT/build/agent-shots/vs/$name"

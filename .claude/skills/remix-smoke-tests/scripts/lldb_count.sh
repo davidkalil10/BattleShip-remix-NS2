@@ -18,6 +18,7 @@
 # Hit counts of 0 with "(unresolved)" mean the symbol was not found (static or inlined): use <file.c>:<line>.
 # "crash=1" on the result line means the process stopped on a signal (rerun alone: the macOS Metal flake looks the same).
 set -u
+command -v timeout >/dev/null || PATH="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compat:$PATH"
 ROOT="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 name="$1"; fkinds="$2"; input="$3"; frames="$4"; shift 4
 dir="$ROOT/build/agent-shots/vs/$name"
