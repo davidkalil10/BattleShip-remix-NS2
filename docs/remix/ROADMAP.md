@@ -547,7 +547,14 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
   - Batch 8 (`fast_fall_aerials`, `item_containers`): Mario's nair with stick down lands at battle tic 64 with the
     toggle on and 81 with it off (frame 460: on the ground against still in the air). Crates with ALWAYS EXPLODE play
     0x3B 21 times and 0x3C never (DEFAULT: 25 and 23).
-  - All runs: rc=0, no abort or assert in the logs, screenshots read.
+  - Batch 11 (`camera_mode`, `hazard_mode`, `dragon_king_hud`): 1P with Camera Mode SCENE, switched to NORMAL from gdb
+    at the second camera: stages 2 and 3 get the vanilla routine table back (Default, Inishie, Zebes) and the default
+    routine, so the SCENE table no longer leaks into the next camera. VS on Planet Zebes (3) and Mushroom Kingdom (8):
+    FIXED gives a still full-stage view and SCENE the wide anim view, against the tracking camera with NORMAL. Rainbow
+    Road (163): the Chain Chomp exists with Hazard Mode 0 and not with 1 or 2 (Hazards.asm tests the whole value). A
+    VS match left on Dragon King (scene gkind 0x35 set from gdb) played on Dream Land puts the combo meter at y 167,
+    above the damage HUD, since the battle-state gkind decides. Hazard Mode outside VS and Training and the Zebes acid
+    AI keep the port's screen gate (`deviations.md` 5.7 and 5.9). All runs rc=0, screenshots read.
   - Batch 9 (`improved_ai`): four level-9 CPUs, 3 stocks, 14000 frames, gdb hit counts on the committed build.
     `fix_target_pos_x` now runs before the ground/air split: with Improved AI on, Flat Zone (50) made 2850 grounded
     calls of `ftRemixAiRecoveryClampWalkTargetX`, 80 of them with the target past the bounds minus 200 (clamped);

@@ -368,8 +368,8 @@ Stage BGM path: `grRemixGetStageBGM` picks the alternate song (chances 65/16/10/
   Port: `mnRemixTournamentLatchLayout` (mn/mnmaps/mnremixstagetournament.c:24) and the stage-select panel (mnremixstagepanel.c). Defaults: TOURNAMENT only in the Tournament profile.
 
 - **Hazard Mode** (`hazard_mode`; 0 NORMAL, 1 HAZARDS OFF, 2 MOVEMENT OFF, 3 ALL OFF; default 0)  
-  Asm: Surface.asm, Hazards.asm, Stages.asm: bit 0 turns stage hazards off, bit 1 stage movement. VS and Training only. L on the stage select cycles it.  
-  Port: `grRemixHazardsAreOn`, `grRemixMovementIsOn` (gr/grremix/grremixhazards.c:24); stage panel L toggle `mnRemixStagePanelToggleHazards` writes the toggle with `remix_toggle_set` (mn/mnmaps/mnremixstagepanel.c:251); also gm/gmremixcameramode.c:126, ft/ftremix/ftremixbury.c:67. The Congo Jungle barrel ignores the setting in the port.
+  Asm: Surface.asm, Hazards.asm, Stages.asm: bit 0 turns stage hazards off, bit 1 stage movement. VS and Training only. L on the stage select cycles it. Rainbow Road's Chain Chomp needs mode 0 (Hazards.asm 5659-5661 tests the whole value).  
+  Port: `grRemixHazardsAreOn`, `grRemixMovementIsOn` (gr/grremix/grremixhazards.c:24); stage panel L toggle `mnRemixStagePanelToggleHazards` writes the toggle with `remix_toggle_set` (mn/mnmaps/mnremixstagepanel.c:251); also gm/gmremixcameramode.c:126, ft/ftremix/ftremixbury.c:67. The Congo Jungle barrel ignores the setting in the port. The Remix stage setups and the Zebes acid AI read the toggle on every screen in the asm; the port gates them to VS and Training (`deviations.md` 5.7 and 5.9).
 
 - **Whispy Mode** (`whispy_mode`; 0 NORMAL, 1 JAPANESE, 2 SUPER, 3 HYPER; default 0/0/0/1)  
   Asm: Hazards.asm: Dream Land's Whispy wind: JAPANESE (slower decay), SUPER and HYPER (stronger wind, bigger blow box). HYPER is not applied in the 1P battle.  
@@ -385,11 +385,11 @@ Stage BGM path: `grRemixGetStageBGM` picks the alternate song (chances 65/16/10/
 
 - **Dragon King HUD** (`dragon_king_hud`; 0 DRAGON KING, 1 ALL STAGES, 2 OFF; default 0/2/0/0)  
   Asm: DragonKingHUD.asm and the HUD placement of ComboMeter, KotH, Multi-Man, All-Star rest area and Bonus: DRAGON KING (default) and ALL STAGES use the lower Dragon King HUD layout, OFF never.  
-  Port: Read for the lowered combo meter, KotH HUD and the 1P placements (if/ifremixcombometer.c:99, gm/gmremixkothhud.c:73, sc/sc1pmode/sc1pbonusstage.c:1170, sc1premixallstarrest.c:33, sc1premixmultiman.c:79). The Dragon King damage number set (file 0xA4 digits, Dragon King colours, y 38), the lowered timer (y 212), the hidden series logo, the instant KO digit fall and the 1P, bonus, Training, How to Play and VS demo placements are in `if/ifremixdragonkinghud.c` (`ifRemixDragonKingHudIsOn`, `ifRemixDragonKingHudPickY`).
+  Port: Read for the lowered combo meter, KotH HUD and the 1P placements (if/ifremixcombometer.c:100 through `ifRemixDragonKingHudIsOn`, battle-state gkind, gm/gmremixkothhud.c:73, sc/sc1pmode/sc1pbonusstage.c:1170, sc1premixallstarrest.c:33, sc1premixmultiman.c:79). The Dragon King damage number set (file 0xA4 digits, Dragon King colours, y 38), the lowered timer (y 212), the hidden series logo, the instant KO digit fall and the 1P, bonus, Training, How to Play and VS demo placements are in `if/ifremixdragonkinghud.c` (`ifRemixDragonKingHudIsOn`, `ifRemixDragonKingHudPickY`).
 
 - **Camera Mode** (`camera_mode`; 0 NORMAL, 1 BONUS, 2 FIXED, 3 SCENE; default 0)  
   Asm: Camera.asm: BONUS routes default-camera stages to the Mushroom Kingdom camera and keeps the Bonus pause zoom, FIXED freezes the camera on a per-stage fixed view and disables pause analog control, SCENE uses the anim camera, hides the HUD at unpause and keeps the pause camera eye.  
-  Port: gm/gmremixcameramode.c:120 (`gmRemixCameraSetupDefault`, frozen/fixed views, pause control), gm/gmremixcamerapause.c, `ftRemixPauseKeepsSceneCamera` (ft/ftremix/ftremixpause.c:49), gm/gmremixspecialzoom.c:196. The stage ids use `gSCManagerBattleState->gkind`.
+  Port: gm/gmremixcameramode.c:323 (`gmRemixCameraSetupDefault`, called before the stage switch of `gmCameraMakeDefaultCamera`, so BONUS, FIXED and SCENE also apply on Planet Zebes and Mushroom Kingdom and only HRC is skipped; it first restores the vanilla routine table, as the N64 overlay reload did; frozen/fixed views, pause control), gm/gmremixcamerapause.c, `ftRemixPauseKeepsSceneCamera` (ft/ftremix/ftremixpause.c:49), gm/gmremixspecialzoom.c:196. The stage ids use `gSCManagerBattleState->gkind`.
 
 - **Yoshi's Island Cloud Anims** (`yi_clouds`; 0 off, 1 on; default 0)  
   Asm: Hazards.asm `yoshis_island_cloud_anims_`: ON animates the Yoshi's Island clouds (scale) and disables their clipping.  

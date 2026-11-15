@@ -253,7 +253,8 @@ Asm `rainbow_road_setup`, `chain_chomp_main_`, `sfx_main_`, `chainchomp_hitbox_*
 `grremixrainbowchomp.c` (weapon kind 0x2A). The chomp file and hitbox file are the stage header pointers at 0x80 and 0xAC; the chomp model
 (DObj descriptors at +0x17F0, model at +0x19E8) is created hidden, and shown on its first spawn.
 
-- With hazards on, a timer runs to 0x35E8 and restarts. Four windows (0x5DB..0x7D0, 0x10A4..0x1298, 0x1B6C..0x1D60, 0x30FC..0x321C), each with
+- With hazard_mode NORMAL (0) only: `rainbow_road_setup` tests the whole value with `bnez` (Hazards.asm 5661), so MOVEMENT OFF also drops the
+  chomp. A timer runs to 0x35E8 and restarts. Four windows (0x5DB..0x7D0, 0x10A4..0x1298, 0x1B6C..0x1D60, 0x30FC..0x321C), each with
   its own animation pair; in a window each frame rolls 1 in 810 (hit value 0x100) until one spawn per window has happened (`chomp_flag`, cleared at the
   window's clear timer). A spawn plays the chomp animation and FGM 0x401 and creates the hitbox weapon.
 - Hitbox weapon: follows the chomp top joint, lifetime 0x546, damage 25, reflectable, three hit records refreshed 0x19 frames after each hit
