@@ -14,6 +14,7 @@
 #include "remix/remix_toggle_tips.h"
 #include "remix/remix_symbols.h"
 #include "PortMenu.h"
+#include "../port_log.h"
 
 #include "Compat.h"
 #include "../enhancements/enhancements.h"
@@ -46,6 +47,7 @@ namespace ssb64 { void MountModsDir(); void UnmountMissingMods(); }
 #include <cctype>
 #include <cstring>
 #include <filesystem>
+#include <optional>
 
 namespace Ship {
 extern bool navigateToWidget;
@@ -828,6 +830,40 @@ void RequestTestMenuPage() {
     Ship::navigateMainEntry = header.c_str();
     Ship::navigateSidebar = sidebar.c_str();
     Ship::navigateToWidget = true;
+}
+
+/** A widget change requested by SSB64_PORT_MENU_SET. */
+struct TestMenuSet {
+    std::string name;
+    int32_t value;
+    uint32_t update;
+};
+
+/**
+ * Reads SSB64_PORT_MENU_SET="<widget name>=<value>@<menu update>" (e.g. "BGM Volume=50@300").
+ * Returns nothing when the variable is unset or malformed (a malformed one is logged).
+ */
+std::optional<TestMenuSet> ParseTestMenuSet() {
+    const char *env = remix_debug_env_text("SSB64_PORT_MENU_SET");
+    if (env == nullptr) {
+        return std::nullopt;
+    }
+    const std::string text(env);
+    const size_t at = text.rfind('@');
+    const size_t equals = text.rfind('=', at);
+    if ((at == std::string::npos) || (equals == std::string::npos) || (equals == 0)) {
+        SPDLOG_WARN("SSB64_PORT_MENU_SET='{}' ignored: expected '<widget name>=<value>@<menu update>', "
+                    "e.g. 'BGM Volume=50@300'",
+                    text);
+        return std::nullopt;
+    }
+    try {
+        return TestMenuSet{ text.substr(0, equals), std::stoi(text.substr(equals + 1, at - equals - 1)),
+                            static_cast<uint32_t>(std::stoul(text.substr(at + 1))) };
+    } catch (const std::exception &) {
+        SPDLOG_WARN("SSB64_PORT_MENU_SET='{}' ignored: the value and the update must be integers", text);
+        return std::nullopt;
+    }
 }
 
 } // namespace
@@ -2254,8 +2290,51 @@ void PortMenu::InitElement() {
     };
 }
 
+WidgetInfo *PortMenu::FindWidgetByName(const std::string &name) {
+    for (auto &[label, entry] : menuEntries) {
+        for (auto &[sidebarName, sidebar] : entry.sidebars) {
+            for (auto &column : sidebar.columnWidgets) {
+                for (auto &widget : column) {
+                    if (widget.name == name) {
+                        return &widget;
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * Test hook: SSB64_PORT_MENU_SET sets the CVar of a checkbox, combobox or int slider at the given menu update (one
+ * per rendered frame, menu open or not) and runs the widget callback, as a change through the widget does. The CVar
+ * is not saved, so the run leaves BattleShip.cfg.json alone.
+ */
+void PortMenu::ApplyTestMenuSet() {
+    static const std::optional<TestMenuSet> request = ParseTestMenuSet();
+    mUpdateCount++;
+    if (!request.has_value() || (mUpdateCount != request->update)) {
+        return;
+    }
+    WidgetInfo *widget = FindWidgetByName(request->name);
+    const bool isIntWidget = (widget != nullptr) && ((widget->type == WIDGET_CVAR_SLIDER_INT) ||
+                                                     (widget->type == WIDGET_CVAR_COMBOBOX) ||
+                                                     (widget->type == WIDGET_CVAR_CHECKBOX));
+    if (!isIntWidget || (widget->cVar == nullptr)) {
+        SPDLOG_WARN("SSB64_PORT_MENU_SET: no checkbox, combobox or int slider named '{}'", request->name);
+        return;
+    }
+    CVarSetInteger(widget->cVar, request->value);
+    if (widget->callback != nullptr) {
+        widget->callback(*widget);
+    }
+    port_log("SSB64_PORT_MENU_SET: '%s' (%s) = %d at menu update %u\n", request->name.c_str(), widget->cVar,
+             request->value, mUpdateCount);
+}
+
 void PortMenu::UpdateElement() {
     Ship::Menu::UpdateElement();
+    ApplyTestMenuSet();
 #ifdef REGION_REMIX
     const bool visible = IsVisible();
     if (mWasVisible && !visible) {

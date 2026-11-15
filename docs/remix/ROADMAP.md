@@ -587,6 +587,9 @@ The asm is the reference, except where it is itself wrong: an asm bug, a missing
     - RANDOM token (0x1B set from gdb before START) on the VS, 1P and Training CSS: VANILLA gives ids up to Ness (10,
       4, 10, 7, 11, 10), INCLUDE BONUS gives bonus ids (65), and a 7-frame later START changes the fighter.
     - Combo meter in 1P: set up once, its update ran 2636 times.
+    - BGM Volume through its menu widget (`SSB64_PORT_MENU_SET="BGM Volume=60@400"` on the VS mode menu, music
+      off at start): with Play Music turned ON from gdb the widget callback restarted track 71; with it still OFF
+      nothing played.
     - Settings close through `PortMenu::UpdateElement` (menu opened with `SSB64_PORT_MENU_OPEN`, hidden from gdb):
       the hook ran, Play Music OFF stopped track 71, and Play Music ON restarted it from silence.
     - Camera BONUS on Planet Zebes: the default and Zebes slots hold the Mushroom Kingdom routine, which the camera

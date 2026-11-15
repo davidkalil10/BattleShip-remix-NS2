@@ -61,8 +61,12 @@ class PortMenu : public Ship::Menu {
 #endif
 
   private:
+    void ApplyTestMenuSet();
+    WidgetInfo* FindWidgetByName(const std::string& name);
+
     bool mShowReextractMessage = false;
     bool mMenuElementsInitialized = false;
+    uint32_t mUpdateCount = 0;
 #ifdef REGION_REMIX
     bool mWasVisible = false;
     bool mUpdateNoticeShown = false;
