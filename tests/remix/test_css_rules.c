@@ -25,6 +25,20 @@ static void testCostumeButtonsInTeamsNeedASelectedFighterWithoutAHeldToken(void)
     CHECK_EQ(0, mnRemixCssCostumeButtonsActive(1, 0, 2));
 }
 
+static void testCostumeButtonKeepsTheTeamCostumeInATeamBattle(void)
+{
+    CHECK_EQ(2, mnRemixCssCostumeAfterButton(1, 2, 3));
+    CHECK_EQ(2, mnRemixCssCostumeAfterButton(1, 2, 0));
+    CHECK_EQ(3, mnRemixCssCostumeAfterButton(0, 2, 3));
+    CHECK_EQ(0, mnRemixCssCostumeAfterButton(0, 4, 0));
+}
+
+static void testRegionalFlagIsShiftedLeftOnTheVsScreenOnly(void)
+{
+    CHECK_EQ(-8, mnRemixCssFlagOffsetX(1));
+    CHECK_EQ(0, mnRemixCssFlagOffsetX(0));
+}
+
 static void testBonusBookendEdges(void)
 {
     CHECK_EQ(1, mnRemixCssBonusBookendContains(24, 44));
@@ -264,6 +278,8 @@ void remixTestCssRules(void)
 {
     RUN_TEST(testCostumeButtonsAlwaysWorkWithoutTeams);
     RUN_TEST(testCostumeButtonsInTeamsNeedASelectedFighterWithoutAHeldToken);
+    RUN_TEST(testCostumeButtonKeepsTheTeamCostumeInATeamBattle);
+    RUN_TEST(testRegionalFlagIsShiftedLeftOnTheVsScreenOnly);
     RUN_TEST(testBonusBookendEdges);
     RUN_TEST(testBonusStepWrapsAtBothEnds);
     RUN_TEST(testBonusHeldStepPrefersZ);

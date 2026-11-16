@@ -110,8 +110,10 @@ loads it.
 - `Costumes.asm select_` (`:621-643`): C right/left step the costume id through `0..num_costumes` with wrap (extra costumes of
   `extra_costumes_table` included), C up/down step the shade 0..2. A fighter with 0 costumes keeps costume 0 and still cycles
   the shade. The "costume already in use" denial is removed (`:1284-1304`).
-- `disable_update` (`:1051-1069`): in a team battle the C buttons change the costume only of a selected fighter whose token nobody
-  holds; the shade is kept in team battle.
+- `disable_update` (`:1051-1069`): in a team battle the C buttons are read only for a selected fighter whose token nobody holds.
+  There `select_` keeps the team costume (`:879-885`, the delay slot of the Sonic check reloads the current costume for every
+  fighter): C up/down step the shade, C left/right put it back to 0, and on Sonic C left/right only switch the Classic model (the
+  yellow team costume becomes 5 or 1, `:888-897`).
 - `cpu_costumes_` (`:1098-1103`): C buttons pressed with the cursor over a CPU panel change that CPU's costume (VS and Training).
 - `get_default_costume_` (`:1945-1985`) reads `Character.default_costume.table` for the C-button and team costume ids.
 - D-pad variants (`check_variant_input_`, `:2365-2390`): while a token is held, D-pad up/down/left/right set the variant slot of the
@@ -296,9 +298,16 @@ emblems and panels:
   ids, includes extra costumes, wraps), C up/down the shade; `mnRemixCostumeGetRandomLegal` rerolls (at most 64 tries, then 0) until
   `ftRemixPartImageIsLegalRandomCostume`. `mnRemixCostumeApplyPartImage` runs every frame on the panel fighter (idempotent, returns
   after three reads for a vanilla costume), so it covers every `ftParamInitAllParts` call.
-- C buttons in a team battle: `mnRemixCssCostumeButtonsActive`; `cpu_costumes_` is `mnPlayersVSGetCostumeButtonPanel` (VS).
+- C buttons in a team battle: `mnRemixCssCostumeButtonsActive` says when they are read and `mnRemixCssCostumeAfterButton` keeps the
+  team costume (only the shade and the Classic Sonic model change); `cpu_costumes_` is `mnPlayersVSGetCostumeButtonPanel` (VS).
 - Variants: `mnRemixVariantHandleInput` in the cursor update, `mnRemixCssIndicatorsUpdate` from the frame update of the four
-  screens draws the D-pad, icons, mark and J/E flag.
+  screens draws the D-pad, icons, mark and J/E flag. The flag sits 8 units left of the D-pad on the VS screen only
+  (`mnRemixCssFlagOffsetX`, `CharacterSelect.asm:5384-5398`); 1P, Training and Bonus draw it at the D-pad x.
+- Token hit test (`get_character_id_`, `:488-493`): the hook replaces the vanilla `+13 / +12` and tests the raw token position
+  against `START - TOKEN_OFFSET` (29, 35). The four screens add `MNREMIX_CSS_TOKEN_HIT_OFFSET_X/Y` (10, 9) before the grid and
+  bookend rectangles, which start at 39 and 44. The 12-Character Battle branch (`:509-521`) hands the raw position to
+  `TwelveCharBattle.get_character_id_`; `mnPlayersVSTwelveCBGetHoveredSlot` passes it with no offset to
+  `mnRemixTwelveCBLayoutSlotAtPoint` (grids from x 19 and 155, y 25 to 109).
 - Random: the L trigger (setting `'L' Selects Random Character`), the CPU pick and the Random bookend all go through
   `mnRemixRandomPickFighterKind`; the recent-randoms list is per port and survives the session. The bonus bookend (`mnremixcssbonus.c`)
   scrolls with Z/R and adds the bonus fighters to the pool when Random Select is not Default.
@@ -379,7 +388,8 @@ with the pure layout and Custom rules in `mnremixtwelvecblayout.c` and `mnremixt
 
 ## 5. Port: deviations from the asm
 
-- **Token centring** uses the cell centre (`cell + w/2 - 13`) instead of `START_X + 12`.
+- **Token centring** uses the cell centre (`cell + w/2 - 13`) instead of `START_X + 12`. This is the rest position only; the hit
+  test of a held token reads the same point as the asm (4.4).
 - **Overscan**: the port crops 10 units of overscan (`port/gui/PortMenu.cpp`, `.Overscan.Enabled`, default on), so a screenshot shows a
   sub-rectangle of the 320x240 frame: `px_x = (u_x - 10) * 4.267`, `px_y = (u_y - 10) * 4.364` for a 1280x960 capture.
 - **Model loading** is not the alternate req list; heap preloading and custom heap slots are not needed with a host heap.

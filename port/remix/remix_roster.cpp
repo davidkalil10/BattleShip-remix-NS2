@@ -430,6 +430,7 @@ bool bindKirbyCopyActions(const std::vector<uint8_t> &bytes)
 
     FighterDescriptor kirby = *vanilla;
     ftRemixBindKirbyActions(&kirby);
+    ftRemixBindKirbyCopyDescriptorHooks(&kirby);
     port_fighter_register(kKirbyFkind, &kirby);
     return true;
 }

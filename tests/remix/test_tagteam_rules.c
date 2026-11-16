@@ -107,6 +107,24 @@ static void testASwapIsNeededForAnotherCostumeOrShade(void)
     CHECK_EQ(1, gmRemixTagTeamRulesNeedsSwap(0x1F, 0, 1, 0, 0x1F, 0, 0, 0));
 }
 
+static void testAStolenStockIsTheLastCssSlotOfAManualPort(void)
+{
+    CHECK_EQ(1, gmRemixTagTeamRulesStealSlot(1, 0, 0, QUEUE_MAX));
+    CHECK_EQ(0, gmRemixTagTeamRulesStealSlot(1, 0, 1, QUEUE_MAX));
+}
+
+static void testAStolenStockOfALastPortCountsTheSkippedSlots(void)
+{
+    CHECK_EQ(3, gmRemixTagTeamRulesStealSlot(1, 2, 0, QUEUE_MAX));
+    CHECK_EQ(2, gmRemixTagTeamRulesStealSlot(1, 2, 1, QUEUE_MAX));
+}
+
+static void testAStolenStockIsClampedToTheQueue(void)
+{
+    CHECK_EQ(QUEUE_MAX - 1, gmRemixTagTeamRulesStealSlot(10, 0, 0, QUEUE_MAX));
+    CHECK_EQ(0, gmRemixTagTeamRulesStealSlot(1, 0, 4, QUEUE_MAX));
+}
+
 void remixTestTagTeamRules(void)
 {
     printf("tag team rules\n");
@@ -119,6 +137,9 @@ void remixTestTagTeamRules(void)
     RUN_TEST(testTheQueueIndexFollowsTheInitialStockCount);
     RUN_TEST(testManualStockCountStartsAtTheFirstSlot);
     RUN_TEST(testStolenStocksAndSkippedStocksMoveTheQueueIndex);
+    RUN_TEST(testAStolenStockIsTheLastCssSlotOfAManualPort);
+    RUN_TEST(testAStolenStockOfALastPortCountsTheSkippedSlots);
+    RUN_TEST(testAStolenStockIsClampedToTheQueue);
     RUN_TEST(testTheShadeCountsEarlierTeammatesWithTheSameFighter);
     RUN_TEST(testTheRightmostIconIsTheCurrentFighter);
     RUN_TEST(testTheLeftmostIconIsTheLastCharacterOfTheQueue);

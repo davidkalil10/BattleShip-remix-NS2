@@ -70,6 +70,23 @@ static void testSpawnFollowsThePortUnlessChosen(void)
     CHECK_EQ(1, sc1PTrainingPortRulesSpawnPort(9, 1));
 }
 
+static void testThePortThatHasTheMenuIsAskedFirstThenTheOthersInOrder(void)
+{
+    const uint16_t start = 0x1000;
+    const uint16_t b = 0x4000;
+    const uint16_t nobody[SC1PTRAININGPORTRULES_PORT_COUNT] = { 0, 0, 0, 0 };
+    const uint16_t second[SC1PTRAININGPORTRULES_PORT_COUNT] = { 0, start, 0, 0 };
+    const uint16_t first_and_last[SC1PTRAININGPORTRULES_PORT_COUNT] = { start, 0, 0, b };
+
+    CHECK_EQ(-1, sc1PTrainingPortRulesFindPressingPort(nobody, 0, start));
+    CHECK_EQ(1, sc1PTrainingPortRulesFindPressingPort(second, 0, start));
+    CHECK_EQ(1, sc1PTrainingPortRulesFindPressingPort(second, 2, start));
+    CHECK_EQ(-1, sc1PTrainingPortRulesFindPressingPort(second, 0, b));
+    CHECK_EQ(0, sc1PTrainingPortRulesFindPressingPort(first_and_last, 0, start | b));
+    CHECK_EQ(3, sc1PTrainingPortRulesFindPressingPort(first_and_last, 1, start | b));
+    CHECK_EQ(3, sc1PTrainingPortRulesFindPressingPort(first_and_last, 3, start | b));
+}
+
 void remixTestTrainingPortRules(void)
 {
     printf("training per-port chain rules\n");
@@ -81,4 +98,5 @@ void remixTestTrainingPortRules(void)
     RUN_TEST(testCountsPerType);
     RUN_TEST(testPickKeepsTheAutoValueForEntryZero);
     RUN_TEST(testSpawnFollowsThePortUnlessChosen);
+    RUN_TEST(testThePortThatHasTheMenuIsAskedFirstThenTheOthersInOrder);
 }

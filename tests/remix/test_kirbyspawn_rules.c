@@ -1,7 +1,8 @@
 /**
  * test_kirbyspawn_rules.c - unit tests of the CSS Kirby Hat rules (ft/ftremix/ftremixkirbyspawnrules.c): the fighter behind each
- * panel value (KirbyHats.asm spawn_with_table_), the magic hat and taunt_loses_power flags a spawn sets (Size.asm 358-381) and
- * the weapon part offsets of the hats with a weapon (KirbyHats.asm use_extended_special_parts_pause_).
+ * panel value (KirbyHats.asm spawn_with_table_), the magic hat and taunt_loses_power flags a spawn sets (Size.asm 358-381),
+ * the power an inhaled Kirby passes on (KirbyHats.asm set_absorbed_hat_) and the weapon part offsets of the hats with a
+ * weapon (KirbyHats.asm use_extended_special_parts_pause_).
  */
 
 #include "test_check.h"
@@ -76,6 +77,25 @@ static void testPowerIsLostOnlyWithNoHatChosen(void)
     CHECK_TRUE(!ftRemixKirbySpawnTauntLosesPower(FTREMIX_KIRBYSPAWN_PANEL_RANDOM));
 }
 
+static void testInhaledKirbyWithTheMagicHatGivesTheMagicPower(void)
+{
+    CHECK_EQ(REMIX_ID_NONE, ftRemixKirbySpawnStolenPower(REMIX_ID_KIRBY, 1, REMIX_ID_FOX));
+    CHECK_EQ(REMIX_ID_NONE, ftRemixKirbySpawnStolenPower(REMIX_ID_JKIRBY, 1, REMIX_ID_FOX));
+}
+
+static void testInhaledKirbyWithoutTheMagicHatGivesItsCopy(void)
+{
+    CHECK_EQ(REMIX_ID_FOX, ftRemixKirbySpawnStolenPower(REMIX_ID_KIRBY, 0, REMIX_ID_FOX));
+    CHECK_EQ(REMIX_ID_KIRBY, ftRemixKirbySpawnStolenPower(REMIX_ID_JKIRBY, 0, REMIX_ID_KIRBY));
+}
+
+static void testInhaledPolygonKirbyAlwaysGivesItsCopy(void)
+{
+    CHECK_EQ(REMIX_ID_FOX, ftRemixKirbySpawnStolenPower(REMIX_ID_NKIRBY, 1, REMIX_ID_FOX));
+    CHECK_EQ(REMIX_ID_FOX, ftRemixKirbySpawnStolenPower(REMIX_ID_NKIRBY, 0, REMIX_ID_FOX));
+    CHECK_EQ(REMIX_ID_NONE, ftRemixKirbySpawnStolenPower(REMIX_ID_NKIRBY, 1, REMIX_ID_NONE));
+}
+
 static void testGunHatsHaveTheirModelFileOffsets(void)
 {
     CHECK_EQ(0x1D830u, ftRemixKirbyGunHatOffset(0x1A));
@@ -108,6 +128,9 @@ void remixTestKirbySpawnRules(void)
     RUN_TEST(testMagicHatStartsOnForTheMagicPowerOrThePanel);
     RUN_TEST(testMagicHatStaysOffOtherwise);
     RUN_TEST(testPowerIsLostOnlyWithNoHatChosen);
+    RUN_TEST(testInhaledKirbyWithTheMagicHatGivesTheMagicPower);
+    RUN_TEST(testInhaledKirbyWithoutTheMagicHatGivesItsCopy);
+    RUN_TEST(testInhaledPolygonKirbyAlwaysGivesItsCopy);
     RUN_TEST(testGunHatsHaveTheirModelFileOffsets);
     RUN_TEST(testHatsWithoutAWeaponHaveNoOffset);
 }

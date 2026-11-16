@@ -24,6 +24,20 @@ static void testOtherModesKeepTheirOwnFlow(void)
     CHECK_EQ(0, sc1PRemixModeLeavesBonusCSSFor1P(SC1PREMIX_MODE_COUNT));
 }
 
+/* _initial_screen_set: every Remix 1P mode but Remix 1P gets the screen 0x77 */
+static void testRemixModesScreenIsEveryRemixModeButRemix1P(void)
+{
+    CHECK_TRUE(sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_BONUS3));
+    CHECK_TRUE(sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_MULTIMAN));
+    CHECK_TRUE(sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_CRUEL));
+    CHECK_TRUE(sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_ALLSTAR));
+    CHECK_TRUE(sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_HRC));
+    CHECK_EQ(0, sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_STANDARD));
+    CHECK_EQ(0, sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_REMIX_1P));
+    CHECK_EQ(0, sc1PRemixModeRunsOnRemixModesScreen(-1));
+    CHECK_EQ(0, sc1PRemixModeRunsOnRemixModesScreen(SC1PREMIX_MODE_COUNT));
+}
+
 static void testSeedAdvanceIsOneToSixtyFourByFrameCount(void)
 {
     CHECK_EQ(1, (int)sc1PRemixModeSeedAdvanceCount(0));
@@ -125,11 +139,29 @@ static void testMasterHandSlotNeedsTheCpuPlayerKind(void)
     CHECK_EQ(0, sc1PRemixSlotIsCpuMasterHand(1, 0));
 }
 
+static void testMenuEdgeWaitFollowsTheDirectionOfTheMove(void)
+{
+    CHECK_EQ(1, sc1PRemixModeMenuAddsEdgeWait(1, 5, 5));
+    CHECK_EQ(1, sc1PRemixModeMenuAddsEdgeWait(-1, 0, 5));
+    CHECK_EQ(1, sc1PRemixModeMenuAddsEdgeWait(1, 4, 4));
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(1, 3, 5));
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(-1, 2, 5));
+}
+
+static void testMenuWrapAddsNoEdgeWait(void)
+{
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(1, 0, 5));
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(-1, 5, 5));
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(1, 0, 4));
+    CHECK_EQ(0, sc1PRemixModeMenuAddsEdgeWait(-1, 4, 4));
+}
+
 void remixTest1PModeRules(void)
 {
     printf("1p mode rules\n");
     RUN_TEST(testBonusModesLeaveTheBonusCSSFor1P);
     RUN_TEST(testOtherModesKeepTheirOwnFlow);
+    RUN_TEST(testRemixModesScreenIsEveryRemixModeButRemix1P);
     RUN_TEST(testSeedAdvanceIsOneToSixtyFourByFrameCount);
     RUN_TEST(testHordeModesAreMultimanAndCruelOnly);
     RUN_TEST(testHandicapsFollowTheAsmKnockbackRatios);
@@ -140,4 +172,6 @@ void remixTest1PModeRules(void)
     RUN_TEST(testBonusStartCheerIsSkippedOnlyWhenTheToggleIsBonus);
     RUN_TEST(testBonusStartCheerFollowsThePreviousScreen);
     RUN_TEST(testMasterHandSlotNeedsTheCpuPlayerKind);
+    RUN_TEST(testMenuEdgeWaitFollowsTheDirectionOfTheMove);
+    RUN_TEST(testMenuWrapAddsNoEdgeWait);
 }

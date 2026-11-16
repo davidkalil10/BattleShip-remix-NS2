@@ -1,6 +1,7 @@
 /**
  * test_varianttune_rules.c - unit tests of the small per-fighter tuning rules (ft/ftremix/ftremixvarianttunerules.c): JDK Spinning
- * Kong, J Falcon Falcon Dive drift, Peppy Firefox pitch and the entry facing of Sonic.asm sonic_facing_.
+ * Kong, J Falcon Falcon Dive drift, Peppy Firefox pitch, the entry facing of Sonic.asm sonic_facing_, J Link's Spin Attack landing lag and the reflect
+ * speed of Wolf and Slippy.
  */
 
 #include "test_check.h"
@@ -62,6 +63,27 @@ static void testOtherRemixFightersClearTheEntryFacing(void)
     CHECK_TRUE(!ftRemixVariantTuneRulesEntryKeepsFacing(REMIX_ID_LANKY));
 }
 
+static void testJLinkSpinAttackLandingLagIsThreeQuarters(void)
+{
+    CHECK_EQ(75, (int)(ftRemixVariantTuneRulesSpinAttackLandingLag(REMIX_ID_JLINK, 0.65F) * 100.0F));
+    CHECK_EQ(65, (int)(ftRemixVariantTuneRulesSpinAttackLandingLag(REMIX_ID_LINK, 0.65F) * 100.0F + 0.5F));
+    CHECK_EQ(65, (int)(ftRemixVariantTuneRulesSpinAttackLandingLag(REMIX_ID_ELINK, 0.65F) * 100.0F + 0.5F));
+}
+
+static void testWolfDoublesAndSlippyCutsTheReflectedSpeed(void)
+{
+    CHECK_EQ(200000, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_WOLF) * 100000.0F));
+    CHECK_EQ(40625, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_SLIPPY) * 100000.0F));
+}
+
+static void testOtherReflectorsKeepTheReflectedSpeed(void)
+{
+    CHECK_EQ(100000, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_FOX) * 100000.0F));
+    CHECK_EQ(100000, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_FALCO) * 100000.0F));
+    CHECK_EQ(100000, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_PEPPY) * 100000.0F));
+    CHECK_EQ(100000, (int)(ftRemixVariantTuneRulesReflectSpeedMul(REMIX_ID_JFOX) * 100000.0F));
+}
+
 void remixTestVariantTuneRules(void)
 {
     printf("variant tune rules\n");
@@ -73,4 +95,7 @@ void remixTestVariantTuneRules(void)
     RUN_TEST(testPolygonFightersKeepTheEntryFacing);
     RUN_TEST(testSonicAndSuperSonicKeepTheEntryFacing);
     RUN_TEST(testOtherRemixFightersClearTheEntryFacing);
+    RUN_TEST(testJLinkSpinAttackLandingLagIsThreeQuarters);
+    RUN_TEST(testWolfDoublesAndSlippyCutsTheReflectedSpeed);
+    RUN_TEST(testOtherReflectorsKeepTheReflectedSpeed);
 }

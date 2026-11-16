@@ -86,11 +86,19 @@ static void testTimerMovesDownWithTheDragonKingHud(void)
 
 static void testCreditsPlayTheFighterSongOnlyInRemix1PAndAllStar(void)
 {
-    CHECK_TRUE(sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_REMIX_1P));
-    CHECK_TRUE(sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_ALLSTAR));
-    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_STANDARD));
-    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_BONUS3));
-    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_HRC));
+    CHECK_TRUE(sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_REMIX_1P, 0));
+    CHECK_TRUE(sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_ALLSTAR, 0));
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_STANDARD, 0));
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_BONUS3, 0));
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_HRC, 0));
+}
+
+/* remix_1P_ending_song: the credits entered from the settings screen (0x39) play the standard song whatever mode is stored */
+static void testCreditsOpenedFromTheMenuKeepTheStandardSong(void)
+{
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_REMIX_1P, 1));
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_ALLSTAR, 1));
+    CHECK_EQ(0, sc1PRemixEndingUsesFighterSong(SC1PREMIX_MODE_STANDARD, 1));
 }
 
 static void testZeroTableEntryKeepsTheStandardCreditsSong(void)
@@ -180,6 +188,7 @@ void remixTest1PLeftoverRules(void)
     RUN_TEST(testKoRecordChecksOnlyTheSwitch);
     RUN_TEST(testTimerMovesDownWithTheDragonKingHud);
     RUN_TEST(testCreditsPlayTheFighterSongOnlyInRemix1PAndAllStar);
+    RUN_TEST(testCreditsOpenedFromTheMenuKeepTheStandardSong);
     RUN_TEST(testZeroTableEntryKeepsTheStandardCreditsSong);
     RUN_TEST(testRestAreaShowsTheFightersLeft);
     RUN_TEST(testRestAreaIconsFillTenToARow);

@@ -20,7 +20,7 @@ Tests: `tests/remix/test_stamina_rules.c` (`gmremixstaminarules.c`: total HP, HP
 - Knockback is always computed as if the victim were at 20% (the four `stamina_knockback_*` patches; the throw patch overrides the sum for every caller).
 - Results use the Timed Stock stock score (`TimedStock.asm` `score_fix_`): `((initial stocks - falls + 1) << 12) - final damage` (see `modes_base.md`).
 - Consumers outside the file: `Poison.asm` (poison damage is clamped to the HP and skips a defeated fighter), `SpecialZoom.asm` (no special zoom in
-  Stamina), `Size.asm` (`stamina_armor_fix_` zeroes passive armor once the HP is gone), `css/PoisonDmg.asm`, `AirDodge.asm` (the air dash array is reset
+  Stamina), `Size.asm` (`stamina_armor_fix_`: on the hit that takes the last HP the status and passive armor are 0 and the crouch discount is lost), `css/PoisonDmg.asm`, `AirDodge.asm` (the air dash array is reset
   by `action_hit_crash_prevent`), `PokemonAnnouncer.asm` (`stamina_fix_2` calls `pokemon_ko_sounds_`).
 - `percent_port[4]` marks a port as already defeated (cleared by `percent_port_refresh` at match start).
 
@@ -63,9 +63,9 @@ Tests: `tests/remix/test_stamina_rules.c` (`gmremixstaminarules.c`: total HP, HP
 | `stamina_down_*`, `stamina_ledge` | `ftRemixStaminaDownBlocked`, `ftRemixStaminaLedgeBlocked` (`ftremixstaminadown.c`) in `ftcommondownwaitbounce.c` and `ftcommoncliffcatchwait.c` |
 | `stamina_invis_prevent`, `egg_crash_prevent` | `ftRemixStaminaSkipsInvisible`, `ftRemixStaminaSkipsDeadWaitInit` (`ftremixstaminaguard.c`) in `ftCommonDeadInitStatusVars` |
 | `stamina_ko_prevent(_front)`, `stamina_fix_6/7` | `ftRemixStaminaIsOutOfStock`, `ftRemixStaminaIsBlastRedeath`, `ftRemixStaminaRebirthSleeps` (`ftremixstaminadead.c`) in `ftcommondead.c`; a second death sends the fighter to sleep (`ftCommonSleepSetStatus`) |
-| `stamina_armor_fix_` | `ftRemixStaminaArmorIsZeroed` used by `ftRemixSizePassiveArmor` (`ftremixsizebody.c`) |
+| `stamina_armor_fix_` | `ftRemixStaminaKnockbackAfterArmor` (`ftremixstaminaguard.c`, rule `gmRemixStaminaRulesKnockbackAfterArmor`) in `ftMainProcParams`: on the lethal hit (`ftRemixStaminaArmorIsZeroed`) the knockback is the one read before the 2/3 of a crouching fighter and no armor is subtracted, because the asm returns to 0x800E632C past the reload of `f0` with `f2 = f12 = 0` |
 | Poison, SpecialZoom | `ftRemixPoisonDamage`, `ftRemixPoisonCanDamage`, `ftRemixPoisonPanelDamage/TryApply` (`ftremixpoison.c`) and `ftRemixSpecialZoomFinalKnockback` (`gmremixspecialzoom.c`) |
-| `stamina_display_`, `stamina_dark_` | `ifRemixStaminaDisplayValue` and `ifRemixStaminaDamageRatio` (`ifremixstaminahud.c`) in `ifcommon.c` (damage digits and darkening); sprites, not text |
+| `stamina_display_`, `stamina_dark_`, `stamina_dark_fix_2` | `ifRemixStaminaDisplayValue` and `ifRemixStaminaDamageRatio` (`ifremixstaminahud.c`) in `ifcommon.c` (damage digits and darkening); sprites, not text; the pop and flash stay vanilla (deviation below) |
 
 ### Menu and CSS
 
@@ -93,6 +93,13 @@ HP steps: `mnRemixVSStaminaStepHP` moves 1 below 10, 10 from 10 to 990 and 1 abo
 - **Armor.** Only the passive armor guard is ported; the asm also erases the passive and Yoshi armor words (`0x7E4`, `0x7E8`) on the KO.
 - **Defeated fighter.** It goes to the Sleep status (`ftCommonSleepSetStatus`) instead of losing control.
 - **Input type in the HP picker.** One step rule for both screens (above).
+- **HUD pop and flash.** `stamina_dark_` (Stamina.asm 65-101) stores the darkness `round(damage * 300 / HP)` in the `.damage` word that the next frame
+  subtracts from the damage to size the pop, so with 200 HP most hits give no pop and no white flash (`stamina_dark_fix_2`, 141-181, only rescales it
+  above 300 HP). The port keeps the real damage there and applies the ratio when it picks the colour, so every hit pops and flashes as in vanilla
+  (`deviations.md` 5.3, owner policy 2026-11-15).
+- **Remix modes.** Every Remix mode's `before_css_setup_` writes a `game_mode` other than 5 and `VsRemixMenu.asm` puts the menu value back on the way
+  out, so Stamina never runs in Tag Team, Tug of War or the other modes. `gmRemixModeBeforeCSS` clears `gGMRemixStaminaRule` and
+  `gmRemixModeLeaveCSS` restores it with the other vanilla settings (`gmremixmodecss.c`).
 
 Audit ledger (every item closed): `docs/remix/patch_audit.md`, group g8.
 

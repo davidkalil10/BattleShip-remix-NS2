@@ -238,7 +238,8 @@ static void testWinnerMustKeepThePortraitHeWonWith(void)
     CHECK_EQ(-1, gmRemixTwelveCBGetWinnerPortraitOf(&state, 2));
 }
 
-static void testNoWinnerPortraitOnceTheBattleIsOver(void)
+/* TwelveCharBattle.asm 2897-2910 and 1317-1322 only test "not started": the lock also holds once the battle is complete. */
+static void testWinnerKeepsHisPortraitOnceTheBattleIsOver(void)
 {
     GMRemixTwelveCBState state;
     int32_t ko;
@@ -251,7 +252,14 @@ static void testNoWinnerPortraitOnceTheBattleIsOver(void)
         gmRemixTwelveCBRecordKo(&state, 1, -1);
     }
     CHECK_EQ(GMREMIX_TWELVECB_STATUS_COMPLETE, state.status);
-    CHECK_EQ(-1, gmRemixTwelveCBGetWinnerPortraitOf(&state, 0));
+    CHECK_EQ(5, gmRemixTwelveCBGetWinnerPortraitOf(&state, 0));
+    CHECK_EQ(-1, gmRemixTwelveCBGetWinnerPortraitOf(&state, 1));
+}
+
+static void testOnlyTheTwoPlayersMayPauseATwelveCharacterBattle(void)
+{
+    CHECK_EQ(2, gmRemixTwelveCBGetPausePortCount(1, 4));
+    CHECK_EQ(4, gmRemixTwelveCBGetPausePortCount(0, 4));
 }
 
 static void testUndoGameReturnsTheStocksLostThisGame(void)
@@ -423,7 +431,8 @@ void remixTestTwelveCBRules(void)
     RUN_TEST(testBestCharacterIsUnsetBeforeTheBattleStarts);
     RUN_TEST(testGameRecordsStopAtTheLimitInsteadOfOverrunning);
     RUN_TEST(testWinnerMustKeepThePortraitHeWonWith);
-    RUN_TEST(testNoWinnerPortraitOnceTheBattleIsOver);
+    RUN_TEST(testWinnerKeepsHisPortraitOnceTheBattleIsOver);
+    RUN_TEST(testOnlyTheTwoPlayersMayPauseATwelveCharacterBattle);
     RUN_TEST(testUndoGameReturnsTheStocksLostThisGame);
     RUN_TEST(testUndoGameCountsAPlayerThatLostEveryStock);
     RUN_TEST(testUndoGameKeepsTheEarlierGamesAndTheStatus);

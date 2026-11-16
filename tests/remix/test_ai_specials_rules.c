@@ -122,6 +122,25 @@ static void testPeppyUsesItsOwnActionIds(void)
     CHECK_EQ(FTREMIX_AI_SPECIALS_NEEDLE_PRESS, ftRemixAiSpecialsNeedleChargeOutcome(0, 0x0EB, 2));
 }
 
+/* AI.asm _end_0x80136BF8 returns 0: only the B press makes ftComputerCheckTryChargeSpecialN return TRUE. */
+static void testOnlyThePressOutcomeReturnsTrue(void)
+{
+    CHECK_TRUE(ftRemixAiSpecialsNeedleChargeReturnsTrue(FTREMIX_AI_SPECIALS_NEEDLE_PRESS));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(FTREMIX_AI_SPECIALS_NEEDLE_KEEP));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(FTREMIX_AI_SPECIALS_NEEDLE_STOP));
+}
+
+static void testSheikAndPeppyChargeActionsReturnFalse(void)
+{
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(1, 0x0EA, 0)));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(1, 0x0ED, 0)));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(1, 0x0EB, 6)));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(0, 0x0E1, 0)));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(0, 0x0EE, 0)));
+    CHECK_EQ(0, ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(0, 0x0E2, 3)));
+    CHECK_TRUE(ftRemixAiSpecialsNeedleChargeReturnsTrue(ftRemixAiSpecialsNeedleChargeOutcome(1, 0x00A, 5)));
+}
+
 static void testChargeShotActiveForSheikMewtwoAndDSamus(void)
 {
     CHECK_TRUE(ftRemixAiSpecialsChargeShotActive(0x3E, 0x0EA));
@@ -153,6 +172,8 @@ void remixTestAiSpecialsRules(void)
     RUN_TEST(testSheikPressesBelowFullAmmo);
     RUN_TEST(testSheikFallsThroughToPeppyActionChecks);
     RUN_TEST(testPeppyUsesItsOwnActionIds);
+    RUN_TEST(testOnlyThePressOutcomeReturnsTrue);
+    RUN_TEST(testSheikAndPeppyChargeActionsReturnFalse);
     RUN_TEST(testChargeShotActiveForSheikMewtwoAndDSamus);
     RUN_TEST(testSamusActionListCoversTheSamusLikeFighters);
     RUN_TEST(testDSamusChargeShotCancels);

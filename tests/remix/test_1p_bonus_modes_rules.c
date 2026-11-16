@@ -135,6 +135,30 @@ static void testArrowPressUsesThePaddingOnTheSideFacingTheOtherArrow(void)
     CHECK_EQ(0, mnRemixBonusModesToggleArrowHit(284, 168, 280, 157, 8, 10, 1));
 }
 
+static void testBothStageArrowsTakeThePaddingOnTheLeft(void)
+{
+    CHECK_TRUE(mnRemixBonusModesStageArrowHit(204, 180, 212, 176, 7, 11));
+    CHECK_TRUE(mnRemixBonusModesStageArrowHit(219, 180, 212, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(203, 180, 212, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(220, 180, 212, 176, 7, 11));
+
+    CHECK_TRUE(mnRemixBonusModesStageArrowHit(272, 180, 280, 176, 7, 11));
+    CHECK_TRUE(mnRemixBonusModesStageArrowHit(287, 180, 280, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(271, 180, 280, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(288, 180, 280, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(284, 175, 280, 176, 7, 11));
+    CHECK_EQ(0, mnRemixBonusModesStageArrowHit(284, 188, 280, 176, 7, 11));
+}
+
+static void testStageRowShowsOnlyOnBonus1And2WithTheRemixChoice(void)
+{
+    CHECK_TRUE(mnRemixBonusModesStageRowIsShown(SC1PREMIX_MODE_STANDARD, 1));
+    CHECK_EQ(0, mnRemixBonusModesStageRowIsShown(SC1PREMIX_MODE_STANDARD, 0));
+    CHECK_EQ(0, mnRemixBonusModesStageRowIsShown(SC1PREMIX_MODE_BONUS3, 1));
+    CHECK_EQ(0, mnRemixBonusModesStageRowIsShown(SC1PREMIX_MODE_BONUS3, 0));
+    CHECK_EQ(0, mnRemixBonusModesStageRowIsShown(SC1PREMIX_MODE_HRC, 1));
+}
+
 void remixTest1PBonusModesRules(void)
 {
     printf("1p bonus modes rules\n");
@@ -151,4 +175,6 @@ void remixTest1PBonusModesRules(void)
     RUN_TEST(testOnlyTheArrowsThatCanMoveExist);
     RUN_TEST(testArrowsBlinkElevenFramesOfTwenty);
     RUN_TEST(testArrowPressUsesThePaddingOnTheSideFacingTheOtherArrow);
+    RUN_TEST(testBothStageArrowsTakeThePaddingOnTheLeft);
+    RUN_TEST(testStageRowShowsOnlyOnBonus1And2WithTheRemixChoice);
 }

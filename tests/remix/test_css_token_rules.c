@@ -277,6 +277,24 @@ static void testUnpluggedPlayerBacksOutWithBFromAnyPort(void)
     CHECK_EQ(1, mnRemixCssUnplugRulesBackTapped(1, 0x4000, taps, 4, 0x4000));
 }
 
+/* get_character_id_ reads the raw token position: the bonus bookend is x 14 to 28, the Random one x 269 to 283, both y 35 to 106. */
+static void testTokenHitPointPutsTheBookendsAtTheRawAsmPositions(void)
+{
+    int hit_x = MNREMIX_CSS_TOKEN_HIT_OFFSET_X;
+    int hit_y = MNREMIX_CSS_TOKEN_HIT_OFFSET_Y;
+
+    CHECK_EQ(0, mnRemixCssBonusBookendContains(13 + hit_x, 35 + hit_y));
+    CHECK_EQ(1, mnRemixCssBonusBookendContains(14 + hit_x, 35 + hit_y));
+    CHECK_EQ(1, mnRemixCssBonusBookendContains(28 + hit_x, 106 + hit_y));
+    CHECK_EQ(0, mnRemixCssBonusBookendContains(29 + hit_x, 35 + hit_y));
+    CHECK_EQ(0, mnRemixCssBonusBookendContains(14 + hit_x, 34 + hit_y));
+    CHECK_EQ(0, mnRemixCssBonusBookendContains(14 + hit_x, 107 + hit_y));
+    CHECK_EQ(0, mnRemixCssRandomBookendContains(268 + hit_x, 35 + hit_y));
+    CHECK_EQ(1, mnRemixCssRandomBookendContains(269 + hit_x, 35 + hit_y));
+    CHECK_EQ(1, mnRemixCssRandomBookendContains(283 + hit_x, 106 + hit_y));
+    CHECK_EQ(0, mnRemixCssRandomBookendContains(284 + hit_x, 35 + hit_y));
+}
+
 void remixTestCssTokenRules(void)
 {
     RUN_TEST(testGridTokenRestsAtStartXPlus12AndStartYPlus14);
@@ -285,6 +303,7 @@ void remixTestCssTokenRules(void)
     RUN_TEST(testGridEdgeBoxIsA24PixelCellFromStartXPlus12);
     RUN_TEST(testBookendEdgeBoxesAre15By72);
     RUN_TEST(testHeldTokenFollowsTheHandAt12AndMinus10);
+    RUN_TEST(testTokenHitPointPutsTheBookendsAtTheRawAsmPositions);
     RUN_TEST(testCursorReachesY212AndOverlapRadiusIs10);
     RUN_TEST(testDefaultStockRangeStepsAndWrapsBetween1And99);
     RUN_TEST(testDefaultStockRangeHonoursAScreenLimit);

@@ -55,6 +55,35 @@ static void testBufferCountsDownAndStopsAtZero(void)
     CHECK_EQ(0, mnRemixVSStatsRulesTickBuffer(0));
 }
 
+static void testPageOneRowsCountThePortsTheTotalsAndTheComboRows(void)
+{
+    CHECK_EQ(5, mnRemixVSStatsRulesPageOneRows(2, 0));
+    CHECK_EQ(7, mnRemixVSStatsRulesPageOneRows(4, 0));
+    CHECK_EQ(9, mnRemixVSStatsRulesPageOneRows(2, 1));
+    CHECK_EQ(13, mnRemixVSStatsRulesPageOneRows(4, 1));
+}
+
+static void testScreenRowsAddPageTwoOnlyWithTheComboMeterOn(void)
+{
+    CHECK_EQ(19, mnRemixVSStatsRulesScreenRows(2, 1));
+    CHECK_EQ(21, mnRemixVSStatsRulesScreenRows(3, 1));
+    CHECK_EQ(5, mnRemixVSStatsRulesScreenRows(2, 0));
+    CHECK_EQ(6, mnRemixVSStatsRulesScreenRows(3, 0));
+}
+
+static void testStripeFlipsOncePerRowAndCarriesToTheNextScreen(void)
+{
+    int second_screen = mnRemixVSStatsRulesStripeAfterRows(0, mnRemixVSStatsRulesScreenRows(2, 1));
+    int third_screen = mnRemixVSStatsRulesStripeAfterRows(second_screen, mnRemixVSStatsRulesScreenRows(2, 1));
+
+    CHECK_EQ(1, mnRemixVSStatsRulesStripeAfterRows(0, 1));
+    CHECK_EQ(0, mnRemixVSStatsRulesStripeAfterRows(0, 2));
+    CHECK_EQ(0, mnRemixVSStatsRulesStripeAfterRows(1, 9));
+    CHECK_EQ(1, second_screen);
+    CHECK_EQ(0, third_screen);
+    CHECK_EQ(0, mnRemixVSStatsRulesStripeAfterRows(0, mnRemixVSStatsRulesScreenRows(3, 0)));
+}
+
 void remixTestVsStatsRules(void)
 {
     printf("vs stats rules\n");
@@ -65,4 +94,7 @@ void remixTestVsStatsRules(void)
     RUN_TEST(testNextPageWrapsAfterTheLastPage);
     RUN_TEST(testPromptRevealsBeforeTheExitWaitEnds);
     RUN_TEST(testBufferCountsDownAndStopsAtZero);
+    RUN_TEST(testPageOneRowsCountThePortsTheTotalsAndTheComboRows);
+    RUN_TEST(testScreenRowsAddPageTwoOnlyWithTheComboMeterOn);
+    RUN_TEST(testStripeFlipsOncePerRowAndCarriesToTheNextScreen);
 }

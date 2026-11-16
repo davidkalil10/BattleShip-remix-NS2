@@ -58,8 +58,8 @@ Classes (`Stages.asm:516-523`): `BATTLE` 0, `RTTF` 1, `BTP` 2, `BTT` 3, `SSS_PRE
 | `tournament_hazard_mode_table` | 4584 | 1 byte | hazard mode forced in the tournament layout | `mnremixstagetournament.c` |
 | `stage_hazard_table` | 4632 | 1 byte | `Hazards.type` (NONE, HAZARDS, MOVEMENT, BOTH) | stage panel rows (`mnremixstagepanel.c`); the platform movement gate keeps a copy of the first 11 entries (`docs/remix/hazards.md`) |
 | `background_table` | 3895 | 1 byte | stage whose background this stage shows | `grRemixGetBackgroundStage` |
-| `bg_type.table` | 2778-2800 | 4 bytes | background type (DEFAULT, STATIC, SECTORZ, BONUS3, LAST) | rules in `grWallpaperMakeDecideKind` (every Remix stage uses the common wallpaper, Remix RTTF the bonus 3 one) |
-| `bg_animation_.table` | 2713-2770 | 4 bytes | pointer to `bg_info_*` (animated sprites) | the Big Boo's Haunt actor is kept in `grremixbbh.c`; `efground.c` runs the ground actor only for vanilla stages |
+| `bg_type.table` | 2778-2800 | 4 bytes | background type (DEFAULT, STATIC, SECTORZ, BONUS3, LAST) | `grRemixWallpaperRulesKind` (grremixwallpaperrules.c) holds the `set_bg_type` calls (Stages.asm 5065-5275); the other added stages use the common wallpaper |
+| `bg_animation_.table` | 2713-2770 | 4 bytes | pointer to `bg_info_*` (animated sprites) | `efRemixGroundGetData` (`ef/efremixground.c`) gives `efGroundMakeAppearActor` the row of the 27 `add_bg_animation` stages |
 | `zoom_table` | 3670 | float32 | preview zoom | `grRemixGetPreviewZoom` |
 | `position_table` | 3891 | 4 bytes | pointer to a `position_array` (x, y, z floats) | `grRemixGetPreviewPosition` |
 | `icon_offset_table` | 3407 | 4 bytes | icon offset in the icon file (`File.STAGE_ICONS` 0xA04, loaded at `Stages.asm:2831`) | `grRemixGetStageIconOffset` |
@@ -98,8 +98,8 @@ Each stage uses three consecutive file ids: `HEADER`, `STG` (+1) and `BG` (+2). 
 
 | Asm | RAM | Vanilla function | Purpose and port |
 |---|---|---|---|
-| `Stages.asm:562` `id_fix_1_` | 0x80104C24 | `grWallpaperMakeDecideKind` (grwallpaper.c) | wallpaper kind for RTTF and bonus stages; the port gives every id above `nGRKindBonusStageEnd` the common wallpaper, Remix RTTF the bonus 3 one |
-| `Stages.asm:605, 611` `id_fix_2_` | 0x801056D4, 0x801056EC | `grMainSetupMakeGround` | ground maker dispatch by `function_table`: `grRemixMakeGround`; the announcer setup `ifRemixAnnouncerSetup` is called from `scvsbattle.c` and `sc1pgame.c` |
+| `Stages.asm:562` `id_fix_1_` | 0x80104C24 | `grWallpaperMakeDecideKind` (grwallpaper.c) | wallpaper kind of every id above `nGRKindBonusStageEnd`: Remix RTTF the bonus 3 one, a stage with no function the static one, the others their `bg_type` entry (`grRemixWallpaperRulesKind`) |
+| `Stages.asm:605, 611` `id_fix_2_` | 0x801056D4, 0x801056EC | `grMainSetupMakeGround` | ground maker dispatch by `function_table`: `grRemixMakeGround` (Crash BTT/BTP run `grRemixCrashBonusMake` first); the announcer setup `ifRemixAnnouncerSetup` runs at the top of `grMainSetupMakeGround`, for every scene that builds a ground |
 | `Stages.asm:673` `id_fix_5_` | 0x80114C9C | `ifCommonAnnounceEndMessage` (ifcommon.c) | GAME SET or FAILURE test for BTT and BTP; no hook in the port (patch_audit ST-1) |
 | `Stages.asm:714, 720, 726` `id_fix_6_` | 0x8013C2C0, 0x8013C408, 0x8013C550 | `ftCommonDead{Down,Right,Left}SetStatus` (ftcommondead.c) | class test for the KO explosion size; the port keeps the vanilla Bonus1/Bonus2 id ranges (ST-26) |
 | `Stages.asm:756` `bonus_fix_1_` | 0x80105720 | `grMainSetupMakeGround` | class BTT/BTP dispatch: `grRemixMakeGround` calls `sc1PBonusStageMakeBonus1Ground` or `sc1PBonusStageInitBonus2` |
@@ -110,8 +110,8 @@ Each stage uses three consecutive file ids: `HEADER`, `STG` (+1) and `BG` (+2). 
 | `Stages.asm:2645, 2652, 2661` `training_id_fix_` | | Training wallpaper helpers (sc1ptrainingmode.c) | the port clamps ids above the vanilla tables to the blue wallpaper; `grRemixGetBackgroundStage` has no caller (ST-24) |
 | `Stages.asm:2698` | 0x800FC29C | `mpCollisionInitGroundData` (mpcollision.c) | ground file table lookup (`dMPCollisionGroundFileInfos`) |
 | `Stages.asm:2704, 2707` | 0x80131B10, 0x80131B20 | `mnMapsAllocModelHeaps` | model heap sizes |
-| `Stages.asm:2715-2730` `bg_animation_` | 0x80116AE4, 0x80116AFC, 0x80116B7C | `efGroundMakeAppearActor` (efground.c) | actor only for `gkind <= nGRKindBattleEnd`; the table is zero for added stages |
-| `Stages.asm:2778, 2781` `bg_type` | 0x80104C34, 0x80104C40 | `grWallpaperMakeDecideKind` | background type |
+| `Stages.asm:2715-2730` `bg_animation_` | 0x80116AE4, 0x80116AFC, 0x80116B7C | `efGroundMakeAppearActor` (efground.c) | `efRemixGroundGetData` (`ef/efremixground.c`): vanilla rows for ids 0..7, the 27 `add_bg_animation` stages (Stages.asm 5078-5265) from `ef/efremixgroundrules.c`, no actor elsewhere |
+| `Stages.asm:2778, 2781` `bg_type` | 0x80104C34, 0x80104C40 | `grWallpaperMakeDecideKind` | background type: `grRemixWallpaperRulesKind` (Bonus3, Sector, static or common) |
 | `Stages.asm:4517` `setup_` | | stage select panel | Hazards and Movement rows, cursor colour and the L toggle: `mnremixstagepanel.c` |
 | `Stages.asm:5323, 5331` `swap_stage_` | | stage selection | with Stage Select on, `mnMapsRemixPickRandomGroundKind`; with it off the port still draws from 11 vanilla stages (ST-23) |
 | `FD.asm:18` `fix_` | 0x80104C84 | `grWallpaperMakeDecideKind` | VS on Final Destination: the port keeps the boss wallpaper call and handles VS inside it (`sc1pgameboss.c`) |

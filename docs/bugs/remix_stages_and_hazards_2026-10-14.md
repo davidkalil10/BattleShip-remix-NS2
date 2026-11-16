@@ -23,6 +23,8 @@ fkind ignores `SSB64_VS_STAGE` (it boots Dream Land): pass at least two fkinds.
   (65, 66, 155) and the Saffron clones (114, 118).
 - **Wallpaper.** `Stages.bg_type`: every Remix stage uses the common wallpaper, Remix RTTF (0xBD) none
   (`grWallpaperMakeDecideKind`).
+  (Corrected 2026-11-15: the asm `set_bg_type` calls give 13 stages a Sector, static or Bonus 3 background; see
+  `remix_stage_loader_bg_type_crash_announcer_2026-11-15.md`.)
 - **Music.** `grRemixGetStageBGM` (`grremixstage.c`): the `default_music_track_table` override, then the Occasional, Rare and
   Rare2 alternates by chance (65/16/10/9), applied in `mpCollisionInitGroundData` for VS.
 - **Stage select.** `mnMapsBuildRemixPages` (`mnmaps.c`, `mnremixstagepages.c`) builds the pages at open from

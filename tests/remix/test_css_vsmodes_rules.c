@@ -449,6 +449,28 @@ static void testReturnWithAModeOutOfRangeOpensPageOne(void)
     CHECK_EQ(MNREMIX_VSMODE_RETURN_NO_MODE_CURSOR, mnRemixVSModeReturnCursor(1, 6));
 }
 
+static void testLeavingTheMenuSyncsTeamCostumesForSmashketballAlways(void)
+{
+    CHECK_EQ(1, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_SMASHKETBALL, 0));
+    CHECK_EQ(1, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_SMASHKETBALL, 1));
+}
+
+static void testLeavingTheMenuSyncsTeamCostumesOnlyWithTeamsOn(void)
+{
+    CHECK_EQ(1, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_DEFAULT, 1));
+    CHECK_EQ(0, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_DEFAULT, 0));
+    CHECK_EQ(1, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_KOTH, 1));
+    CHECK_EQ(0, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_KOTH, 0));
+    CHECK_EQ(1, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_TUG_OF_WAR, 1));
+    CHECK_EQ(0, mnRemixVSModeExitSyncsTeamCostumes(MNREMIX_VSMODE_RETURN_MODE_TUG_OF_WAR, 0));
+}
+
+static void testLeavingTheMenuNeverSyncsTeamCostumesForTwelveCbAndTagTeam(void)
+{
+    CHECK_EQ(0, mnRemixVSModeExitSyncsTeamCostumes(1, 1));
+    CHECK_EQ(0, mnRemixVSModeExitSyncsTeamCostumes(2, 1));
+}
+
 void remixTestCssVsModesRules(void)
 {
     RUN_TEST(testTitleOffsetPerMode);
@@ -490,4 +512,7 @@ void remixTestCssVsModesRules(void)
     RUN_TEST(testReturnAfterVsStartOpensPageOne);
     RUN_TEST(testReturnFromAnyOtherSceneOpensPageOne);
     RUN_TEST(testReturnWithAModeOutOfRangeOpensPageOne);
+    RUN_TEST(testLeavingTheMenuSyncsTeamCostumesForSmashketballAlways);
+    RUN_TEST(testLeavingTheMenuSyncsTeamCostumesOnlyWithTeamsOn);
+    RUN_TEST(testLeavingTheMenuNeverSyncsTeamCostumesForTwelveCbAndTagTeam);
 }

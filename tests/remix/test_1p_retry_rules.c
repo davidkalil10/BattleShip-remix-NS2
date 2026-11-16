@@ -41,10 +41,11 @@ static void testPauseRetryIgnoresOtherModesAndScenes(void)
     CHECK_EQ(0, sc1PRemixRetryIsPauseRetry(SC1PREMIX_MODE_BONUS3, 0, BUTTON_L));
 }
 
-static void testGameSetRetryNeedsLHeldInAFakeScreenRun(void)
+static void testGameSetRetryNeedsLHeldAloneInAFakeScreenRun(void)
 {
     CHECK_EQ(1, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_BONUS3, 1, 0, BUTTON_L));
-    CHECK_EQ(1, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_CRUEL, 1, 0, BUTTON_L | BUTTON_A));
+    CHECK_EQ(1, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_HRC, 1, 0, BUTTON_L));
+    CHECK_EQ(0, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_CRUEL, 1, 0, BUTTON_L | BUTTON_A));
     CHECK_EQ(0, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_CRUEL, 1, 0, BUTTON_A));
     CHECK_EQ(0, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_CRUEL, 1, 0, 0));
 }
@@ -52,6 +53,7 @@ static void testGameSetRetryNeedsLHeldInAFakeScreenRun(void)
 static void testGameSetRetryWorksInABonusPracticeRun(void)
 {
     CHECK_EQ(1, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_STANDARD, 0, 1, BUTTON_L));
+    CHECK_EQ(0, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_STANDARD, 0, 1, BUTTON_L | BUTTON_A));
     CHECK_EQ(0, sc1PRemixRetryIsGameSetRetry(SC1PREMIX_MODE_STANDARD, 0, 1, BUTTON_A));
 }
 
@@ -69,7 +71,7 @@ void remixTest1PRetryRules(void)
     RUN_TEST(testOtherModesAreNotFakeScreenModes);
     RUN_TEST(testPauseRetryNeedsLInAFakeScreenRun);
     RUN_TEST(testPauseRetryIgnoresOtherModesAndScenes);
-    RUN_TEST(testGameSetRetryNeedsLHeldInAFakeScreenRun);
+    RUN_TEST(testGameSetRetryNeedsLHeldAloneInAFakeScreenRun);
     RUN_TEST(testGameSetRetryWorksInABonusPracticeRun);
     RUN_TEST(testGameSetRetryLeavesTheOtherRunsAlone);
 }

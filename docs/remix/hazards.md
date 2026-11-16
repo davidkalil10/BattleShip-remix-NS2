@@ -40,7 +40,10 @@ routine run it instead of a vanilla maker. Reading the `function_table` entries 
 | Mushroom Kingdom maker | 0x08, 0x41 DL, 0x42 ~, 0x9B Mushroom Kingdom SR |
 | Remix `Hazards.*` setup | one row per stage in section 3 (Great Bay, MMM, Corneria, Onett, Japes, GB Land, Pirate Land, Casino, Metallic Madness, Rainbow Road, Toad's Turnpike, Dracula's Castle and Reverse Castle, Twilight City, Remix RTTF, Scuttle Town, Big Boo's Haunt, Spawned Fear, Time Twister) |
 
-Crash BTT (0xCB) and Crash BTP (0xCE) name `Hazards.crash_btt_setup` and `crash_btp_setup`, but their BTT/BTP class sends them to the bonus ground first.
+Crash BTT (0xCB) and Crash BTP (0xCE) name `Hazards.crash_btt_setup` and `crash_btp_setup`: `id_fix_2_` runs the setup, which then jumps to the
+bonus ground setup (0x80105700). The setup creates the 1-up watcher (`grremixcrashbonus.c`, `grRemixCrashBonusMake`): the first fighter on
+floor line 9 (BTT) or 0x16 (BTP) shrinks the 1-up (yakumono DObj 5 or 15, scale 0x38D10000), plays FGM 0x5C3 and makes Crash Bash Loading
+(MIDI 0x16F) the stage song, once per stage load.
 Dream Land Beta 1 and 2 (0x09, 0x0A) have no ground function in `function_table` (`OS.NULL`, handled elsewhere); their respawn point is
 overridden by `grRemixSpawnRespawnPointOverride` (see `docs/remix/vanilla_patches.md`).
 
@@ -85,7 +88,7 @@ The Remix patches wrap the vanilla maker functions with the toggles. All edits s
 | `saffron_city_pokemon_` | `grYamabukiGateProcUpdate` Wait case (gryamabuki.c) | both wait-case calls gated |
 | `planet_zebes_acid_` (hazards) | `grZebesMakeGround` (grzebes.c) | returns NULL before any GObj when hazards are off |
 | `planet_zebes_acid_` (movement) | `grZebesProcUpdate` Normal case | acid rise gated by `grRemixMovementToggleIsOn()` |
-| `alt_acid_levels_` | `grZebesMakeAcid` | `grRemixGetAltAcidLevels(gkind)` (grremixzebes.c) replaces the 16-entry level table for Norfair 0x5C, Norfair Remix 0xA5, Zebes DL 0x74, Zebes ~ 0x79; written after `gcPlayAnimAll`, before `acid_status` is set, and never restored (as in the asm) |
+| `alt_acid_levels_` | `grZebesMakeAcid` | `grRemixGetAltAcidLevels(gkind)` (grremixzebes.c) replaces the 16-entry level table for Norfair 0x5C, Norfair Remix 0xA5, Zebes DL 0x74, Zebes ~ 0x79; written after `gcPlayAnimAll`, before `acid_status` is set; every other Zebes-based stage gets the vanilla levels back (`grRemixZebesSelectAcidLevels`, saved before the first overwrite), as the N64 reload of the battle overlay data gives them |
 | `peach_bumper_` | `grCastleMakeGround` (grcastle.c) | `grCastleInitAll` only for `grRemixStageHasPeachBumper` (0x00, 0x6B, 0x6C, 0x96, 0xC9) with hazards on; the other Peach clones run no castle map animation, as in the asm. Bowser's Stadium (0x43) starts the bombs instead |
 | `peach_bumper_hitbox_` | `itGBumperMakeItem` (itgbumper.c) | `grRemixPeachBumperSetupHitbox`: castle knockback constants on the five bumper stages, and on Casino Night Zone (0x9F) the bumper FGM 0x3D5, hitbox size 250 and the low byte of `knockback_scale` set to 0x40 |
 | `congo_jungle_barrel_`, `add_barrel_`, `barrel_angle_fix_`, `many_barrels_fix_` | `grJungleMakeGround` (grjungle.c), `ftMainCheckAddGroundObstacle` (ftmain.c) | `grRemixJungleBarrelsMakeGround` (grremixjunglebarrels.c): the moving barrel on Congo 0x02, 0x69, 0x6A and Falls 0x5E only with hazards on; Smashketball 0x5A gets two static barrels (x ±3954, y 2944 in the Smashketball mode, 1775 in a normal match with hazards on); Banjo BTP gets 12 barrels from `Hazards._banjo_btp_barrel_structs`; every barrel registers as a ground obstacle (12 slots on Banjo BTP, `grremixbarrel.c`); the shot direction is the rotation of the fighter's own barrel (`grJungleTaruCannGetRotateOf`) |
@@ -159,7 +162,9 @@ Per fighter (ports 0 to 3), skipped when the match has not started, and for Fox,
 below `water_y` spawns damage sparks on both sides at `splash_y` and plays FGM 0x3D1; every frame under water the aerial velocity is multiplied
 by 0.9375 on x and 0.875 on y (the y value is stored only when the result is below -20), the knockback velocity by 0.98046875 on x and y (y
 additionally by 0.9375 when below -20), and the fast-fall, absorb and `is_goto_attack100` bits are cleared (the asm clears the whole bitfield
-byte with mask 0x07; kept as written).
+byte with mask 0x07; kept as written). The water routine is the run function of its ground object (asm `Render.CREATE_OBJECT_` with the
+routine in a1, no process), so it runs before every process of the frame: before the fighters' interrupt step, as in the asm. A velocity set
+by a status entry (a jump under water) reaches the fighter's physics undragged on its first frame.
 
 ### 3.2 Dracula's Castle 0xB0 (176), Reverse Castle 0xB1 (177), Grim Reaper's Cavern 0xBE (190)
 
@@ -207,13 +212,15 @@ A new song only starts while the hammer (0x2D) or the star (0x2E) song is not pl
 Asm `pirate_land_setup`, `pirate_land_main_`, `cannon_main_`, `cannonball_*`; port `grremixpiratecannon.c` (setup and cannon),
 `grremixpiratecannonball.c` (weapon kind 0x28). Hazards on: water through `grRemixWaterMakeGround(-600, -360)` and the cannon.
 
-- Cannon: GObj with the joint descriptors at cannon file + 0x07A8, model at +0x0970, joint animation at +0x0BB4 and material animation at +0x0BF0
+- Cannon: GObj with the joint descriptors at cannon file + 0x07A8 (every joint gets a `nGCMatrixKindTraRotRpyRSca` matrix, asm
+  `STAGE_OBJECT_INIT_` with 0x1C), model at +0x0970, joint animation at +0x0BB4 and material animation at +0x0BF0, `gcPlayAnimAll` every frame
   (the cannon file is the stage header pointer at 0x80, the hitbox file the pointer at 0xAC). States Waiting, Turning and Firing; the barrel x is
   -128, 0 or +128; turn speed 4 (8 in a frenzy); waits 90 + rand(0..60) frames, 360 before the first shot, 30 between frenzy moves; a shot
   rolls a 5% chance of a frenzy of 10 + rand(0..10) moves; firing lasts 12 frames with the barrel scale 1.125, FGM 1012 (turn) and 1013 (shot),
   light screen shake.
 - Cannonball: spawned at the base plus the barrel translate on the joint track of the position (0x0000, 0x0610, 0x0C50 in the hitbox file
-  track table); `is_camera_follow` set, joint y rotation pi/2; it has no launch velocity (the properties struct with speed 100 is never
+  track table), with the white sparkle (`efManagerSparkleWhiteMakeEffect`, asm 0x80100480) at the barrel; second transform 0x48 (camera
+  billboard that keeps the DObj scale, which the barrel track animates); `is_camera_follow` set, joint y rotation pi/2; it has no launch velocity (the properties struct with speed 100 is never
   referenced), the barrel animation moves it. Smoke puff (`efManagerDustExpandLargeMakeEffect`) every 9 frames. It explodes when its model
   animation ends (`anim_frame <= 0`; the 999-frame lifetime is a guard): sparkle effect, FGM 1, quake 1, hitbox size 360, damage 25, fire,
   angle 361, kbs 90, bkb 50, FGM 25, explosion lasts 15 frames. The explosion setup is the Samus bomb one (`wpSamusBombExplodeInitVars`) with the
@@ -243,7 +250,8 @@ Asm `metallic_madness_setup`, `bee_factory_`, `shrink_timer_`, `robot_bee_*`, `r
   `nGCMatrixKindTraRotRpyRSca` (the laser grows `scale.x` by 3 per frame towards the clamp); a map hit explodes it with the Fox blaster glow; a
   hit shrinks every fighter in the attack record that is not reflecting or absorbing (whole `FTStruct` flag word compared with the two asm
   patterns): `grRemixMetallicShrinkPlayer` sets the size multiplier to 0.5 for 900 tics and destroys an active Super Mushroom of that port; the
-  shrink timer restores the size of the match state (`ftRemixSizeGetModeMultiplier`). The reflector flips the speed and re-aims; the absorb proc is
+  shrink timer is cleared on every frame in which the port has an active Super or Poison Mushroom (the mushroom then owns the size), otherwise it
+  restores the size of the match state (`ftRemixSizeGetModeMultiplier`) when it ends. The reflector flips the speed and re-aims; the absorb proc is
   `wpFoxBlasterProcHit`. Deviation: the maximum X scale of the laser is read by the asm from a vanilla-overlay float (RAM 0x8019CAA0) that the
   Remix RAM image does not contain; the port uses the Fox blaster clamp (`WPBLASTER_CLAMP_SCALE_X`, 160/3).
 
@@ -251,7 +259,8 @@ Asm `metallic_madness_setup`, `bee_factory_`, `shrink_timer_`, `robot_bee_*`, `r
 
 Asm `rainbow_road_setup`, `chain_chomp_main_`, `sfx_main_`, `chainchomp_hitbox_*`; port `grremixrainbow.c` (schedule and sounds),
 `grremixrainbowchomp.c` (weapon kind 0x2A). The chomp file and hitbox file are the stage header pointers at 0x80 and 0xAC; the chomp model
-(DObj descriptors at +0x17F0, model at +0x19E8) is created hidden, and shown on its first spawn.
+(DObj descriptors at +0x17F0, model at +0x19E8) is created hidden on display link 0x11 with `grDisplayLayer0PriProcDisplay` (no z-buffer),
+runs `gcPlayAnimAll` every frame (so the spawn animation carries it along the track) and is shown on every spawn.
 
 - With hazard_mode NORMAL (0) only: `rainbow_road_setup` tests the whole value with `bnez` (Hazards.asm 5661), so MOVEMENT OFF also drops the
   chomp. A timer runs to 0x35E8 and restarts. Four windows (0x5DB..0x7D0, 0x10A4..0x1298, 0x1B6C..0x1D60, 0x30FC..0x321C), each with
@@ -259,8 +268,9 @@ Asm `rainbow_road_setup`, `chain_chomp_main_`, `sfx_main_`, `chainchomp_hitbox_*
   window's clear timer). A spawn plays the chomp animation and FGM 0x401 and creates the hitbox weapon.
 - Hitbox weapon: follows the chomp top joint, lifetime 0x546, damage 25, reflectable, three hit records refreshed 0x19 frames after each hit
   (`chain_chomp_projectile_counter`, kept inside the weapon update because the port has no hook in the hit-record routine), growl FGM 0x401 on
-  a roll of 2 in 80 during the first 15 frames.
-- With movement on, a sound process plays FGM 0x402 at timer 0x960, 0x403 four times every 0x3C and 0x404 at the end, then restarts.
+  a roll of 2 in 80 while the low byte of the weapon GObj's `frame_draw_last` is below 15 (the asm reads GObj + 0x0E, a global draw counter),
+  so the roll window reopens every 256 frames for the weapon's whole life.
+- With movement on, a sound process plays FGM 0x402 at timer 0x960, 0x403 five times every 0x3C (the `bnez` delay slot decrements the counter on every pass) and 0x404 at 0xAC8, then restarts.
 - Deviation: `blast_zone_destroy_prevent` keeps the chomp weapon alive past the map bounds in the asm; the port weapon has no `proc_dead`.
 
 ### 3.10 Toad's Turnpike 0xA6 (166): lights
@@ -285,14 +295,15 @@ destroy). The port timer (`sITRemixCarState`) is separate from the asm map data 
 ### 3.12 Mad Monster Mansion 0x40 (64)
 
 Asm `mmm_setup`, `mmm_main`; port `grremixmmm.c`. A process polls ports 0 to 3: a fighter in action Taunt (0xBD) standing on floor line 2 with
-x in [1696, 2080] (inclusive) plays FGM 0x564 once per match. The routine object is a ground GObj with process priority 3.
+x in [1696, 2080] (inclusive) plays FGM 0x564 once per match. The routine object is a ground GObj with process priority 3. A taunter on
+line 2 outside the band ends the asm scan for that frame (`bc1fl _end`); the port goes on to the next port (deviations.md 5.7).
 
 ### 3.13 Big Boo's Haunt 0xC0 (192)
 
 Asm `bbh_setup_`, `boo_sound_`; port `grremixbbh.c`. Skipped in Training. `boo_sound_` plays the Boo laugh (FGM 0x527) on the frame the vanilla
-ground actor spawns a Boo. The Remix build runs the vanilla actor with `stages/bbh.asm` data; the port does not run the actor for Remix stages,
-so `grremixbbh.c` keeps the actor's countdown itself (flight gap 30 frames, long wait `rand(10000) + 6000`, queue 1 + `rand(2)` Boos) and the
-laugh follows it.
+ground actor spawns a Boo. The Boos are the vanilla ground actor (`efGroundMakeAppearActor`) run with the `stages/bbh.asm` bg_info
+(`ef/efremixground.c`, Stages.asm `bg_animation_`), and the laugh reads the actor's countdown (`sEFGroundActor.make_wait`, RAM 0x80131AD8)
+as `boo_sound_` does.
 
 ### 3.14 Spawned Fear 0xC3 (195)
 
@@ -303,11 +314,13 @@ Asm `spawned_fear_acid_setup_`, `spawned_fear_acid_main_`, `cacodemon_factory_`,
   percent is below 666, with the DOOM_ACID colour animation (0x79) started when no colour override is active; at 666% or more it is KO'd
   (`ftCommonDeadDownSetStatus`) unless a star is active, after the overlay words (`p_loop_sfx`, `loop_sfx_id`, `colanim` use-flags and
   skeleton id) and the colour override are cleared. The poison timer advances once per frame (`ftRemixPoisonAdvanceTimer`).
-- Cacodemon factory: same schedule as the bee (1500 frame wait, 1 in 1500 roll, forced at 3000, only one alive at a time; the lock clears on
-  destroy and on blast zone). It spawns at the origin, draws the direction twice and keeps the second value, starts the animation tracks
+- Cacodemon factory: same schedule as the bee (1500 frame wait, 1 in 1500 roll, forced at 3000), with only one alive at a time: a roll hit or
+  the forced frame restarts the timer even while one is alive (the restart sits in the delay slot of the lock test) and only the spawn is
+  skipped. The lock clears on destroy and on blast zone. It spawns at the origin, draws the direction twice and keeps the second value, starts the animation tracks
   (joint file + 0x0918, material + 0x10C4). Item footer and Thunderball files come from the stage header (+0xE0 minus 0x7F8, and +0x130).
 - Cacodemon: hitbox size 125, damage 5, angle 0x361, kbs 0x25, bkb 0x50, FGM 0x26; shoots FGM 0x55D, dies FGM 0x55E; destroyed at a blast zone.
-- Thunderball: duration 40, speed 80 aimed at the fighter closest on x whose status is 7 or more (the target is kept between shots), else
+- Thunderball: second transform 0x47 (camera billboard), model turned to the side of its x speed at spawn (`wpMainVelSetModelPitch`, asm
+  0x80167FA0); duration 40, speed 80 aimed at the fighter closest on x whose status is 7 or more (the target is kept between shots), else
   (-100, -100). It never expires (the asm ignores the expiry result); a map hit plays a small smoke (the lr slot gets the bit pattern of 1.0,
   as in the asm) and destroys it; a hurtbox hit destroys it; the reflector is `wpMarioFireballProcReflector` and the absorb `wpFoxBlasterProcHit`.
 
@@ -321,17 +334,21 @@ function; `remix_rttf_bombs_` is commented out, so the bomb is the vanilla one).
 
 ### 3.16 Time Twister 0xD2 (210), Scuttle Town 0xBF (191): background fades
 
-Both create a ground GObj with an update process (priority 3) and a display callback (priority 6) that fills the rectangle (10, 10) to
+Both create a ground GObj with an update process (priority 3) and a display callback on display link 0 (the asm
+`Render.draw_rectangle` room 0, drawn only by the wallpaper camera, so only the background is tinted) that fills the rectangle (10, 10) to
 (310, 230) with `G_RM_CLD_SURF` at the current RGB and alpha. The alpha steps by 4, the glass colour is written to ground data + 0x4C at alpha
 0x80, the background bitmap is swapped at alpha 0xFC (`grRemixStageBgSetBitmap` writes the stage wallpaper `SObj`), and the transition ends at
 alpha 0. Helpers in `grremixstagebg.c` (`grRemixStageBgBitmapToken`, `grRemixStageReadWarpBallBgIndex`, `grRemixStageReadFirstJointPaletteBits`).
 
 - Time Twister (`grremixtimetwister.c`): the process waits for the warp ball (the joint four siblings after the first joint of the stage model, link 2) to be
-  visible and reads its texture index as the next background (0 N. Sanity Beach 0x7AABD900, 1 Snow Go 0x4C82BD00, 2 Future Frenzy 0x5E729800,
+  visible (the detection frame counts frame 1 of the transition, as the asm falls through into `_in_transition`) and reads its texture index as the next background (0 N. Sanity Beach 0x7AABD900, 1 Snow Go 0x4C82BD00, 2 Future Frenzy 0x5E729800,
   3 Time Twister 0x00005400; the four background headers are ground data +0xCC, +0xD0, +0xD4, +0x48). The fade alpha moves from frame 180: FGM
-  0x94 and the song fade at 180, FGM 0x59E and the camera restore at 270, the new song at 300; FGM 0x59D and the camera zoom-out
+  0x94 and the song fade at 180, FGM 0x59E and the camera restore at 270, the new song at 300 (`gmRemixBgmChangeUnlessItemMusic`: under Hammer or Star music it only becomes the stage
+  song and plays when the item ends); FGM 0x59D and the camera zoom-out
   (`gmCameraSetStatusMapZoom` with the stage zoom bounds) when the transition starts. The song changes once per match and only when the stage
-  plays the Time Twister track (`gmRemixBgmRulesTimeTwisterChanges`); the four tracks are in `gmremixbgmrules.c`. In Training the fade exists
+  plays the Time Twister track (`gmRemixBgmRulesTimeTwisterChanges`); the four tracks are in `gmremixbgmrules.c`. A song picked in the
+  pause (D-pad Right or Down) turns the swaps off for the rest of the match, even when the pick is the song already playing
+  (`Pause.asm`:562-563, `grRemixTimeTwisterCancelBgmChange`). In Training the fade exists
   only with the Training stage-background option (`REMIX_TRAINING_STAGE_BG`). Time Twister SSS (0xD3) is a clone.
 - Scuttle Town (`grremixscuttle.c`): the transition starts when the first joint palette index reads 1.0 (to night, background ground data
   + 0xC8, rgb 0x00105000) or 9.0 (to day, + 0x48, rgb 0x94CEFF00). Same Training rule. Deviation (mirrors the asm): `scuttle_town_setup_`
@@ -350,11 +367,13 @@ port: the factory only runs in Training (the asm returns for other screens) and 
 
 Asm `peach_bumper_` (bomb branch), `replenish_bowser_bombs_`, `bowser_bomb_*`, `bomb_hitstun_`, `track_hit_object_`; port `grremixbowserbombs.c`.
 `grCastleMakeGround` starts it when hazards are on. Two RTTF bombs (`nITKindTaruBomb`) at x = +-2988, y = 512, hover bottom ECB -416, with the
-item file `BOWSER_BOMB_HEADER` (file 0x9B2) loaded into `gGRCommonStruct.bonus3.item_head`; the status-0 update is replaced by a flash
-(120 frames, hidden while bit 1 of the timer is set), then the hitbox turns on with FGM 0xC2. A respawn process replaces an exploded bomb after 300
-frames (a failed spawn retries after the same time). Hooks: `itTaruBombCommonProcHit` (explosion plays FGM 1 and flags the slot; no shrapnel),
+item file `BOWSER_BOMB_HEADER` (file 0x9B2) loaded into `gGRCommonStruct.bonus3.item_head`. The two bombs of the match start keep the RTTF fall
+status and their hitbox: they drop to the hover height and play the landing FGM 0xC2. A respawn process replaces an exploded bomb after 300
+frames (a failed spawn retries after the same time); only a respawned bomb gets the flash (`_setup_bomb`: hitbox off, the status-0 update
+replaced by the flash for 120 frames, hidden while bit 1 of the timer is set, then the hitbox turns on with FGM 0xC2). Hooks: `itTaruBombCommonProcHit` (explosion plays FGM 1 and flags the slot; no shrapnel),
 `itTaruBombFallProcMap` (landing FGM 0xC2 on this stage), `ftCommonDamageInitDamageVars` (hitstun `x 9 / (gravity + 4)` for fighters hit by the
-bomb) and the item branch of `ftMainProcessHitCollisionStatsMain` (`grRemixBowserBombsTrackHitObject`). A bomb absorbed by Marina is not detected
+bomb) and the top of `ftMainProcessHitCollisionStatsMain` (`grRemixBowserBombsTrackHitObject`: the attacker of the first hit log, of any
+class, so the next non-bomb hit clears the bomb). A bomb absorbed by Marina is not detected
 (the asm tests the position struct pointer); only the explosion flag is used.
 
 ### 3.19 Saffron City, Yoshi's Island, Hyrule, Sector Z, Zebes, Congo Jungle

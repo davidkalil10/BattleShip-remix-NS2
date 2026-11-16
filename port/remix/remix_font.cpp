@@ -164,9 +164,9 @@ float FitFactor(const std::string &text, float scale, float maxWidth) {
 }
 
 void Draw(ImDrawList *drawList, ImVec2 position, ImVec2 pixelsPerUnit, float scale, ImU32 color,
-          const std::string &text, float widthFactor) {
-    const float glyphWidth = REMIX_FONT_GLYPH_SIZE * scale * pixelsPerUnit.x * widthFactor;
-    const float glyphHeight = REMIX_FONT_GLYPH_SIZE * scale * pixelsPerUnit.y;
+          const std::string &text, float widthFactor, float glyphScale) {
+    const float glyphWidth = REMIX_FONT_GLYPH_SIZE * scale * pixelsPerUnit.x * widthFactor * glyphScale;
+    const float glyphHeight = REMIX_FONT_GLYPH_SIZE * scale * pixelsPerUnit.y * glyphScale;
     float cursor = position.x;
     const float uvSize = static_cast<float>(REMIX_FONT_GLYPH_SIZE);
 

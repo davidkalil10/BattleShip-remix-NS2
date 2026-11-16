@@ -35,6 +35,23 @@
   - Several CPU recovery details match the original.
 
   Where Smash Remix itself has a bug, the port keeps the corrected behaviour.
+- **Stages, modes, items and fighters checked against Smash Remix.** The same comparison was run on the rest of the
+  ported game logic, and about 120 differences were fixed. Some of them:
+  - Pirate Land's cannon moves and fires with its flash; Rainbow Road's Chain Chomp charges down the track.
+  - The animated backgrounds of 27 stages play; stages use their own wallpaper kind.
+  - Great Bay, Twilight City and Pirate Land water no longer slows a jump out of it.
+  - King of the Hill: the win countdown resets while the hill is empty or contested, each full bar flashes on its own.
+  - Tag Team: team costumes and stock steals follow the character select.
+  - Training: D-pad shortcuts work while paused, frame advance works at every game speed, a KO respawns at 0%.
+  - Home-Run Contest: camera speed, the record is saved only on a completed attempt, the Sandbag takes no input.
+  - Items: Franklin Badge reflects with its sound and effect, Mr. Saturn no longer vanishes on landing, the Waddle
+    Doo beam works, mushrooms picked one after the other, Cloaking Device opacity.
+  - Fighters: Peach floats out of a double jump, Marina's air jumps get shorter, Kirby's copies of Dedede, Lanky and
+    Crash, Wolf and Slippy reflect speed, Wario's Body Slam clang, Mad Piano's bonus books.
+  - Character select: stock counter and Manual stock arrows in VS, token pick-up area, team costume kept with C.
+  - Pause and results: extra pause controls on every pause type, Match Stats underlines and Highest Taken, Player Tag
+    outline.
+  - Announcer calls (Long KO, Clang, Close match) and the level 10 CPU in a few situations.
 - **Windows: a clear message when Windows blocks the ROM extractor.** When Smart App Control or another application
   control policy stops `torch.exe` on the first launch, the error now says so instead of only showing a code.
 - **Packaging.** The Linux AppImage uses the Smash Remix icon instead of the vanilla one, the Windows zip no longer

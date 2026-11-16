@@ -24,9 +24,8 @@ extern "C" {
  *   0..2    results screen: Match Stats prompt and page hints (mnremixvsstatsview.c)
  *   3       title screen: "Smash Remix v2.0.1" (mnremixtitleversion.c)
  *   4       VS item switch: ": All On/Off" legend text (mnremixitemswitchlegend.c)
- *   5..8    battle: custom player tag names of the four ports (ifremixplayertag.c)
- *   9..13   battle: reserved for King of the Hill and Smashketball in-match text (none used so far, both HUDs are sprites,
- *           rectangles and the stage scoreboard)
+ *   5..12   battle and results screen: custom player tag names of the four ports, the black under-copies at 5..8 and the
+ *           coloured names over them at 9..12 (ifremixplayertag.c); 13 free
  *   14..18  battle: reserved for the Tag Team, Tug of War and Stamina in-match HUD (no text drawn yet)
  *   19..22  battle pause: Gentlemen's Reset request texts (ifremixgentlemensreset.c); 23 free
  *   51..70  battle pause legend: its text rows and the music title (ifremixpauselegend.c), VS and 1P battles
@@ -92,6 +91,24 @@ void remix_hud_text_put(int slot, const char *text, float x, float y, uint32_t r
  */
 void remix_hud_text_put_fit(int slot, const char *text, float x, float y, uint32_t rgba, float scale, int align,
                             float max_width);
+
+/**
+ * Same as remix_hud_text_put_fit for a copy whose glyphs are enlarged in place: every glyph keeps the position it has in the
+ * unscaled string and is drawn glyph_scale times larger from its top-left corner (PlayerTag.asm create_custom_tag_, the black
+ * copy under a custom tag name).
+ *
+ * @param slot Label index (0..REMIX_HUD_TEXT_SLOTS-1); a lower slot draws under a higher one.
+ * @param text Text, copied.
+ * @param x Anchor X in N64 screen units.
+ * @param y Top of the glyph box in N64 screen units.
+ * @param rgba Colour as 0xRRGGBBAA.
+ * @param scale Font scale of the layout.
+ * @param align REMIX_HUD_ALIGN_LEFT, REMIX_HUD_ALIGN_RIGHT or REMIX_HUD_ALIGN_CENTER.
+ * @param max_width Widest the string may be in N64 screen units.
+ * @param glyph_scale Size multiplier of each glyph sprite.
+ */
+void remix_hud_text_put_fit_glyph_scale(int slot, const char *text, float x, float y, uint32_t rgba, float scale, int align,
+                                        float max_width, float glyph_scale);
 
 /**
  * Same as remix_hud_text_put with a printf style format (the text is cut at REMIX_HUD_TEXT_LENGTH - 1 characters).

@@ -151,6 +151,10 @@ file; rows 0..4 are the page 2 modes, row 5 the page 1 "Remix Modes" button). `m
 B on page 2 returns to page 1 with the cursor on "Remix Modes"; A or START on a page 2 button stores the mode and leaves for the VS CSS
 exactly as VS Start (`mnVSModeSaveSettings()`, `scene_curr = nSCKindPlayersVS`). The text of the new buttons is a `Sprite` of the MNVSMode
 file read like the vanilla texts. Mode rules are in `gm/gmremixmodecss.c` (`gmRemixModeBeforeCSS` / `LeaveCSS` / `StartMatch`).
+`save_global_settings_` (:438-467) also gives the fighters already chosen the costume of their team when the menu leaves for a
+team match (Smashketball always; the default VS, King of the Hill and Tug of War with teams on): `mnVSModeSyncTeamCostumes`
+after `mnVSModeSaveSettings` on VS Start, VS Options and a Remix mode (rule `mnRemixVSModeExitSyncsTeamCostumes`, teams from
+`gmRemixModeGetTeams`).
 
 The mode flags the asm sets (`twelve_cb_flag`, `vs_mode_flag`) are replaced by `gm/gmremixmode.c` state. As in the asm,
 leaving the CSS reopens the VS menu on its Remix page with the cursor on the mode played (MN-14).
@@ -162,7 +166,8 @@ reach Tug of War, A at 380 leaves for the CSS; `gMNVSModeRemixMode` equals 1 + t
 
 ## 4. 1P mode menu (`SinglePlayerMenus.asm`)
 
-Remix: generic button creation (`create_menu_button_` :103, `render_menu_buttons_` :211, `fix_cursor_wrap_` :251, `set_cursor_index_`
+Remix: generic button creation (`create_menu_button_` :103, `render_menu_buttons_` :211, `fix_cursor_wrap_` :251: the 8 extra frames of
+repeat wait come only on the last button going down and on the first going up, never on a wrap, `sc1PRemixModeMenuAddsEdgeWait`; `set_cursor_index_`
 :290, `page_2_exit` :341), `fix_a_and_b_button_crashes_` (:443), 34 hooks, stock/KO and time displays (`_ko_amount_or_feet` :460,
 `load_bonus3_time` :508, `total_kos_or_feet_` :571, `draw_hrc_high_score_decimal_` :681), and the HRC/Remix headers
 (`header_graphic_remix_1p` :807). Port: `mn/mn1pmode/mnremix1pmode.{c,h}` (menu button tables and pages, called from `mn1pmode.c`); the
@@ -230,11 +235,17 @@ aligned at X 24, one right-aligned cell per active port at X 184 + 35 * column, 
 `mnremixvsstatsscene.{c,h}` (camera, dimmed background alpha 0xB0 on dl link 36 and button sprites on 37, `ifRemixSprite`).
 Hooks: `ftcommonspecial{hi,n,lw}.c` and `ftcommonspecialair.c` (specials), `ftremixzcancel.c` (`ftRemixZCancelCountResult`),
 `ftremixwalltech.c`, `ftcommonpassive.c` and `ftcommonpassivestand.c` (tech success), `mpcommon.c` (ledge grab, in
-`mpCommonRunFighterSpecialCollisions`), `ftparam.c` `ftParamUpdateDamage` (highest percent, after the 999 clamp), three lines in
+`mpCommonRunFighterSpecialCollisions`), `scVSBattleFuncUpdate` (`mnRemixVSStatsCollectMidmatch`: highest percent, sampled from
+`players[].stock_damage_all` every frame like `run_collect_`, so the panel's initial damage and poison count), three lines in
 `mnvsresults.c`, reset in `scVSBattleStartBattle`. Damage per port pair is read from `gSCManagerTransferBattleState.players[]`. The
 group 0x16 hide is `gmRemixGroupDisplaySet` (Render.asm `toggle_group_display_` over `gGCCommonLinks`).
 
-Deviations: cells are centred and spaced with 6-character padding rather than aligned at fixed X; stripe parity restarts on page 2; the
+Each port header has the white 26x1 underline of `draw_port_headers_` (:633-643, Y 26, from X 158 + 35 * column). `stripe_on`
+is never reset by the asm: the port carries it from page 1 to page 2 and from one results screen to the next
+(`mnRemixVSStatsPagesStartScreen`, rules `mnRemixVSStatsRulesScreenRows` and `mnRemixVSStatsRulesStripeAfterRows`), so with
+the Combo Meter on (an odd row count) the striped rows alternate from one screen to the next.
+
+Deviations: cells are centred and spaced with 6-character padding rather than aligned at fixed X; the
 special-move percent uses truncation, the others round to nearest even like `cvt.w.s`. The A, B and R buttons are extension sprites
 (`ifRemixSpriteMake` in `mnremixvsstatsscene.c`); a CPU tech miss is counted by `ftremixaiteching.c` (`AI.asm` `random_teching_`).
 Test: `inputs/stats_view.txt`; play a 2-4 player match with a CPU to the results, wait for the prompt (do not press START), A, R, B.
@@ -420,7 +431,7 @@ to the DK picture with the scroll sound and no announcer), `l5_screens_gallery` 
 |---|---|---|
 | `AerialAttackFastFall.asm` | five hooks at 0x80129E38-0x80129E88 swap the Proc Physics of AttackAir N/F/B/Hi/Lw (`ftPhysicsApplyAirVelDrift`) for `...FastFall` (0x800D9160) when `Fast Fall Aerials` is on (Gameplay Settings, default off) | `ft/ftremix/ftremixaerialfastfall.c` via `ftMainSetStatus`: swaps the physics only for those five statuses of `dFTCommonNullStatusDescs` and reads the toggle each frame |
 | `MagnifyingGlass.asm` | `apply_custom_zoom_` (0x80110E80) scales the magnified model by `Character.magnifying_glass_zoom` per character id (custom matrix per port) | `gm/gmremixmagnify.c`, wired at `ifcommon.c` |
-| `SFXReplace.asm` | on Flat Zone (0x32) and Flat Zone 2 (0x62), in VS (0x16), Training (0x36) and Remix modes (0x77), the footstep (23 ids), landing (12) and hard landing (7) sounds become gaw sounds 0x602, 0x603, 0x604 (no setting); the down bounce becomes 0x604 on those stages | `ftremixsfxreplace.c`: runs before `ftRemixJapaneseMotionSoundFgm` in the PlayFGM case (hook 0x800DF864 before 0x800DF86C); `ftCommonDownBounceUpdateEffects` for the bounce |
+| `SFXReplace.asm` | on Flat Zone (0x32) and Flat Zone 2 (0x62), in VS (0x16), Training (0x36) and Remix modes (0x77), the footstep (23 ids), landing (12) and hard landing (7) sounds become gaw sounds 0x602, 0x603, 0x604 (no setting); the down bounce becomes 0x604 on those stages | `ftremixsfxreplace.c`: runs before `ftRemixJapaneseMotionSoundFgm` in the PlayFGM case (hook 0x800DF864 before 0x800DF86C); `ftCommonDownBounceUpdateEffects` for the bounce. The asm screen 0x77 is the 1P game of every Remix 1P mode but Remix 1P (`_initial_screen_set`): the port tests the 1P game scene plus `sc1PRemixModeRunsOnRemixModesScreen` (Bonus 3, Multi-Man, Cruel, All-Star, HRC) |
 | `Practice.asm overlay_colour_` | tints the fighter by state when `Color Overlays` is on: yellow when actionable (standing, turn, landing after the FAF), blue intangible, green invulnerable, red hitstun, cyan reflect/absorb; the Falcon turn check compares the wrong register so Falcon gets the slow FAF 5 (Remix behaviour kept) | `ftremixoverlay.c` (`ftRemixOverlayColour` at the start of `ftMainProcPhysicsMapDefault`), flags in two static arrays |
 | `Practice.asm flash_on_z_cancel_` | flash on a Z-cancel landing | `ftremixzcancel.c` `ftRemixZCancelFlashOnLanding` |
 

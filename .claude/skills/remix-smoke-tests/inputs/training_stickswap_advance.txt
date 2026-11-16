@@ -1,5 +1,7 @@
 # Training (LLDB_START_SCENE=54 SSB64_TRAIN_FKINDS=0,8) with SSB64_REMIX_PANEL="DpadControl.1=1" (Stick Swap): stick up
-# freezes (the D-pad up shortcut), stick right held advances one frame every 5 frames (the DR turbo). Count with lldb_count.sh
-# on sc1ptrainingremix.c:124 (advance, 7 in this run) and :129 (freeze toggle, 1).
+# freezes (the D-pad up shortcut), stick right held advances one frame every 5 frames (the DR turbo). Count with gdb_count.sh
+# (GDB_START_SCENE=54) on sc1PTrainingFrameRulesResolve, whose first argument is the SC1PTrainingFrameState and second the lag
+# tic: "... if ((SC1PTrainingFrameState*)$rdi)->is_right_latched != 0 && $rsi == 0" (advance, 7 in this run) and the same with
+# is_up_latched (freeze toggle, 1).
 200 202 0 - 0 70
 240 275 0 - 70 0

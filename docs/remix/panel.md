@@ -92,7 +92,7 @@ Values are from `css/X.asm`; module files are under `decomp/src/ft/ftremix/` unl
 | Initial Damage | 0..999 | `Damage.asm` (0x800D7A14) | `ftremixpanel.c` |
 | Poison Dmg | 0 None, 1 Low (+1%), 2 Medium (+2%), 3 High (+4%), 4 Heal (+2 HP) | `PoisonDmg.asm` | `ftremixpoison.c` |
 | Practice | 0 OFF, 1..10 Stage N, 11 Final Stage | `Practice_1P.asm` | `gm/gmremixpractice.c` |
-| Stock Count (port only) | 0..99, default 3 | `stock_count_table` | `gm/gmremixstockmode.c` |
+| Stock Count (port only) | -1..99, default -1 (unset: the rules value) | `stock_count_table` | `gm/gmremixstockmode.c` |
 
 Fighter names of Kirby Hat 1..40 follow the CSS order (`kFighterNames` in the registry); the Handicap labels are `kHandicapNames`.
 
@@ -107,7 +107,9 @@ and entry egg (0x80102F5C) are not wired; `Character.yoshi_egg_color.table` is n
 **Player Tag.** Every value >= 1 swaps the in-match tag for an arrow-only sprite (file 0x26 offset 0x1158, absent from the vanilla 0xEB8-long
 table), draws the custom name (`Toggles.entry_player_tags_{N-1} + 0x28`) and skips the `playertag_wait` countdown. Port:
 `ifRemixPlayerTagSpriteOffset`, `ifRemixPlayerTagAlwaysShown`, and `ifRemixPlayerTagDrawName` (name through `remix_hud_text` at the sprite
-centre every frame, one layer, no black outline copy). Tag number 2 named `afk` also drives the credits speed assist
+centre every frame: the black copy of `create_custom_tag_`, moved by (-1, -1.65) with every glyph 1.25 times larger in place
+(`remix_hud_text_put_fit_glyph_scale`), under the coloured name; both take the alpha of the indicator sprite, as
+`position_custom_tag_` copies it, so the name fades with the arrow of a cloaked or invisible fighter). Tag number 2 named `afk` also drives the credits speed assist
 (`docs/remix/menus.md`) and the 1P away mode (`sc1PRemixAfk*`).
 
 **Visibility.** `initialize_override_table_` (0x800D7CBC) sets the env colour override of the port; `update_player_indicator_alpha_`
@@ -138,14 +140,24 @@ to Play and Auto-Demo; it scales the top joint, ECB, ledge box, camera zoom and 
 
 **Stock and Stock Count.** `set_initial_stock_count_`: Default uses the match stocks; Last uses the count the port ended the previous match
 with (`previous_stock_count_table`, written at every KO by `update_stocks_remaining_`, at least `min(prev, rules)`); Manual uses
-`stock_count_table[port]` when below the rules value (unset -1 means the rules value). The CSS counter is 0-based and the HUD shows
+`stock_count_table[port]` when below the rules value (unset -1 means the rules value; the port option `StockCount` has the same -1
+default, `gmRemixStockModeRulesManualCount`). The CSS counter is 0-based and the HUD shows
 `count + 1`. Tag Team, Tug of War, 12CB, King of the Hill and Smashketball also use the tables. Port: `gmRemixStockModeBeginMatch(player,
 match_stocks)` from the `scvsbattle.c` fighter loop stores `initial_stock_count`; Last is `sStockModeLastCount` (reset on a CSS reset and by
-the salty runback). `StockCount` is a port-only option edited in the port menu in place of the Manual counter the Remix draws under the panel;
-the CSS draws a counter only for the 12CB Manual stocks (`mnremixtwelvecbstockmanual.c`).
+the salty runback). The VS CSS draws the counter of `update_stock_icon_and_count_indicators_` (`CharacterSelect.asm:5625-5718`) under the
+panel of a port in Last or Manual, for the fighter the panel shows: stock icon, "x" and the count (`mnPlayersVSUpdateStockModeIndicator`,
+`gmRemixStockModeRulesCssCount`; hidden while the panel menu is open). A selected fighter in Manual also gets the two blinking arrows
+(`mnremixtwelvecbstockmanual.c`, shared with the 12CB); a cursor press on one steps the count and wraps between 0 and the rules value
+(`check_manual_stock_arrow_press_`, `update_remaining_stocks_`: `mnPlayersVSCheckStockModeArrowPress`, `gmRemixStockModeRulesStepManualCount`,
+FGM 163 at most every 3 frames while A is held, the Tag Team queue cut to the new count). The count is the panel value `StockCount`
+(CVar `gRemix.Panel.StockCount.P<n>`), which the port menu also edits; the CSS writes the value it shows back, as the asm does, so an
+unset count becomes the rules value of that visit. The character selects of King of the Hill and Smashketball set Stock back to Default
+for the four ports on entry (`before_css_setup_` of both modes clears `stockmode_table`: `gmRemixStockModeClearModes` from
+`gmRemixModeBeforeCSS`).
 
 **Knockback.** At `ftManagerMakeFighter` each port rolls one angle per action id (0x200) when the scene changed (`randomize_angles_`);
-`get_angle_hitbox_` (`ftMainParseMotionEvent`) and `get_angle_throw_` (`ftCommonThrownReleaseThrownUpdateStats`) read it. Port
+`get_angle_hitbox_` (`ftMainParseMotionEvent`) and `get_angle_throw_` (`ftCommonThrownReleaseThrownUpdateStats`) read it; a throw uses
+the option and the throw action (ThrowF, ThrowB...) of the thrower, not of the thrown fighter. Port
 `ftRemixKnockbackRandomizeAngles` / `ftRemixKnockbackAngle`: 60% a good angle (45-135), 15% a semi-spike or spike (180-360), 15% random
 (0-360), 10% the Sakurai angle (361). Re-entering the same scene (Training reset, salty runback) keeps the angles.
 
@@ -211,7 +223,7 @@ Smash holds A with Charge Smashes on). The stick is half range (+-40) on a singl
 Stickless, with Single Button Mode (press only) and in Training with "D-pad Controls" other than OFF. Macros read the D-pad generated by Stick Swap.
 
 **Initial Damage.** `char_init_` sets the percent of a new fighter, ignoring respawns; in Stamina the value is limited to the HP. Port
-`ftRemixPanelGetInitialDamage` (from `ftManagerInitFighter`): only when the description has no damage and the fighter is not a demo fighter; VS,
+`ftRemixPanelGetInitialDamage` (from `ftManagerMakeFighter`, the call the asm recognises by its return address, so a KO respawn starts at 0%): only when the description has no damage and the fighter is not a demo fighter; VS,
 1P and Bonus take `panel % 1000`, Training takes the menu percent (Reset Sets Percent).
 
 **Poison Dmg.** `apply_damage` (called by `Poison.asm:51`) runs when the low 7 bits of the match tic are zero (about every 2 s; at game speed 1/3 or
@@ -221,8 +233,8 @@ which skips the hazard poison for that frame; `ftRemixPoisonUpdate` runs before 
 same frame; the timer is `gSCManagerBattleState->time_passed`; game speed is read from the toggle directly; the percent is capped at the Stamina HP
 and a defeated Stamina fighter is skipped.
 
-**Practice.** `_1p_practice` maps 1..3 to stages 0..2, 4..6 to 4..6, 7..9 to 8..10, 10 to 12 and 11 to 13 (bonus stages 3, 7, 11 skipped); holding L on
-GAME SET or STAGE CLEAR (`hold_l_to_retry_`, `hold_l_to_retry_stage_clear_`) or the pause menu L retries the stage. Port:
+**Practice.** `_1p_practice` maps 1..3 to stages 0..2, 4..6 to 4..6, 7..9 to 8..10, 10 to 12 and 11 to 13 (bonus stages 3, 7, 11 skipped); holding L alone on
+GAME SET (a Bonus stage of the run included) or STAGE CLEAR (`hold_l_to_retry_`, `hold_l_to_retry_stage_clear_`) or the pause menu L retries the stage. Port:
 `gmRemixPracticeStartStage` from `mnPlayers1PGameSetSceneData` reads the registry directly (the player table is not filled yet and the human guard
 could zero it); a retry replays the stage with no continue, level drop or stage preview (the trigger sets a flag, ends the scene and
 `sc1PManagerUpdateScene` consumes it through `gmRemixPracticeConsumeRetry`).

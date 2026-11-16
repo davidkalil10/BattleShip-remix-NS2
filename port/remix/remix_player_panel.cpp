@@ -87,7 +87,8 @@ const std::vector<Option> kOptions = {
     { REMIX_PANEL_DAMAGE, "Damage", "Initial Damage (%)", 0, 999, 0, {} },
     { REMIX_PANEL_POISON_DAMAGE, "PoisonDmg", "Poison Damage", 0, 4, 0, { "None", "Low", "Medium", "High", "Heal" } },
     { REMIX_PANEL_PRACTICE_1P, "Practice1P", "1P Practice", 0, 11, 0, PracticeStages() },
-    { REMIX_PANEL_STOCK_COUNT, "StockCount", "Stock Count (Manual)", 0, 99, 3, {} },
+    // StockMode.asm stock_count_table starts unset (-1): the count of the rules until an arrow of the CSS or this menu sets it
+    { REMIX_PANEL_STOCK_COUNT, "StockCount", "Stock Count (Manual, -1 = rules)", -1, 99, -1, {} },
 };
 
 std::array<std::string, REMIX_PANEL_TAG_COUNT> sTagNameOverrides;

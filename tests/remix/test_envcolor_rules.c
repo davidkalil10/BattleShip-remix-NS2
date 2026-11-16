@@ -1,5 +1,5 @@
 /**
- * test_envcolor_rules.c - unit tests of the env colour opacity rule (ft/ftremix/ftremixenvcolorrules.c).
+ * test_envcolor_rules.c - unit tests of the env colour override rules (ft/ftremix/ftremixenvcolorrules.c).
  */
 
 #include "test_check.h"
@@ -38,6 +38,20 @@ static void testForcedRenderModeIsTheAsmAlphaWord(void)
     CHECK_EQ(0xC41049D8u, FTREMIX_ENVCOLOR_FORCED_RENDER_MODE);
 }
 
+static void testOverrideReplacesTheStageLightColour(void)
+{
+    CHECK_EQ(1, ftRemixEnvColorRulesReplacesLight(ENVCOLOR_CLOAKED, 0, 0));
+    CHECK_EQ(1, ftRemixEnvColorRulesReplacesLight(ENVCOLOR_DARK, 0, 0));
+    CHECK_EQ(0, ftRemixEnvColorRulesReplacesLight(0, 0, 0));
+}
+
+static void testColAnimColour2AndFogColourWinOverTheOverride(void)
+{
+    CHECK_EQ(0, ftRemixEnvColorRulesReplacesLight(ENVCOLOR_CLOAKED, 1, 0));
+    CHECK_EQ(0, ftRemixEnvColorRulesReplacesLight(ENVCOLOR_DARK, 0, 1));
+    CHECK_EQ(0, ftRemixEnvColorRulesReplacesLight(ENVCOLOR_NONE, 1, 1));
+}
+
 void remixTestEnvColorRules(void)
 {
     printf("env color rules\n");
@@ -46,4 +60,6 @@ void remixTestEnvColorRules(void)
     RUN_TEST(testPanelOptionsNoneAndCloakedForceTheAlphaRenderMode);
     RUN_TEST(testAnyAlphaBelowOpaqueForcesTheAlphaRenderMode);
     RUN_TEST(testForcedRenderModeIsTheAsmAlphaWord);
+    RUN_TEST(testOverrideReplacesTheStageLightColour);
+    RUN_TEST(testColAnimColour2AndFogColourWinOverTheOverride);
 }

@@ -46,7 +46,8 @@ or armor on defeat, KO sound and the damage pose; `no_laugh_`; `giga_usp_prevent
 cards were rewritten (`title_card_*`): name text (Marina, Banjo and Crash cut to a short width, only on the Team and Giant cards: `title_card_text_routine` does it in
 those two branches and every other stage shows the full name), team and giant texts, voice, model scale, Yoshi card, Metal Bros, tiny team (three tiny opponents,
 costume `member index % fighter kind`: 0, 1, 2 for most fighters; the asm divides by the kind and traps on Mario, the port uses costume 0 there), doubles order.
-`SinglePlayer.asm` adds the per-fighter name texture, FGM and name delay tables (`get_name_texture_`, `get_fgm_`, `get_name_delay_`), the VS preview fixes
+`SinglePlayer.asm` adds the per-fighter name texture, FGM and name delay tables (`get_name_texture_`, `get_fgm_`, `get_name_delay_`: the patch drops the vanilla `+ 1`, so "VS" plays
+on tic 51 and the opponent name on tic 111 for a delay of 50), the VS preview fixes
 (`singleplayer_vs_preview_fix_`, `_with_allies_fix_`, `duo_team_costume_preview_fix_`, `singleplayer_gdk_polygon_team_costume_preview_fix_`,
 `singleplayer_mm_costume_preview_fix_`) and the `fix_port_index_` patches (`desc.player` of title card fighters = the human port). The costume fixes run when a card
 fighter is made (`sc1PIntroMakeVSFighter`): costume 1 for the opponent when the human has costume 0 and is Giant DK facing DK or a polygon facing an original polygon,
@@ -56,7 +57,7 @@ and allies take the human port (allies: the other of P1 and P2), the opponents t
 port apply (`sc1pintrorules.c`).
 
 Records: the 1P score, bonus count and best difficulty per fighter in `Character.REMIX_1P_HIGH_SCORE_TABLE` (and `ALLSTAR_HIGH_SCORE_TABLE`). The run has its own ending
-song (`BGM.asm` `remix_1P_ending_song`: `Character.remix_1p_end_bgm.table[fkind]`).
+song (`BGM.asm` `remix_1P_ending_song`: `Character.remix_1p_end_bgm.table[fkind]`). Credits opened from the port menu (Remix > Other Screens, the asm settings screen 0x39) play the standard credits song whatever mode is stored (`sc1PRemixEndingUsesFighterSong`).
 
 ## All-Star
 
@@ -102,16 +103,16 @@ Enemy port is on); a beaten record plays New Record (FGM 0x1D0) instead of Compl
 
 ## Home-Run Contest (HRC)
 
-The first 1P stage becomes the HRC stage with a Sandbag (CPU type 5) as the only opponent, one stock, no items, blast zones off (`turn_off_blastzones_`), the bat never
+The first 1P stage becomes the HRC stage with a Sandbag (player kind 5, a fighter that gets no input: `sc1PRemixHrcFighterKind`) as the only opponent, one stock, no items, blast zones off (`turn_off_blastzones_`), the bat never
 despawns (`prevent_item_despawn_`), no BGM volume ramp, "Are You Ready?" (FGM 509, 66 tics) and a 600 tic countdown in the Bonus timer layout (`apply_countdown_`, `_load_timer`).
 `HRC.main_` runs per frame: it finds the human (type 0) and the Sandbag (type 5), and while the Sandbag is behind `START_X` (-19392) the camera holds `DEFAULT_CAMERA_X`
-(-21312), after which it follows one third of the way each frame; past 12528 the camera warps back 9120 (100 ft) and `warp_distance` grows. Distance in tenths of a foot =
-`(sandbag x - START_X + warp_distance) / 9.12`, truncated. The attempt ends after 600 tics once the Sandbag has stopped and the human is not in an exempt action (Lanky
-Orangstand, Donkey Kong cargo, the action table); `_complete` animates the counter to the centre over 45 tics and plays FGM 0x1CB, `_failure` counts the same timer. Projectiles
+(-21312), after which it follows one eighth of the way each frame (the asm divides by `0x41000000`, 8.0; its comment says 3); past 12528 the camera warps back 9120 (100 ft) and `warp_distance` grows. Distance in tenths of a foot =
+`(sandbag x - START_X + warp_distance) / 9.12`, truncated. The attempt ends after 600 tics once the Sandbag has stopped and the human is in a resting action (the action table, and
+Lanky's Orangstand: `deviations.md` 5.7); the Donkey Kong cargo ends it at once; `_complete` animates the counter to the centre over 45 tics and plays FGM 0x1CB, `_failure` counts the same timer. Projectiles
 and the human are repositioned relative to the warped camera (`update_projectile_and_hmn_positions_`); the distance signs show 100 / 200 / 300 ft and the fourth sign moves on each
 warp; the clouds scroll against the Sandbag (`animate_background_image_`, speed factor -0.001, x scale 2.2334); Big Blue (stage 0x48) scrolls its background in VS the same way.
 The counter is the distance with one decimal ("12.3", right aligned at x 278, y 44, scale 0.9) and "FT." (x 282, y 47, scale 0.625), growing to scale 1.35 / 1.075 and moving
-to the centre while COMPLETE. The record is `Character.HRC_HIGH_SCORE_TABLE` (tenths of a foot, drawn on the CSS with a period at x 216).
+to the centre while COMPLETE. The record is `Character.HRC_HIGH_SCORE_TABLE` (tenths of a foot, drawn on the CSS with a period at x 216); only a COMPLETE saves it (`_time_save` hooks the Complete announce), a FAILURE never does.
 
 ## Music, stage setup and items of the modes (`sc1pgame.c` hooks)
 
@@ -149,10 +150,13 @@ Alternate and Random Music are still applied by `mpCollisionInitGroundData` in t
 
 `Bonus.asm` adds a Normal / Remix header toggle to the Bonus 1, 2 and 3 CSS (`handle_header_toggle_`), with the title "Option", the `MODE:` row (NORMAL `0xE4BE41`, REMIX `0xE44141`),
 blinking arrows and, for Bonus 1/2 on Remix, a STAGE row: 33 stages (`btt_stage_table`, `btp_stage_table`, Remix fighters included) shown with one or two stock icons (file 0xD8B),
-and "L: Set Stage" while a token is held. Remix selection disables the automatic start (`manual_remix_bonus_start_`, 140 tics otherwise). `set_btt_stage_id_` / `set_btp_stage_id_` pick the stage:
+and "L: Set Stage" while a token is held. `setup_` makes the STAGE row on Bonus 3 too, hidden: the row, its arrows, the icons and "L: Set Stage" follow the header on every frame, so a
+cycle from Bonus 3 to Bonus 1/2 shows them and a cycle to Bonus 3 hides and disables them (`mnRemixBonusModesStageRowIsShown`). Both STAGE arrows take 8 px of press padding on their left
+side (`mnRemixBonusModesStageArrowHit`); the MODE arrows take it on the side facing the other arrow. Remix selection disables the automatic start (`manual_remix_bonus_start_`, 140 tics otherwise). `set_btt_stage_id_` / `set_btp_stage_id_` pick the stage:
 the fighter's own (`Character.BTT_TABLE`, `BTP_TABLE`) for added fighters, the STAGE row for a Remix choice, the vanilla stage otherwise; `bonus_fix_1_..4_` supply the targets / platforms
 of the added stages (`Stages.bonus_pointer_table`). Records for added fighters and Remix stages are `Bonus.REMIX_BONUS_HIGH_SCORE_TABLE` (33 stages x fighters x targets / platforms), and the
-Bonus 2 CSS shows the per-mode records (KOs `0x34E8` or feet `0x3C08` label, 5 or 7 digits, a total line at x 235 / 225, y 205, header images `0x1DD8` Bonus 3, `0x14D8` Multi-Man,
+Bonus 2 CSS shows the per-mode records (KOs `0x34E8` or feet `0x3C08` label, 5 or 7 digits, a total line at x 235 / 225, y 205, the feet total with the same decimal point as the
+record: `draw_hrc_high_score_decimal_` hooks both routines; header images `0x1DD8` Bonus 3, `0x14D8` Multi-Man,
 `0x1958` Cruel, `0x24C8` HRC). In the 1P run itself the `_1p` variants of the stage id patches ignore `Bonus.mode` and use the default tables.
 
 ### Bonus bookend and menu hooks
@@ -178,7 +182,8 @@ credits slow down at the first Remix name.
   value 2), Gameplay word 2 to be 0, the Pokemon word `& 0xFFFC` to be `0x7FFC` and no enemy port; otherwise "High Scores Disabled" is drawn (x 192, y 217, scale 0.8125, `0xFF8080FF`) and no
   record is written.
 - Practice_1P (panel option): the 1P game starts on the chosen stage (values 1..11 map to Link, Yoshi, Fox, Mario, Pikachu, DK, Kirby, Samus, Metal Mario, Polygon team, Boss, with the Bonus
-  stages skipped); L held on any controller at stage clear, or L in the pause menu, retries the stage without a continue, a level drop or the stage preview. Practice runs take the Bonus timer branch.
+  stages skipped); L held alone on one controller (`Joypad.check_buttons_all_` with "match any" false: L + A does not count) at GAME SET, the Bonus stages of the run included, or at stage
+  clear, or L in the pause menu, retries the stage without a continue, a level drop or the stage preview. Practice runs take the Bonus timer branch.
 
 ## How the port does it
 
@@ -196,15 +201,15 @@ credits slow down at the first Remix name.
 | Multi-Man, Cruel | `sc1premixmultiman.c` (`SetupBattle/SetupHud/SetupPlayer/SetupEnemy/PolygonKind/OnEnemyKo/OnPlayerKo/SaveRecord/LeaveRun/DrawHud`), pure rules in `sc1premixmoderules.c`; HUD sprites through `ifRemixSpriteMake` + `remix_hud_text_putf` slot 28 |
 | Bonus 3 | `sc1premixbonus3.c` (`SetupBattle`, `SetCourse`, `OnComplete`, `SaveRecord`; rules in `sc1premixbonus3rules.c`), the count-up timer is `sc1PBonusStageMakeCountUpTimer` (also the HRC timer, which counts down 600 tics in `sc1PBonusStageTimerProcUpdate` and holds at 0, and the Practice timer; `sc1PBonusTimerIsCountUpRun` in `sc1pbonustimer.c` tells which runs use it, `sc1PGameInitTimeUpMessage` asks it), finish hook in `grbonus3.c` (`grBonus3FinishProcUpdate`), `SSB64_REMIX_BONUS3_COURSE=normal|remix` forces the course |
 | HRC | `sc1premixhrc.c` (stage, Sandbag, stocks, Are You Ready, end of run), `sc1premixhrcrun.c` (per-frame, counter, `sc1PRemixHrcCounterAt`), `sc1premixhrctravel.c`, `sc1premixhrcsigns.c`, `sc1premixhrcclouds.c`, `sc1premixhrcrecord.c`; rules in `sc1premixhrc*rules.c`; blast zones in `ftmain.c`, bat in `itmap.c` (`sc1PRemixHrcKeepsItem`), countdown in `ifcommon.c` |
-| `_end_match_screen`, `_reset`, `_reset_button`, `hold_l_to_retry_` (fake screen 0x77), `bonus2` exits | The L retry of Bonus 3, Multi-Man, Cruel and HRC lives in `sc1premixretry.c` (rules in `sc1premixretryrules.c`): L in the pause menu (`sc1PRemixRetryTryByPause`) or L held on any controller while GAME SET shows (`sc1PRemixRetryTryByGameSet`, also for Bonus 1/2 practice runs) sets the retry flag (`reset_flag`) and ends the scene from `ifcommon.c`. `sc1PRemixModeLeaveRun` (`sc1premixbonusexit.c`) restarts the run only when it consumes that flag; A + B + R + Z and a KO return to the Bonus 2 CSS, as `_end_match_screen` does. The pause legend (`ifCommonBattlePauseMakeSObjsAll`) shows "L: RETRY" in these four modes, HRC included. In a Bonus 1/2 practice run `sc1PBonusStageStartScene` consumes the flag and keeps the Bonus stage and its CSS as the scenes (`hold_l_to_retry_bonus_1/_2`), skipping the unlock checks |
+| `_end_match_screen`, `_reset`, `_reset_button`, `hold_l_to_retry_` (fake screen 0x77), `bonus2` exits | The L retry of Bonus 3, Multi-Man, Cruel and HRC lives in `sc1premixretry.c` (rules in `sc1premixretryrules.c`): L in the pause menu (`sc1PRemixRetryTryByPause`) or L held alone on one controller while GAME SET shows (`sc1PRemixRetryTryByGameSet`, also for Bonus 1/2 practice runs) sets the retry flag (`reset_flag`) and ends the scene from `ifcommon.c`. `sc1PRemixModeLeaveRun` (`sc1premixbonusexit.c`) restarts the run only when it consumes that flag; A + B + R + Z and a KO return to the Bonus 2 CSS, as `_end_match_screen` does. The pause legend (`ifCommonBattlePauseMakeSObjsAll`) shows "L: RETRY" in these four modes, HRC included. In a Bonus 1/2 practice run `sc1PBonusStageStartScene` consumes the flag and keeps the Bonus stage and its CSS as the scenes (`hold_l_to_retry_bonus_1/_2`), skipping the unlock checks |
 | Bonus Remix | `sc1pbonusremix.c` (`sc1PBonusRemixGetBattleGkind`, tables read from the Remix image, class table for platforms, `TrySave`), `sc1pbonusstage.c` hooks (`sc1PBonusStageIsNewRecord`: the New Record voice compares with the Remix table record of the stage played when it is not the fighter's default stage, the record must be complete and beaten; `sc1PBonusStageGetGkind1PGame`: the Bonus stages inside the 1P game ignore `Bonus.mode` and the Remix 1P table, rules in `sc1pbonusstagerules.c`), CSS `mnremixbonusmodes.c` (Option panel, MODE row, STAGE row, "L: Set Stage", manual start, records, total, headers; rules `mnremixbonusmodesrules.c`) |
 | Bonus bookend, Random token | `mnRemixCssBonusMakeBookend/GetFighterKind/Scroll/UpdateHint` and `mnRemixCssRandomMakeBookend` (`mnremixcssbonus.c`, `mnremixcssrandom.c`) through `mnRemixBonusModesUpdateScroll/UpdateHint`; slide-in by `mnRemixCssSlideAttach` on the 30 grid portraits (`mnPlayers1PBonusMakeRemixPortrait`); the puck returns `REMIX_ID_RANDOM` over the bookend |
 | records and switch | `LBBackup1PRecord` fields `hrc_distance`, `multiman_kos`, `cruel_kos`, `bonus3_time`, `bonus3_remix_time`, `remix_1p`, `allstar` and `LBBackupData.remix_bonus` (`lbtypes.h`; `GMCOMMON_FIGHTERS_SAVE_NUM` is 97, one row per Remix fighter); `sc1premixscore.c`, `sc1premixhighscores.c` (writers call `sc1PRemixHighScoresCanSaveRecord` first), `mnremixcsspanelmenurules.c` (`mnRemixPanelMenuRulesHighScoresEnabled`) with `remix_toggle_group_snapshot` (`port/remix/remix_toggles.cpp`) |
 | Single Player Enemy, afk | `sc1premixenemy.c` (port state, hooks in `sc1pgame.c`, `efmanager.c` shield colour), `sc1premixenemyrules.c`, `sc1premixenemyafk.c` (afk tag 2 = `SSB64_REMIX_TAG_NAMES="2=afk"`, hooks in `sc1pstageclear.c`, `sc1pintro.c`, `mn1pcontinue.c`, `sc1pbonusstage.c`, `grbonus3.c`), CSS labels `mnremixenemylabel.c`, Z / B in `mnplayers1pgame.c` |
-| Practice_1P | `gmRemixPracticeStartStage/Begin/TryRetryByHold/TryRetryByPause/ConsumeRetry` (`gmremixpractice.c`), hooks in `sc1pmanager.c`, `sc1pstageclear.c`, `ifcommon.c`; `prevent_masterhand_softlock_`: `sc1PGameBossSetBossPlayer` takes a slot as Master Hand only with player kind CPU and fighter kind Boss (`sc1PRemixSlotIsCpuMasterHand`, `sc1premixmoderules.c`), so a stale slot of another port type left in `gSCManager1PGameBattleState` by a practice retry is never the boss |
+| Practice_1P | `gmRemixPracticeStartStage/Begin/TryRetryByHold/TryRetryByGameSet/TryRetryByPause/ConsumeRetry` (`gmremixpractice.c`; `TryRetryByGameSet` takes the 1P Game battle and a Bonus stage of the run, `_check_bonus_not_1p`), hooks in `sc1pmanager.c`, `sc1pstageclear.c`, `ifcommon.c`; `prevent_masterhand_softlock_`: `sc1PGameBossSetBossPlayer` takes a slot as Master Hand only with player kind CPU and fighter kind Boss (`sc1PRemixSlotIsCpuMasterHand`, `sc1premixmoderules.c`), so a stale slot of another port type left in `gSCManager1PGameBattleState` by a practice retry is never the boss |
 | Rest Area hearts | `heart_persist`: `itRemixHeartIsDespawnBlocked` (`itremixheartpersist.c`) stops `itProcessProcItemMain` from counting the pickup wait of a heart down while `sc1PRemixAllstarIsRestArea`, so the hearts never flash or vanish |
 | env mapping | `env_mapping_fix_`: `sysRemixEnvMapAppendLookAt` (`sysremixenvmap.c`, screen rule `sysRemixEnvMapIsLookAtScreen` in `sysremixenvmaprules.c`) appends the two look-at commands (`custom_lighting_1/2`, byte for byte) at the end of the camera display list setup (`func_8001663C`, `sys/objdisplay.c`) on the 1P VS preview, the CSS screens 0x10 to 0x14, the VS results, the ending room and the Continue screen, so Metal Mario and the polygons get environment mapping; a camera with its own look-at matrix replaces them later in the list. The asm tests the first loaded file (0xB, 0x4F); the port tests the scene only, since its Continue screen is a scene of its own |
-| own ending song | `sc1PRemixEndingGetCreditsSong` (`sc1premixending.c`) from `scStaffrollFuncStart` |
+| own ending song | `sc1PRemixEndingGetCreditsSong` (`sc1premixending.c`) from `scStaffrollFuncStart`; not for credits opened from the port menu (previous scene equal to the credits scene) |
 
 Save format: the Remix record fields extend `LBBackup1PRecord` / `LBBackupData` under `PORT && REGION_REMIX`; the checksum covers the whole struct, so a save from before a field was added is reset once to the
 defaults. Vanilla builds are untouched.
@@ -221,6 +226,8 @@ defaults. Vanilla builds are untouched.
 - **Option bar.** The Option panel bar is a HUD rectangle (slot 46), drawn over the game sprites; the asm draws it under the outline and the title.
 - **Rest Area.** The port uses the race wait for the Rest Area and enters `sc1PManagerUpdateScene` once per run, so `match_begin_flag` has no visible effect (`sc1PRemixAllstarKeepsRunState` keeps the asm
   rules for a re-entry).
+- **Bonus total time with the Remix choice.** With REMIX and a stage that is not the fighter's own, the asm also counts the fighters with no Bonus stage, so its TOTAL never shows; the port
+  skips them (`deviations.md` 5.6).
 - **Total label.** The "TOTAL" label keeps y 209 (the asm stores a register whose value is not traced); the number is at y 205 as in the asm.
 
 Audit ledger (every item closed): `docs/remix/patch_audit.md`, group g1.

@@ -44,6 +44,7 @@ struct HudLabel {
     float scale = 1.0f;
     int align = REMIX_HUD_ALIGN_LEFT;
     float maxWidth = 0.0f;
+    float glyphScale = 1.0f;
 };
 
 struct HudBar {
@@ -147,7 +148,7 @@ void DrawLabelWithRemixFont(ImDrawList *drawList, ImVec2 origin, ImVec2 scale, c
     const float textWidth = RemixFont::Measure(label.text, label.scale) * widthFactor * scale.x;
     const ImVec2 position(origin.x + label.x * scale.x - textWidth * AnchorFraction(label.align), origin.y + label.y * scale.y);
 
-    RemixFont::Draw(drawList, position, scale, label.scale, ColorOf(label.rgba), label.text, widthFactor);
+    RemixFont::Draw(drawList, position, scale, label.scale, ColorOf(label.rgba), label.text, widthFactor, label.glyphScale);
 }
 
 void DrawLabel(ImDrawList *drawList, ImVec2 origin, ImVec2 scale, const HudLabel &label) {
@@ -275,6 +276,7 @@ extern "C" void remix_hud_text_put(int slot, const char *text, float x, float y,
     label.scale = scale;
     label.align = align;
     label.maxWidth = 0.0f;
+    label.glyphScale = 1.0f;
     label.active = true;
     label.lastFrame = sCurrentFrame;
 }
@@ -284,6 +286,14 @@ extern "C" void remix_hud_text_put_fit(int slot, const char *text, float x, floa
     remix_hud_text_put(slot, text, x, y, rgba, scale, align);
     if (slot >= 0 && slot < REMIX_HUD_TEXT_SLOTS && text != nullptr) {
         sLabels[slot].maxWidth = max_width;
+    }
+}
+
+extern "C" void remix_hud_text_put_fit_glyph_scale(int slot, const char *text, float x, float y, uint32_t rgba, float scale,
+                                                   int align, float max_width, float glyph_scale) {
+    remix_hud_text_put_fit(slot, text, x, y, rgba, scale, align, max_width);
+    if (slot >= 0 && slot < REMIX_HUD_TEXT_SLOTS && text != nullptr) {
+        sLabels[slot].glyphScale = glyph_scale;
     }
 }
 

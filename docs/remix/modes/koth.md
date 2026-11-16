@@ -25,12 +25,14 @@ start); sudden death is off for KOTH (`TimedStock.asm` `prevent_sudden_death_`).
 All of it runs only while `Global.vs.game_status == 1` (go), in the order of registration: `hill_update_routine_`, `track_score_`,
 `update_indicators_`.
 
-- `hill_update_routine_`: while `timer != 0` it counts down. If the hill strip is hidden (display flag set) for 120 frames, or the hill leaves the
-  blast zone, or the timer ends, a new hill is chosen: `timer = 1200 + random(0..1199)` and `set_random_hill_`. The first hill is picked 120 frames
-  into the match.
-- `set_random_hill_`: up to 3 tries. Each try `get_random_line_id_` picks a random line of the collision line groups; surface materials 0x00-0x06,
-  0x0C-0x0E, 0x11 and 0x1F-0x23 are valid, the damaging and special ones (0x07-0x0B, 0x0F-0x10, 0x12-0x1E) are not. A try is rejected when the line
-  is outside the blast zone, the strip would be hidden, or the line is the current hill. On success: sound 0xA2, `contested_buffer = 0`.
+- `hill_update_routine_`: while `timer != 0` it counts down. A shown hill clears `hidden_frames`; a hidden one (display flag set) moves the hill
+  on the frame `hidden_frames` already equals 120 (the 121st hidden frame, which also clears the count) and otherwise counts the frame. A hill that
+  did not time out moves when it leaves the blast zone; the timer ending also moves it. A move sets `timer = 1200 + random(0..1199)` and calls
+  `set_random_hill_`. Nothing happens before the first strip object exists, so the first hill is picked when the 120-frame start timer ends.
+- `set_random_hill_`: `get_random_line_id_` picks a random line of the collision line groups; surface materials 0x00-0x06, 0x0C-0x0E, 0x11 and
+  0x1F-0x23 are valid, the damaging and special ones (0x07-0x0B, 0x0F-0x10, 0x12-0x1E) are drawn again. A line outside the blast zone, or whose
+  strip would be hidden, is drawn again without a try count. Only a repeat of the current hill uses up a try (3, checked before the decrement), so
+  the 4th repeat keeps the hill, with no sound. On a new hill: sound 0xA2, `contested_buffer = 0` (`hidden_frames` is not touched).
 - `track_score_`:
   1. A fighter is on the hill when its floor line id is the hill line, it is grounded and not captured. If it holds another fighter, it is eligible
      only when the held one is on its own team; otherwise the hill is contested (candidate -2).
@@ -41,13 +43,15 @@ All of it runs only while `Global.vs.game_status == 1` (go), in the order of reg
   4. When the king changes: sound 0x115 (gained, king >= 0) or 0xA9 (lost or contested).
   5. Scoring, per fighter whose team is the king, on the hill and eligible: while `team_scores[team] != target` the fighter's `scores[port]` and the
      team score go up by one **per eligible fighter** (two teammates on the hill raise the team score by 2 per frame); at the target the team's
-     `winner_times` goes up once per frame (+2 FFA, +1 teams). Every fighter not on the king's team has its `winner_times` reset to 0.
+     `winner_times` goes up once per frame (+2 FFA, +1 teams). Every fighter not on the king's team has its `winner_times` reset to 0; the loop also
+     runs with no king (-1 or -2), so an empty or contested hill resets every team's win timer.
   6. A scoring fighter with an empty `0x0A28` gfx routine slot gets the pulsing colour overlay of its colour (`GFXRoutine.KOTH_RED/BLUE/GREEN/YELLOW`,
      `KOTH_GRAY` for a CPU in free-for-all; teams never use gray).
 - `check_match_end_` (hook `0x80113180`, called from `VsRemixMenu.asm`): for each of the 4 `winner_times` entries, at 30, 90 and 150 it plays the
   3 / 2 / 1 announcer (`FGM.announcer.fight.*`) and returns (one beep per frame; the other entries are not checked that frame); at >= 210 each
   fighter of the king team gets one more score frame and the game-set routine runs. Any other case falls through to the vanilla time check.
-- `update_indicators_`: bar width = `trunc(score / target * 40)` px; when full, a white flash rectangle pulses alpha 0 to 100 in steps of 5.
+- `update_indicators_`: bar width = `trunc(score / target * 40)` px; when full, the meter's own white flash rectangle (alpha 0, delta +5 at setup)
+  steps by its delta, which turns up at 0 and down at 100, so each bar starts its pulse from 0 on the frame it fills.
 - `delay_respawn_`: the rebirth wait is 120 frames instead of 45, and the fighter's camera is turned off when the wait equals 75.
 - `ai_hill_behavior_`: a CPU targets the hill indicator (x of the indicator joint, y minus 500) and ignores items and tornados.
 - `get_surface_center_coords_` is defined but never called.
@@ -71,7 +75,9 @@ only) holds the strip pieces, the marker and the meter frame (image at +0x0AA8).
   GRAY `0xACACACFF`. Free-for-all order by port is red, blue, yellow, green with a CPU gray; teams use red, blue, green, yellow.
 - Meters: one per port (free-for-all) or team at x = 40 + 70 * port, frame image at y 180 (x - 3), bar and flash at y 188, 40 x 5 px. With the
   Dragon King HUD toggle on, or a Dragon King stage with the toggle on Auto, they move to y 8 / 16. Bar colours `colors_bar` (C96A6AFF, 7E7EC9FF,
-  B2B244FF, 4EAD4EFF, gray 888888FF for a CPU) and `team_colors_bar` (C96A6AFF, 7E7EC9FF, 4EAD4EFF, B2B244FF).
+  B2B244FF, 4EAD4EFF, gray 888888FF for a CPU) and `team_colors_bar` (C96A6AFF, 7E7EC9FF, 4EAD4EFF, B2B244FF). The frame image is tinted with
+  `colors_meter` / `team_colors_meter`, the lighter `Color.damage_icon` values (red FFA0A0FF, blue B4B4FFFF, yellow E6E678FF, green A0FFA0FF, gray
+  DCDCDCFF), in the same order.
 - CSS: header image at offset `0x29A8` of the game modes file, announcer FGM 775 on entry, a 3-digit goal picker (values 5, 10, 15, 20, 25, 30, 45,
   60, 90, 120, 240, 480, 960; x shifts at 100 and over).
 - Results: an extra "Times" row (label image at `0xE648`) with `M:SS` per port, drawn at y 124 with the place line pushed down 16 and delayed
@@ -81,13 +87,13 @@ only) holds the strip pieces, the marker and the meter frame (image at +0x0AA8).
 
 | Asm | Port |
 |---|---|
-| mode selection, `before_css_setup_`, `leave_css_setup_`, `start_match_setup_` | `gmRemixModeBeforeCSS/LeaveCSS/StartMatch` with the KOTH profile (Time rule, goal 30, teams saved) in `gmremixmodecss.c` |
+| mode selection, `before_css_setup_`, `leave_css_setup_`, `start_match_setup_` | `gmRemixModeBeforeCSS/LeaveCSS/StartMatch` with the KOTH profile (Time rule, goal 30, teams saved) in `gmremixmodecss.c`; the CSS entry also sets the panel option Stock of the four ports to Default (`KingOfTheHill.asm` 220-224, `gmRemixStockModeClearModes`) |
 | `setup_` | `gmRemixKothSetup` (`gmremixkoth.c`), called from `scVSBattleStartBattle` (`scvsbattle.c`): resets `gGMRemixKoth` (`gmremixkothstate.h`), registers `gmRemixKothProcUpdate`, makes the strip model and the meters |
-| `hill_update_routine_`, `set_random_hill_`, `get_random_line_id_` | `gmRemixKothUpdateHill` / `gmRemixKothPickHill` (`gmremixkoth.c`) and `gmremixkothhill.c` (`gmRemixKothHillPickLine`, material filter, blast zone test, 3 tries) |
+| `hill_update_routine_`, `set_random_hill_`, `get_random_line_id_` | `gmRemixKothUpdateHill` / `gmRemixKothPickHill` (`gmremixkoth.c`) and `gmremixkothhill.c` (`gmRemixKothHillPickLine`, material filter, blast zone test); the retry rule is `gmRemixKothRulesPickHill` and the hidden timeout `gmRemixKothRulesHiddenTimeout` (`gmremixkothrules.c`) |
 | `track_score_` | `gmRemixKothTrackScore` (`gmremixkothking.c`); the pure king and buffer rules are `gmRemixKothRulesCandidate` / `gmRemixKothRulesSettle` (`gmremixkothrules.c`); the fighter test is `gmRemixKothIsOnHill` (floor line id, grounded, not captured) |
 | `_apply_gfx_routines` | `gmRemixKothGlowApply` (`gmremixkothglow.c`): sets a fighter colour animation override (ids `0x80..0x83` for red, blue, green, yellow; the gray id is registered at run time with `gmRemixColScriptsRegisterRoutine`) |
 | `check_match_end_` | `gmRemixKothCheckMatchEnd` (`gmremixkoth.c`): countdown at 30, 90, 150, end at 210, then `ifCommonAnnounceEndMessage` |
-| `update_indicators_`, `setup_` meters | `gmRemixKothHudSetup/Update` (`gmremixkothhud.c`): the frame is a native sprite (`IFREMIX_SPRITE_KOTH_METER` from file 0x14F3), the bar and flash go through `remix_hud_bar_put`; positions and colours from `gmremixkothrules.c` |
+| `update_indicators_`, `setup_` meters | `gmRemixKothHudSetup/Update` (`gmremixkothhud.c`): the frame is a native sprite (`IFREMIX_SPRITE_KOTH_METER` from file 0x14F3), the bar and flash go through `remix_hud_bar_put`; positions, colours (`gmRemixKothRulesMeterColor` for the frame, `gmRemixKothRulesBarColor` for the bar) and the per-meter flash step (`gmRemixKothRulesFlashStep`) from `gmremixkothrules.c` |
 | `create_ground_gfx_`, `render_ground_gfx_`, `update_ground_gfx_`, indicator | `gmremixkothmodel.c` (`gmRemixKothModelSync` every frame) builds effect objects from file 0x14F3 like `koth_ground_gfx_struct` and `koth_indicator_gfx_struct`; the prim colour is `gmRemixKothDrawGetPrimColor` (`gmremixkothdraw.c`), which also keeps a flat strip fallback when the file is missing |
 | `delay_respawn_` | `gmRemixKothGetDeadWait` / `gmRemixKothDeadUpdateCamera`, called from `ftcommondead.c` |
 | TimedStock `calculate_time_score_`, `prevent_sudden_death_` | `mnvsresults.c` score source (`gmRemixKothGetScore`) and `gmRemixTimedStockAllowsSuddenDeath` (`gmremixtimedstock.c`, called from `scVSBattleSetScoreCheckSuddenDeath`) |
@@ -102,7 +108,10 @@ only) holds the strip pieces, the marker and the meter frame (image at +0x0AA8).
   point; the results row and the end timer are unaffected, only the bar speed of a team with two fighters on the hill differs.
 - **Hill visibility and blast zone.** The asm tests the hill strip display flag (hidden for 120 frames) and the indicator position against the
   blast bounds. The port has no strip display flag to read: a hill is "hidden" when its collision is switched off (`gmRemixKothHillLineIsUsable`), and
-  it leaves play when any vertex of the line is outside the map bounds (`gmRemixKothHillIsInsideBlastZone`).
+  it leaves play when any vertex of the line is outside the map bounds (`gmRemixKothHillIsInsideBlastZone`). The vanilla vertex readers stop the game
+  on a line whose collision is off, so a hidden hill only moves by the 121st-frame timeout or the timer, never by the blast-zone check (deviations.md).
+- **Hill draws.** The asm draws invalid lines forever (a stage with no valid line would hang); `gmRemixKothRulesPickHill` keeps the hill after 256
+  invalid draws in a row (deviations.md).
 - **Model placement.** The asm keeps raw vertices and follows a moving platform with the top joint; the port places the pieces on the world
   vertices every frame (`gmRemixKothModelSync`) with the top joint at the origin, which lands in the same place. The marker is recomputed every
   frame instead of once per hill.

@@ -43,6 +43,9 @@ Port code: `decomp/src/gm/gmremixtagteam.c` (queues, swap, steal), `gmremixtagte
   with the old one's team, port, stock count and animation heap; the damage series icon is changed and items and projectiles owned by the old fighter
   are re-pointed to the new one (owner `0x08`, Blue Shell `0x180`, Flashbang / Waddle / Gordo `0x1C4`). A change of costume or shade of the same
   character only repaints.
+- `handle_stock_stealing_`: the stolen stock is the victim's slot `current_slot - stolen count`; `current_slot` is the last CSS slot, the per-port
+  stock count of `css.get_stock_count_` (the Manual count when it is below the setting, the setting for Default and Last). The port takes the
+  stock count the victim started with plus the Last skip (`gmRemixTagTeamRulesStealSlot`), so a Manual teammate gives its own last queued fighter.
 - `show_all_icons_`: the HUD lists the queue in reverse, the rightmost icon is the current fighter; the icon at the current position uses the loaded
   fighter's icon or the stolen icon; the rest use the icon cache.
 - N64 heap code (`load_all_files_`, `load_particle_bank_stuff_in_normal_heap`, `use_largest_anim_heap_`) exists only to fit the characters in memory.
@@ -54,7 +57,7 @@ Port code: `decomp/src/gm/gmremixtagteam.c` (queues, swap, steal), `gmremixtagte
 | mode profile (Timed Stock, 3 stocks, teams saved) | `gmremixmodecss.c`; title `0x2738` and FGM 783 in `mnremixcssmoderules.c` |
 | queue write, pickup, B, recall, stock change, start gate (`css` scope) | `mnRemixTagTeamCssWrite`, `NextSlot`, `StepBack`, `StocksChanged`, `AllowsStart`, `GetSlot` (`mnremixtagteamcss.c`; pure rules `mnremixtagteamcssrules.c`) called from `mnplayersvs.c`; pickup wait 2 frames in the token grab code |
 | CSS icon rows | `mnRemixTagTeamCssIconsMake` (`mnremixtagteamcssicons.c`): icons at panel x + 5, 10 apart, y 117, the CSS derives the costume icon at draw time |
-| `start_match_setup_`, `use_character_queues_on_load_` | `gmRemixTagTeamBuildQueues` (called before the fighters are made in `scVSBattleStartBattle`): slot 0 from the match data (or the first CSS pick), slots 1-5 from the CSS queue, else the port-menu CVar slot, else Random; `gmRemixTagTeamApplyStartSlot` puts the Stock Mode Last start slot in the match data and `gmRemixTagTeamSetup` puts the CSS pick back once the fighters exist |
+| `start_match_setup_`, `use_character_queues_on_load_` | `gmRemixTagTeamBuildQueues` (called before the fighters are made in `scVSBattleStartBattle`): slot 0 from the match data (or the first CSS pick, with the team costume of `players[].team` in a team battle), slots 1-5 from the CSS queue, else the port-menu CVar slot, else Random; `gmRemixTagTeamApplyStartSlot` puts the Stock Mode Last start slot in the match data and `gmRemixTagTeamSetup` puts the CSS pick back once the fighters exist |
 | queue index | `gmRemixTagTeamGetSlotOfPort` with `gmRemixTagTeamRulesQueueIndex` / `...SkippedStocks` over `gmRemixStockModeGetInitialCount` |
 | `load_next_char_` | `gmRemixTagTeamLoadNextFighter` (called first thing in `ftCommonRebirthDownSetStatus`, `ftcommonrebirth.c`): `gmRemixTagTeamRulesNeedsSwap`, `ftManagerDestroyFighter` then `ftManagerMakeFighter`, `gmRemixTagTeamMoveOwnership` (item and weapon `owner_gobj`), `ifRemixTagTeamRefreshHud` (damage series emblem and stock icon redraw) |
 | `show_all_icons_` | `gmRemixTagTeamApplyStockIcon` (called from `ifcommon.c` stock icon setup) with `gmRemixTagTeamRulesIconSlot`; icons are resolved at match start by `gmRemixTagTeamIconsSet` (`gmremixtagteamicons.c`, only the main file of a fighter is read) |
@@ -74,8 +77,9 @@ queue wins and a Random token of the CSS rolls like a Random slot.
   Classic Sonic flag).
 - **Match data.** `players[].fkind/costume/shade` keep the CSS pick after a swap (the asm overwrites them), so the results show the CSS pick and a
   runback starts from the same queue.
-- **Remapped pointers.** Only `owner_gobj` of items and weapons is moved; the Blue Shell (`0x180`) and Flashbang / Waddle Dee / Waddle Doo / Gordo
-  (`0x1C4`) player pointers are not, since the new fighter reuses the freed fighter struct slot. The `sw r0, 0x0ADC(a1)` ammo reset is not needed (new struct).
+- **Remapped pointers.** Only `owner_gobj` of items and weapons is moved; the Blue Shell keeps the port of its target
+  (`item_vars.shell.remix_target_port`, the asm `0x180` pointer), which the new fighter keeps, and the Flashbang / Waddle Dee / Waddle Doo / Gordo
+  (`0x1C4`) player pointers are not moved, since the new fighter reuses the freed fighter struct slot. The `sw r0, 0x0ADC(a1)` ammo reset is not needed (new struct).
 - **Stock Mode tables.** One set of Stock Mode tables for all modes; the asm copies `stockmode_table`, `stock_count_table` and
   `previous_stock_count_table` in and out per mode.
 - **Skipped stocks below zero.** If the stock setting is lowered under the stored Last count the asm indexes before the queue; the port starts at slot 0.

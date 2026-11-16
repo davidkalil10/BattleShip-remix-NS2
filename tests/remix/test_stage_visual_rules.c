@@ -82,6 +82,23 @@ static void testWallpaperKindWithFunctionIsCommon(void)
     CHECK_EQ(GRREMIX_WALLPAPER_KIND_COMMON, grRemixWallpaperRulesKind(nGRRemixStage_DEKU_TREE, 0x80461234u));
 }
 
+static void testWallpaperKindFollowsTheSetBgTypeCalls(void)
+{
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_BONUS3, grRemixWallpaperRulesKind(nGRRemixStage_FLAT_ZONE, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_BONUS3, grRemixWallpaperRulesKind(nGRRemixStage_FLAT_ZONE_2, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_BONUS3, grRemixWallpaperRulesKind(nGRRemixStage_GB_LAND, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_DRAGONKING, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_DRAGONKING_REMIX, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_N64, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_N64_REMIX, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_FROSTY, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_SECTOR_Z_DL, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_SECTOR_Z_O, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_SECTOR, grRemixWallpaperRulesKind(nGRRemixStage_SECTOR_Z_REMIX, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_STATIC, grRemixWallpaperRulesKind(nGRRemixStage_YOSHI_ISLAND_DL, 0x80460000u));
+    CHECK_EQ(GRREMIX_WALLPAPER_KIND_STATIC, grRemixWallpaperRulesKind(nGRRemixStage_YOSHI_ISLAND_O, 0x80460000u));
+}
+
 static void testBlueBackgroundScrollsOnlyWhileTheMatchWaitsOrRuns(void)
 {
     CHECK_TRUE(grRemixBlueBackgroundRulesSpeed(0) < 0.0F);
@@ -119,6 +136,7 @@ void remixTestStageVisualRules(void)
     RUN_TEST(testWallpaperKindOfRemixRttfIsBonus3);
     RUN_TEST(testWallpaperKindWithoutFunctionIsStatic);
     RUN_TEST(testWallpaperKindWithFunctionIsCommon);
+    RUN_TEST(testWallpaperKindFollowsTheSetBgTypeCalls);
     RUN_TEST(testBlueBackgroundScrollsOnlyWhileTheMatchWaitsOrRuns);
     RUN_TEST(testItemDisplayLinkByKind);
     RUN_TEST(testItemDisplayLinkDefaultsToTheVanillaLink);

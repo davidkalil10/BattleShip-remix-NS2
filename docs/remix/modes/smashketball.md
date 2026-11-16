@@ -24,7 +24,9 @@ Scoring (`basketball_main_`, `_scored`):
   `HOOP_MIN` (3504) from the centre. Above the rim while passing clears `scoreable`; below while `scoreable` is set scores. Soccer: `|x|` of the
   ball at least 4288 (`0x45860000`) is a goal. The left hoop credits the Away team, the right hoop the Home team.
 - Attributed basket (the ball's last owner is on the scoring team): `scores[port]` +1 per point, `winner_scores[port]` +6 per point, the owner's
-  `consecutive_baskets` +1 (the other streaks reset). Three or more in a row force the crowd chant (`force_chant_`, knockback 160).
+  `consecutive_baskets` +1 (the other streaks reset). Three or more in a row force the crowd chant (`force_chant_`, knockback 160) for the owner's
+  `FTStruct.player_num` (0x18, not the port); the force skips only the damage and wait checks, so the chant does not restart while the owner is
+  still the last player the crowd called.
 - Unattributed basket (no owner, or the owner is on the other team): every teammate gets `winner_score_distribution[teammates]` (6 for a team of
   one, 3 for two, 2 for three) times the points in `winner_scores`. The team score is the same in both cases.
 - Effects: crowd sound 0x272 (cheer) or 0x267 (groan for an own-goal owner), basket explosion effect plus sound 0x118.
@@ -34,7 +36,7 @@ Scoring (`basketball_main_`, `_scored`):
 
 | Asm | What it does |
 |---|---|
-| `before_css_setup_`, `leave_css_setup_`, `start_match_setup_` | Time rule, teams on, stage select off, goal 10; at start: stage id, `player_spawns` (port 1 always spawn 2, then home side fills 2, 0, 1 left to right and away side 3, 1, 0 right to left) |
+| `before_css_setup_`, `leave_css_setup_`, `start_match_setup_` | Time rule, teams on, stage select off, goal 10, panel option Stock of the four ports back to Default (`Smashketball.asm` 164-168, `gmRemixStockModeClearModes`); at start: stage id, `player_spawns` (port 1 always spawn 2, then home side fills 2, 0, 1 left to right and away side 3, 1, 0 right to left) |
 | `setup_` | zeroes scores, builds team lists (first fighter's team is Home, the last other team seen is Away), finds the scoreboard digits in the stage model, colours them with `Color.tag` of the team (RED `0xED3636FF`, BLUE `0x4E4EE9FF`, GREEN `0x4EB94EFF`, YELLOW `0xFFDF1AFF`) and registers `basketball_main_` and `scoreboard_main_`; on the Smashketball stage in any other mode it only runs the time with dashes for the scores |
 | `basketball_main_` | after 0x135 frames since the screen load, if no ball exists it is spawned (item 0x40, x 0, y 2048, 5632 when golden); reads the ball position (the owner's item joint while held) and detects the basket |
 | `scoreboard_main_` | time from the battle state (`time_remain - 1` plus the 59 second rollover) or dashes when the match time is infinite; scores as two digits, 99 shown for anything larger |
@@ -47,7 +49,7 @@ Scoring (`basketball_main_`, `_scored`):
 | `Spawn.asm` | neutral spawns are always used in Smashketball, even with the Neutral Spawns toggle off; the two stages share the four spawn positions (x -3042, 3042, -1615, 1615) |
 | CSS | `enable_toggling_mode_` (the game mode button flips Basketball / Soccer instead of teams; titles `0x2C18` "Smashketball 1" and `0x2E88` "Smashketball 2" in the game modes file), `use_goal_yellow_picker_` (GOAL image `0x27FC8`), `prevent_start_unless_two_teams_`, announcer FGM 776 |
 | Results | `add_row_to_results_`: an extra "FGs" row (label image `0xE9E0`) with the baskets per port (limit 999) |
-| AI | `ai_ball_behavior_` (CPUs target the ball height and x +-400 by team) and `ai_ball_attack_range` |
+| AI | `ai_ball_behavior_` (CPUs target the ball height and x +-400 by team) and `ai_ball_attack_range` (the attack picker reads the ball as its target: hurtbox, position, speed, gravity and fall speed; the level 10 prediction of `AI.asm` `fix_movement_prediction` reads the same numbers, port `ftRemixAiPredictionGetTargetMotion`) |
 
 Music is `MIDI.id.NBA_JAM`. Remix-only stage files `STG_SMASHKETBALL_HEADER`, `STG_SMASHKETBALL`, `STG_SMASHKETBALL_BG` (0x991-0x993). The
 sounds are `bounce`, `fire_bounce`, `spawn_buzz`, `end_buzzer`.
@@ -65,7 +67,7 @@ structs (0-9, 10 for a dash). There is no text; the CSS uses title sprites.
 | spawns | `gmRemixSmashketballGetSpawnSlot` / `GetSpawnPos` (`gmremixsmashketball.c`), used by `gmremixspawnsetup.c` for every Smashketball match regardless of the toggle |
 | `setup_` | `gmRemixSmashketballSetup` (called from `scVSBattleStartBattle` and the sudden death restart in `scvsbattle.c`): state `gGMRemixSmashketball` (`gmremixsmashketballstate.h`), `gmRemixSmashketballFindTeams`, baskets (`gmRemixSmashketballMoveBaskets`), scoreboard (`gmremixsmashketballboard.c`: `BoardSetup`, `BoardSetTeamColors`, `BoardUpdate`, `ShowDashScores`, `UpdateTimeOnly`), update process `gmRemixSmashketballProcUpdate`; outside the mode `gmRemixSmashketballSetupTimeOnly` handles the time-only board |
 | `basketball_main_` | spawn after `GMREMIX_SMASHKETBALL_BALL_WAIT_FRAMES` (0x135) frames of the go status; `itRemixBasketballCheckHoop` detects the basket; `gmRemixSmashketballScore` (`gmremixsmashketballscore.c`) applies the attribution rules, streak, effects, cheer or groan; pure rules in `gmremixsmashketballrules.c` |
-| chant | `ftPublicRemixForceCall` (`ft/ftpublic.c`, the `force_chant_` bypass), called with knockback 160 from `gmRemixSmashketballScoreOwner` |
+| chant | `ftPublicRemixForceCall` (`ft/ftpublic.c`, the `force_chant_` bypass of the damage and wait checks; the same-player check stays), called with knockback 160 and the owner's `player_num` from `gmRemixSmashketballScoreOwner` |
 | `check_match_end_`, sudden death | `gmRemixSmashketballCheckMatchEnd`; `gmRemixSmashketballPrepareSuddenDeath` (called from `scVSBattleSetScoreCheckSuddenDeath`) returns FALSE for unequal scores; `gmRemixSmashketballGetSuddenDeathDamage` (called from `scvsbattle.c`) gives 0% |
 | `play_end_buzzer_` | `ifCommonBattleEndAddSoundQueueID` path in `ifcommon.c` queues `GMREMIX_SMASHKETBALL_FGM_END_BUZZER` (0x431) |
 | `prevent_despawn` | `itRemixBasketballIsDespawnBlocked`, called from `itProcessProcItemMain` (`itprocess.c`) |

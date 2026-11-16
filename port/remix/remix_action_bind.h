@@ -35,6 +35,12 @@ int ftRemixKirbyVanillaMotionCount(void);
  */
 void ftRemixBindDescriptorHooks(int remix_id, struct FighterDescriptor *descriptor);
 
+/**
+ * Installs the callbacks a copy ability needs on a Kirby descriptor (Kirby or J Kirby): the shield hitlag
+ * skip of the copied Crash spin. See decomp/src/ft/ftremix/ftremixdeschooks.c.
+ */
+void ftRemixBindKirbyCopyDescriptorHooks(struct FighterDescriptor *descriptor);
+
 #ifdef __cplusplus
 }
 #endif

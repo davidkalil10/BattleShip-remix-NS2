@@ -7,7 +7,7 @@
 
 #include "if/ifremixannouncerrules.h"
 
-#define FAKE_DRAW_MAX 8
+#define FAKE_DRAW_MAX 16
 
 static int sFakeDraws[FAKE_DRAW_MAX];
 static int sFakeDrawCount;
@@ -18,6 +18,19 @@ static void setFakeDraws(int first, int second, int count)
 {
     sFakeDraws[0] = first;
     sFakeDraws[1] = second;
+    sFakeDrawCount = count;
+    sFakeDrawNext = 0;
+    sFakeDrawRange = 0;
+}
+
+static void setFakeDrawList(const int *draws, int count)
+{
+    int index;
+
+    for (index = 0; index < count; index++)
+    {
+        sFakeDraws[index] = draws[index];
+    }
     sFakeDrawCount = count;
     sFakeDrawNext = 0;
     sFakeDrawRange = 0;
@@ -143,16 +156,77 @@ static void testBurnDrawsOverTheFirstCallOnly(void)
     CHECK_EQ(1, sFakeDrawRange);
 }
 
-static void testClangPlaysOnlyOncePerMatch(void)
+/* clang_announcement_ reads the high byte of the used halfword (lbu), always 0: the clip comes back after its cooldown */
+static void testClangIsNeverSpent(void)
 {
     IFRemixAnnouncerTable *table = ifRemixAnnouncerTablesGet(nIFRemixAnnouncerCallClang);
 
     ifRemixAnnouncerTablesReset();
+    table->entries[0].used = 1;
+    CHECK_EQ(0, ifRemixAnnouncerRulesIsSpent(table));
+    setFakeDraws(0, 0, 1);
+    CHECK_EQ(0x4B2, ifRemixAnnouncerRulesPickStandard(table, fakeDraw)->fgm_id);
+    table->entries[0].timer = 0x708;
+    CHECK_TRUE(ifRemixAnnouncerRulesPickStandard(table, fakeDraw) == NULL);
+    ifRemixAnnouncerTablesReset();
+}
+
+/* team_ko_announcement_ reads the used halfword of the first call twice, so only that call ends the team KO comments */
+static void testTeamKOIsSpentOnceItsFirstCallPlayed(void)
+{
+    IFRemixAnnouncerTable *table = ifRemixAnnouncerTablesGet(nIFRemixAnnouncerCallTeamKO);
+
+    ifRemixAnnouncerTablesReset();
+    CHECK_EQ(0, ifRemixAnnouncerRulesIsSpent(table));
+    table->entries[1].used = 1;
     CHECK_EQ(0, ifRemixAnnouncerRulesIsSpent(table));
     table->entries[0].used = 1;
     CHECK_EQ(1, ifRemixAnnouncerRulesIsSpent(table));
     ifRemixAnnouncerTablesReset();
     CHECK_EQ(0, ifRemixAnnouncerRulesIsSpent(table));
+}
+
+/* _unspecific_loop draws again until a free call comes up, however many draws that takes */
+static void testGeneralPickDrawsUntilAFreeCall(void)
+{
+    static const int draws[] = { 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6 };
+    IFRemixAnnouncerTable *table = ifRemixAnnouncerTablesGet(nIFRemixAnnouncerCallGeneral);
+    int index;
+
+    ifRemixAnnouncerTablesReset();
+    for (index = 0; index < 6; index++)
+    {
+        table->entries[index].timer = 0x3840;
+    }
+    setFakeDrawList(draws, 13);
+    CHECK_EQ(0x4BE, ifRemixAnnouncerRulesPickFree(table, fakeDraw)->fgm_id);
+    CHECK_EQ(13, sFakeDrawNext);
+    CHECK_EQ(8, sFakeDrawRange);
+    ifRemixAnnouncerTablesReset();
+}
+
+static void testGeneralPickStaysSilentWhenNoCallIsFree(void)
+{
+    IFRemixAnnouncerTable *table = ifRemixAnnouncerTablesGet(nIFRemixAnnouncerCallGeneral);
+    int index;
+
+    for (index = 0; index < table->pick_count; index++)
+    {
+        table->entries[index].timer = 1;
+    }
+    setFakeDraws(0, 0, 1);
+    CHECK_TRUE(ifRemixAnnouncerRulesPickFree(table, fakeDraw) == NULL);
+    CHECK_EQ(0, sFakeDrawNext);
+    ifRemixAnnouncerTablesReset();
+}
+
+/* 0x801317CC holds the stock number of the HUD (stock_count + 1) and the asm wants it under 2 */
+static void testCloseMatchWantsTheLastStock(void)
+{
+    CHECK_EQ(1, ifRemixAnnouncerRulesIsLastStock(0));
+    CHECK_EQ(1, ifRemixAnnouncerRulesIsLastStock(-1));
+    CHECK_EQ(0, ifRemixAnnouncerRulesIsLastStock(1));
+    CHECK_EQ(0, ifRemixAnnouncerRulesIsLastStock(4));
 }
 
 static void testOtherCallsAreNeverSpent(void)
@@ -220,7 +294,11 @@ void remixTestAnnouncerRules(void)
     RUN_TEST(testGymLeaderCastleDrawsOverItsCallAndTheFirstOpening);
     RUN_TEST(testOpeningHasItsThreeCalls);
     RUN_TEST(testBurnDrawsOverTheFirstCallOnly);
-    RUN_TEST(testClangPlaysOnlyOncePerMatch);
+    RUN_TEST(testClangIsNeverSpent);
+    RUN_TEST(testTeamKOIsSpentOnceItsFirstCallPlayed);
+    RUN_TEST(testGeneralPickDrawsUntilAFreeCall);
+    RUN_TEST(testGeneralPickStaysSilentWhenNoCallIsFree);
+    RUN_TEST(testCloseMatchWantsTheLastStock);
     RUN_TEST(testOtherCallsAreNeverSpent);
     RUN_TEST(testStandardPickTakesTheFirstFreeDraw);
     RUN_TEST(testStandardPickUsesTheLastDrawWhenEveryDrawIsCoolingAndTheFlagIsClear);

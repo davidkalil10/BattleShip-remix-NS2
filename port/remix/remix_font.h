@@ -58,9 +58,11 @@ float FitFactor(const std::string &text, float scale, float maxWidth);
  * @param color ImGui colour used as the tint.
  * @param text Text to draw.
  * @param widthFactor Horizontal squeeze applied to glyphs and advances (Render.apply_max_width_ flattens only the X axis).
+ * @param glyphScale Enlarges every glyph sprite from its top-left corner and leaves the advances alone (PlayerTag.asm
+ *        create_custom_tag_ multiplies the scale of each character image of the black copy and keeps its position).
  */
 void Draw(ImDrawList *drawList, ImVec2 position, ImVec2 pixelsPerUnit, float scale, ImU32 color, const std::string &text,
-          float widthFactor);
+          float widthFactor, float glyphScale = 1.0f);
 
 } // namespace RemixFont
 

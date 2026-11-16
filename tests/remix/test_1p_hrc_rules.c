@@ -47,15 +47,30 @@ static void testDistanceIsInTenthsOfAFootFromTheStartLine(void)
     CHECK_EQ(1000, state.distance);
 }
 
-static void testCameraPansAThirdOfTheWayToTheSandbag(void)
+/* HRC.asm main_ divides by 0x41000000 (8.0); the "3" in its comment is wrong. */
+static void testCameraPansAnEighthOfTheWayToTheSandbag(void)
 {
     SC1PRemixHrcState state;
     SC1PRemixHrcMove move;
 
     sc1PRemixHrcStateReset(&state);
-    sc1PRemixHrcTrack(&state, -15000.0F, -18000.0F, &move);
-    CHECK_EQ(-17000, (int)move.camera_x);
+    sc1PRemixHrcTrack(&state, -15000.0F, -18200.0F, &move);
+    CHECK_EQ(-17800, (int)move.camera_x);
     CHECK_EQ(0, (int)move.sandbag_shift);
+}
+
+static void testCameraWarpsOnThePannedXNotOnTheSandbagX(void)
+{
+    SC1PRemixHrcState state;
+    SC1PRemixHrcMove move;
+
+    sc1PRemixHrcStateReset(&state);
+    sc1PRemixHrcTrack(&state, 13328.0F, 12400.0F, &move);
+    CHECK_EQ(12516, (int)move.camera_x);
+    CHECK_EQ(0, (int)move.sandbag_shift);
+    sc1PRemixHrcTrack(&state, 13328.0F, 12416.0F, &move);
+    CHECK_EQ(12530 - 9120, (int)move.camera_x);
+    CHECK_EQ(-9120, (int)move.sandbag_shift);
 }
 
 static void testCameraWarpMovesTheCameraAndTheSandbagBack(void)
@@ -232,7 +247,8 @@ void remixTest1PHrcRules(void)
     RUN_TEST(testResetClearsTheDistanceAndStartsTheEndTimer);
     RUN_TEST(testCameraWaitsAtTheDefaultXBeforeTheStartLine);
     RUN_TEST(testDistanceIsInTenthsOfAFootFromTheStartLine);
-    RUN_TEST(testCameraPansAThirdOfTheWayToTheSandbag);
+    RUN_TEST(testCameraPansAnEighthOfTheWayToTheSandbag);
+    RUN_TEST(testCameraWarpsOnThePannedXNotOnTheSandbagX);
     RUN_TEST(testCameraWarpMovesTheCameraAndTheSandbagBack);
     RUN_TEST(testDistanceKeepsCountingAcrossAWarp);
     RUN_TEST(testTheAttemptContinuesOverThePlatformWithTimeLeft);

@@ -59,6 +59,19 @@ static void testHPLeftIsNeverBelowZero(void)
     CHECK_EQ(0, gmRemixStaminaRulesHPLeft(STAMINA_DEFAULT_TOTAL_HP, 250));
 }
 
+static void testKnockbackAfterArmorSubtractsTheArmorWhileHPIsLeft(void)
+{
+    CHECK_EQ(4965, (int)(gmRemixStaminaRulesKnockbackAfterArmor(0, 79.65F, 79.65F, 30.0F) * 100.0F + 0.5F));
+    CHECK_EQ(5310, (int)(gmRemixStaminaRulesKnockbackAfterArmor(0, 79.65F, 53.10F, 0.0F) * 100.0F + 0.5F));
+}
+
+static void testKnockbackAfterArmorOnTheLethalHitIgnoresArmorAndCrouch(void)
+{
+    CHECK_EQ(7965, (int)(gmRemixStaminaRulesKnockbackAfterArmor(1, 79.65F, 79.65F, 30.0F) * 100.0F + 0.5F));
+    CHECK_EQ(7965, (int)(gmRemixStaminaRulesKnockbackAfterArmor(1, 79.65F, 53.10F, 0.0F) * 100.0F + 0.5F));
+    CHECK_EQ(7965, (int)(gmRemixStaminaRulesKnockbackAfterArmor(1, 79.65F, 53.10F, 200.0F) * 100.0F + 0.5F));
+}
+
 void remixTestStaminaRules(void)
 {
     printf("stamina rules\n");
@@ -70,4 +83,6 @@ void remixTestStaminaRules(void)
     RUN_TEST(testDamageToFinishStopsThePercentAtTotalHPPlusOne);
     RUN_TEST(testHPLeftCountsDownFromTotalHPPlusOne);
     RUN_TEST(testHPLeftIsNeverBelowZero);
+    RUN_TEST(testKnockbackAfterArmorSubtractsTheArmorWhileHPIsLeft);
+    RUN_TEST(testKnockbackAfterArmorOnTheLethalHitIgnoresArmorAndCrouch);
 }
