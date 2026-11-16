@@ -702,7 +702,7 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
   - g11 (CSS panel menu): G11-1 Reset clears the Manual and Last stock counts; G11-2 a Stock change refreshes the Tag
     Team queue; G11-3 arrows blink 10 on, 10 off (`g11*_rerun`); G11-4 CPU-port panel values after 1P, deviation.
   - g12: G12-1 the Special Zoom gate accepts the 1P and Remix mode scenes (`g12zoom_*_after`: the decisive-stock check
-    runs; no zoom was seen firing in these runs, the scripted inputs score no KO); G12-2 throw announcer damage,
+    runs; `lead_zoom1p`, a 1P match with the damage forced to 300 under gdb: one KO zoom starts); G12-2 throw announcer damage,
     deviation; G12-3 the menu music alternate roll on every entry (`g12bgm_after`).
   - g13: G13-1 `_find_closest_ledge` lookup by loop index, deviation.
   - Still not compared, by their nature: data tables read from the Remix image (stage, title-card, All-Star and
