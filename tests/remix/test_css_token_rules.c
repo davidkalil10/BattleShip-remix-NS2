@@ -167,7 +167,8 @@ static void testStaminaMenuStickStepsTenWithSnaps(void)
     CHECK_EQ(10, mnRemixVSStaminaRulesMenuStep(9, 1, 1));
     CHECK_EQ(20, mnRemixVSStaminaRulesMenuStep(10, 1, 1));
     CHECK_EQ(999, mnRemixVSStaminaRulesMenuStep(989, 1, 1));
-    CHECK_EQ(1, mnRemixVSStaminaRulesMenuStep(990, 1, 1));
+    CHECK_EQ(999, mnRemixVSStaminaRulesMenuStep(990, 1, 1));
+    CHECK_EQ(999, mnRemixVSStaminaRulesMenuStep(998, 1, 1));
     CHECK_EQ(1, mnRemixVSStaminaRulesMenuStep(999, 1, 1));
     CHECK_EQ(1, mnRemixVSStaminaRulesMenuStep(10, 0, 1));
     CHECK_EQ(1, mnRemixVSStaminaRulesMenuStep(2, 0, 1));

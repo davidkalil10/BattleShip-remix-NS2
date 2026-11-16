@@ -192,6 +192,10 @@ Port (`decomp/src/mn/mnmaps/`): `mnremixstagegridrules.c` (pure grid), `mnremixs
 `mnremixstageroulette.c`, `mnremixstagetournament.c`, `mnremixstagevariant.c` (C-down variant cycle over `Stages.variant_table`),
 `mnremixemblem.c` (series emblem on the wooden coin). Test: `SSB64_MAPS_START_GKIND=<gkind>` with `css.sh` and
 `stage_select_sweep.sh`; page 3 with `inputs/css_page3_stage.txt`.
+Stage select details (M14 T14.6-g02): Stage Select OFF draws the random stage again until it differs from the previous match's stage
+(`mnRemixStageRandomRulesExcludeStage`); R/Z play FGM 164 (silent over a running Roulette); page switch, L and C-Down are dropped on a frame
+with a held direction or a nonzero scroll wait; the "afk" tag presses A after 120 frames outside Training (`mnRemixStageGridRulesAfkSelects`);
+the Time Twister preview reads the TIME_TWISTER_SSS file (0xD3).
 
 ---
 

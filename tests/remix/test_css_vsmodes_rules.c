@@ -260,6 +260,91 @@ static void fillSlots(MNRemixTagTeamCssQueue *queue, int count)
     }
 }
 
+static int fakeRewriteCostume(int fkind, int value)
+{
+    return (fkind * 10) + value;
+}
+
+static void testRewritePreviousGivesTheDefaultCostumeAndSkipsTheCurrentSlot(void)
+{
+    MNRemixTagTeamCssQueue queues[4];
+    int teams[4] = { 0, 1, 2, 3 };
+    int port;
+
+    for (port = 0; port < 4; port++)
+    {
+        mnRemixTagTeamCssRulesReset(&queues[port]);
+        fillSlots(&queues[port], 2);
+        queues[port].slots[0].fkind = 7;
+        queues[port].slots[0].costume = 5;
+        queues[port].slots[0].is_team_costume = 1;
+        queues[port].slots[1].costume = 9;
+    }
+    queues[2].slots[0].fkind = 3;
+    queues[3].slots[0].fkind = 7;
+
+    mnRemixTagTeamCssRulesRewritePrevious(queues, 3, 0, teams, fakeRewriteCostume);
+
+    CHECK_EQ(72, queues[3].slots[0].costume);
+    CHECK_EQ(0, queues[3].slots[0].is_team_costume);
+    CHECK_EQ(9, queues[3].slots[1].costume);
+}
+
+static void testRewritePreviousCountsEarlierPortsWithTheSameFighterInTheSlot(void)
+{
+    MNRemixTagTeamCssQueue queues[4];
+    int teams[4] = { 0, 0, 1, 1 };
+    int port;
+
+    for (port = 0; port < 4; port++)
+    {
+        mnRemixTagTeamCssRulesReset(&queues[port]);
+        queues[port].current_slot = 1;
+        queues[port].slots[0].fkind = 7;
+        queues[port].slots[0].costume = 5;
+    }
+    mnRemixTagTeamCssRulesRewritePrevious(queues, 3, 0, teams, fakeRewriteCostume);
+
+    CHECK_EQ(73, queues[3].slots[0].costume);
+
+    mnRemixTagTeamCssRulesRewritePrevious(queues, 0, 0, teams, fakeRewriteCostume);
+
+    CHECK_EQ(70, queues[0].slots[0].costume);
+}
+
+static void testRewritePreviousInATeamBattleSetsTheTeamCostumeAndTheShade(void)
+{
+    MNRemixTagTeamCssQueue queues[4];
+    int teams[4] = { 0, 0, 1, 0 };
+    int port;
+
+    for (port = 0; port < 4; port++)
+    {
+        mnRemixTagTeamCssRulesReset(&queues[port]);
+        queues[port].current_slot = 1;
+        queues[port].slots[0].fkind = 7;
+    }
+    mnRemixTagTeamCssRulesRewritePrevious(queues, 3, 1, teams, fakeRewriteCostume);
+
+    CHECK_EQ(70, queues[3].slots[0].costume);
+    CHECK_EQ(2, queues[3].slots[0].shade);
+    CHECK_EQ(1, queues[3].slots[0].is_team_costume);
+}
+
+static void testRewritePreviousLeavesAnEmptySlotEmpty(void)
+{
+    MNRemixTagTeamCssQueue queues[4];
+    int teams[4] = { 0, 0, 0, 0 };
+
+    mnRemixTagTeamCssRulesReset(&queues[0]);
+    queues[0].current_slot = 1;
+
+    mnRemixTagTeamCssRulesRewritePrevious(queues, 0, 0, teams, fakeRewriteCostume);
+
+    CHECK_EQ(MNREMIX_TAGTEAM_CSS_NONE, queues[0].slots[0].fkind);
+    CHECK_EQ(0, queues[0].slots[0].costume);
+}
+
 static void testQueueStartsEmptyOnTheFirstSlot(void)
 {
     MNRemixTagTeamCssQueue queue;
@@ -495,6 +580,10 @@ void remixTestCssVsModesRules(void)
     RUN_TEST(testSlideMovesByTheSpeedOfTheColumn);
     RUN_TEST(testSlideStopsAtTheCell);
     RUN_TEST(testEveryPortraitReachesItsCell);
+    RUN_TEST(testRewritePreviousGivesTheDefaultCostumeAndSkipsTheCurrentSlot);
+    RUN_TEST(testRewritePreviousCountsEarlierPortsWithTheSameFighterInTheSlot);
+    RUN_TEST(testRewritePreviousInATeamBattleSetsTheTeamCostumeAndTheShade);
+    RUN_TEST(testRewritePreviousLeavesAnEmptySlotEmpty);
     RUN_TEST(testQueueStartsEmptyOnTheFirstSlot);
     RUN_TEST(testWriteFillsTheCurrentSlotOnly);
     RUN_TEST(testWriteWithoutAFighterEmptiesTheSlot);

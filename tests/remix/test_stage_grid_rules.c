@@ -255,6 +255,38 @@ static void testListIsEmptyWhenNothingIsLegal(void)
     CHECK_EQ(0, mnRemixStageRandomRulesBuildList(entries, 0, 0, list));
 }
 
+static void testExcludingThePreviousStageKeepsTheOthersInOrder(void)
+{
+    int list[] = { 0x00, 0x2A, 0x30, 0x2A };
+
+    CHECK_EQ(2, mnRemixStageRandomRulesExcludeStage(list, 4, 0x2A));
+    CHECK_EQ(0x00, list[0]);
+    CHECK_EQ(0x30, list[1]);
+}
+
+static void testExcludingTheOnlyStageLeavesTheListUntouched(void)
+{
+    int list[] = { 0x2A };
+
+    CHECK_EQ(1, mnRemixStageRandomRulesExcludeStage(list, 1, 0x2A));
+    CHECK_EQ(0x2A, list[0]);
+}
+
+static void testExcludingAStageOutsideTheListKeepsEverything(void)
+{
+    int list[] = { 0x00, 0x01 };
+
+    CHECK_EQ(2, mnRemixStageRandomRulesExcludeStage(list, 2, 0x77));
+}
+
+static void testAfkSelectsAfterOneSecondOutsideTraining(void)
+{
+    CHECK_EQ(0, mnRemixStageGridRulesAfkSelects(0, 119, 1));
+    CHECK_EQ(1, mnRemixStageGridRulesAfkSelects(0, 120, 1));
+    CHECK_EQ(0, mnRemixStageGridRulesAfkSelects(0, 500, 0));
+    CHECK_EQ(0, mnRemixStageGridRulesAfkSelects(1, 500, 1));
+}
+
 static void testGeneratedToggleTableHoldsEveryTogglableCustomStageOnce(void)
 {
     int count = (int)(sizeof(sStageToggleRows) / sizeof(sStageToggleRows[0]));
@@ -300,6 +332,10 @@ void remixTestStageGridRules(void)
     RUN_TEST(testIconsStartAt30And20WithStep42And32);
     RUN_TEST(testCursorSitsSixPixelsUpAndLeftOfTheIcon);
     RUN_TEST(testPageNumberIsOneBased);
+    RUN_TEST(testExcludingThePreviousStageKeepsTheOthersInOrder);
+    RUN_TEST(testExcludingTheOnlyStageLeavesTheListUntouched);
+    RUN_TEST(testExcludingAStageOutsideTheListKeepsEverything);
+    RUN_TEST(testAfkSelectsAfterOneSecondOutsideTraining);
     RUN_TEST(testRandomListKeepsTheTogglesThatAreOnInOrder);
     RUN_TEST(testTournamentLayoutKeepsTheLegalStagesOnly);
     RUN_TEST(testListWithEveryToggleOffFallsBackToAllStages);

@@ -52,7 +52,7 @@ Audit ledger (every item closed): `docs/remix/patch_audit.md`, groups g2 (panel 
 |---|---|
 | `init_debug_menu_` 27, `update_debug_menu_` 79 (button 0x1208, reset 0x1828) | `MakeSprites`, `PlaceButtons` through `ifRemixSpriteMakeFromFile` (links 22 and 28, like the panel card) |
 | `setup_menu_page_`, `render_menu_page_` (texts) | `remix_hud_text_put_fit`, slots 56..83 (7 per panel) |
-| `create_item_arrows_` 929, `arrow_state_routine_` 1040, `render_pagination_` 1073 | `PlaceItemArrows`, `PlacePageArrows`; one blink timer per panel (0..19, shown below 11) |
+| `create_item_arrows_` 929, `arrow_state_routine_` 1040, `render_pagination_` 1073 | `PlaceItemArrows`, `PlacePageArrows`; one blink timer per panel (1..20 wrapping to 0, shown for 1..10) |
 | `press_a_handler_`, `handle_item_arrow_press_` 1761, `handle_reset_button_press_` 1621 | `mnRemixPanelMenuPress`, `mnRemixPanelMenuStepItem`, `mnRemixPanelMenuResetPanel` (union of the human and CPU lists); each CSS calls it in its A-tap chain after the checks the asm also runs first |
 | `hold_a_handler_` 1432 | `mnRemixPanelMenuRulesHoldAdvance`, `mnRemixPanelMenuHoldPress` (sound at most every 3 frames) |
 | `add_menu_item` 2477, `write_menu_items` 2575, `APPLIES_TO` | `mnremixcsspanelmenurules.c` (the human/CPU split only on VS and Training) |
@@ -153,7 +153,9 @@ FGM 163 at most every 3 frames while A is held, the Tag Team queue cut to the ne
 (CVar `gRemix.Panel.StockCount.P<n>`), which the port menu also edits; the CSS writes the value it shows back, as the asm does, so an
 unset count becomes the rules value of that visit. The character selects of King of the Hill and Smashketball set Stock back to Default
 for the four ports on entry (`before_css_setup_` of both modes clears `stockmode_table`: `gmRemixStockModeClearModes` from
-`gmRemixModeBeforeCSS`).
+`gmRemixModeBeforeCSS`). The panel Reset button also puts that port's Manual and Last counts back to -1 (`onchange_handler` `_check_reset`,
+`_tag_team`: `gmRemixStockModeResetPort`), and in Tag Team any change of the Stock option re-reads the count, cuts the queue above it and
+syncs the fighter display (`_icon_refresh`; `mnPlayersVSStockOptionChanged`, called by `mnremixcsspanelmenuinput.c`).
 
 **Knockback.** At `ftManagerMakeFighter` each port rolls one angle per action id (0x200) when the scene changed (`randomize_angles_`);
 `get_angle_hitbox_` (`ftMainParseMotionEvent`) and `get_angle_throw_` (`ftCommonThrownReleaseThrownUpdateStats`) read it; a throw uses
@@ -211,7 +213,7 @@ Training menus (the vanilla one and the Z menu, both read the stick of `gSYContr
 bits and the D-pad becomes the stick (80 on the axis, the stick stays when no D-pad is held). On the character select screens the D-pad moves
 the cursor (Stickless, or the Dpad CSS Cursor Control toggle). Deviations: the title is always treated as unpaused (the asm reads the match info
 pause byte); the 1P game scene stands for the "1p battle" part of `Global.screen.TITLE_AND_1P` and screen 0x77 never occurs (the Remix modes
-run on the VS scene). With no D-pad held, the fighter side leaves the stick of a Stickless J port alone, so its physical stick still moves the
+run on the 1P game scene). With no D-pad held, the fighter side leaves the stick of a Stickless J port alone, so its physical stick still moves the
 fighter, as in the asm (`ftRemixDpadWriteStick`). The Training DR shortcut reads the repeat mask (`button_update`, Training.asm `_check_dr`
 TURBO), so a held D-pad right, or the turbo above, repeats the frame advance; DR wins over DU and DD pressed on the same frame
 (`sc1PTrainingRemixPollDpad`).
@@ -224,7 +226,7 @@ Stickless, with Single Button Mode (press only) and in Training with "D-pad Cont
 
 **Initial Damage.** `char_init_` sets the percent of a new fighter, ignoring respawns; in Stamina the value is limited to the HP. Port
 `ftRemixPanelGetInitialDamage` (from `ftManagerMakeFighter`, the call the asm recognises by its return address, so a KO respawn starts at 0%): only when the description has no damage and the fighter is not a demo fighter; VS,
-1P and Bonus take `panel % 1000`, Training takes the menu percent (Reset Sets Percent).
+1P and Bonus take `panel % 1000` (All-Star, a 1P match, skips it as `Damage.asm:75-77` does, so a panel value set earlier never reaches it), Training takes the menu percent (Reset Sets Percent).
 
 **Poison Dmg.** `apply_damage` (called by `Poison.asm:51`) runs when the low 7 bits of the match tic are zero (about every 2 s; at game speed 1/3 or
 2/3 the low bits may be 1 or 2): the percent rises by 1, 2 or 4 (cap 999) or the fighter heals 2. Super Star and the respawn status skip it; the
@@ -248,7 +250,7 @@ could zero it); a retry replays the stage with no continue, level drop or stage 
 - The menu button hides with the doors and when the panel is disabled; the asm creates it once. Hiding is by flags: targets are forced hidden each
   frame and the flags seen before the hide are restored, so a target the CSS legitimately hides while the menu is open can reappear at close until
   the CSS sets it again.
-- One blink timer per panel instead of one per arrow; the text is the ImGui overlay (above the game), the sprites are game objects.
+- One blink timer per panel instead of one per arrow (shown for the stored values 1 to 10, hidden for 11 to 19 and 0, as the asm tests the value before the wrap); the text is the ImGui overlay (above the game), the sprites are game objects.
 - Press order: VS puts the menu press before the 12CB press inside the A-tap block; 1P, Training and Bonus after the puck grab, like the asm hook.
 - `SinglePlayer.high_score_enabled` does not exist in the port; the Gameplay/Pokemon toggle checks and the enemy-port check of
   `check_high_scores_enabled` (2396-2417) are not in the refreshed value.

@@ -189,7 +189,7 @@ static void testItemArrowsWrapBetweenMinAndMax(void)
     CHECK_EQ(998, mnRemixPanelMenuRulesStepValue(999, -1, 0, 999));
 }
 
-static void testBlinkCountsZeroToNineteenAndShowsBelowEleven(void)
+static void testBlinkShowsTenFramesAndHidesTenOfTwenty(void)
 {
     int timer = 0;
     int visible_frames = 0;
@@ -200,9 +200,12 @@ static void testBlinkCountsZeroToNineteenAndShowsBelowEleven(void)
         visible_frames += mnRemixPanelMenuRulesBlinkIsVisible(timer);
         timer = mnRemixPanelMenuRulesBlinkNext(timer);
     }
-    CHECK_EQ(11, visible_frames);
+    CHECK_EQ(10, visible_frames);
     CHECK_EQ(0, timer);
     CHECK_EQ(0, mnRemixPanelMenuRulesBlinkNext(19));
+    CHECK_EQ(0, mnRemixPanelMenuRulesBlinkIsVisible(0));
+    CHECK_EQ(1, mnRemixPanelMenuRulesBlinkIsVisible(1));
+    CHECK_EQ(1, mnRemixPanelMenuRulesBlinkIsVisible(10));
     CHECK_EQ(0, mnRemixPanelMenuRulesBlinkIsVisible(11));
 }
 
@@ -526,7 +529,7 @@ void remixTestCssPanelMenuRules(void)
     RUN_TEST(testPageArrowsWrapAroundTheEnds);
     RUN_TEST(testRowsOnPageAreTheItemsLeft);
     RUN_TEST(testItemArrowsWrapBetweenMinAndMax);
-    RUN_TEST(testBlinkCountsZeroToNineteenAndShowsBelowEleven);
+    RUN_TEST(testBlinkShowsTenFramesAndHidesTenOfTwenty);
     RUN_TEST(testHoldRepeatsEverySixthFrameAfterFifteenFrames);
     RUN_TEST(testHoldRepeatsEveryFrameAfterNinetyFrames);
     RUN_TEST(testReleasingAResetsTheHoldCounters);

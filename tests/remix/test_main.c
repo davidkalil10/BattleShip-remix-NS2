@@ -72,6 +72,7 @@ extern void remixTestAiDiRules(void);
 extern void remixTestBlueShellRules(void);
 extern void remixTestDekuNutRules(void);
 extern void remixTestTurnipRules(void);
+extern void remixTestItemSwitchRules(void);
 extern void remixTestBasketballBounceRules(void);
 extern void remixTestConkerGrenadeRules(void);
 extern void remixTestFranklinBadgeRules(void);
@@ -208,6 +209,7 @@ int main(void)
     remixTestBlueShellRules();
     remixTestDekuNutRules();
     remixTestTurnipRules();
+    remixTestItemSwitchRules();
     remixTestBasketballBounceRules();
     remixTestConkerGrenadeRules();
     remixTestFranklinBadgeRules();

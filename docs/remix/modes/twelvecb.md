@@ -57,7 +57,7 @@ Remix files `File.CHARACTER_PORTRAITS` (0xA05) and `File.CSS_IMAGES` (0xA06).
 
 | Asm | Port |
 |---|---|
-| `before_css_setup_`, `force_ffa_and_stock_`, `leave_css_setup_`, `start_match_setup_` | the 12CB profile (stock rule, FFA, 3 stocks, no goal) in `gmremixmodecss.c`; `gmRemixModeLeaveCSS` resets the battle with `gmRemixTwelveCBReset` |
+| `before_css_setup_`, `force_ffa_and_stock_`, `leave_css_setup_`, `start_match_setup_` | the 12CB profile (stock rule, FFA, 3 stocks, no goal) in `gmremixmodecss.c`; `gmRemixModeLeaveCSS` only stores the stocks like the asm, so leaving the CSS with B keeps the battle (status, defeated portraits, pools, best characters) until the RESET button (`gmRemixTwelveCBReset` from `handle_reset_`) |
 | `game_setup_` | `gmRemixTwelveCBBeginMatch` (`gmremixtwelvecb.c`, called before the fighters are made in `scVSBattleStartBattle`): portraits of both players, `gmRemixTwelveCBStartGame` (record), starting stocks; a COMPLETE battle starts over |
 | `set_initial_stock_count_` | `gmRemixTwelveCBGetStocks`, used by `gmRemixStockModeBeginMatch` |
 | `update_stocks_remaining_` | `gmRemixTwelveCBOnKo` (`ftCommonDeadUpdateScore`, after the stock was taken) -> `gmRemixTwelveCBRecordKo` (pool, portrait, COMPLETE); outside the mode `gmRemixStockModeOnKo` (same place) stores the stock count the port is left with for Stock Mode Last (`gmremixstockmode.c`, Stamina out-of-stock keeps -1, only on the VS battle scene) |
@@ -98,6 +98,8 @@ random, preset, copy). `SSB64_DK_MODE=1|2` still sets the mode without the CSS.
   animation is larger than the fighter's heap.
 - **Entry state of a resolved Random.** The asm clears the Random character of a port when the 12CB select re-opens (its character id is not in the set tables); the port
   does the same through the same validity rule instead of restoring the Random bookend.
+- **Random portrait in the Custom set (open, owner decision).** The asm Z/R cycle (`check_input_` 4291-4300) wraps over all of `Training.entry_id_to_char_id`, whose last entry is the Random placeholder, so one press past Poly Crash puts the "?" portrait on a Custom slot (`was_random` records a match started from it). The port list (`remix_training_characters_data.inc`) stops at Poly Crash and the CSS has no Random portrait or `was_random` flow in this mode, so Z/R goes from Poly Crash straight to Mario. Adding the entry needs the "?" portrait, its selection (random pick at game start) and its restore after the game.
+- **Set change with a character chosen.** `update_character_set_` (redraw branch) looks the character under the token up again in the new set (random when none, with the announcer when no token is held) and rebuilds the panel fighter; the port does the same in `mnPlayersVSTwelveCBRefreshFighterAfterSetChange`. The portrait variant check of `portrait_change_` (a new portrait id updates the panel even for the same character, so the defeated pose follows) is `mnPlayersVSTwelveCBCheckPortraitChanged`; the J or E flag of the panel (`update_variant_indicators_`) is drawn by `mnPlayersVSRemixTwelveCBFlagFrameUpdate`; the set arrow zones are inclusive and the right one 33 wide (`mnRemixTwelveCBLayoutSetArrowAt`).
 - **N64 heap.** No `custom_heap_address` reset or heap slot handling: the port loads files per kind on demand.
 - **Text path.** All CSS and results text goes through `remix_hud_text` (the Remix Kabel font rebuilt from the user's .o2r); buttons, arrows and the
   crown are native sprites.

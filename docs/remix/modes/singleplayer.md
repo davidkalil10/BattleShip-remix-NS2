@@ -25,7 +25,7 @@ Tests: `tests/remix/test_1p_*.c` (mode names, mode rules, Remix 1P picks, bonus 
 | 6 | HRC | page 2, through the Bonus 2 CSS |
 
 Selecting a row of `menu_button_table` / `remix_menu_button_table` writes the mode and `page_flag`; the flag is cleared when the 1P menu is left
-(`remove_flag`); `game_over_end` returns the menu to page 1. Multi-Man, Cruel, Bonus 3 and HRC first open the Bonus 2 CSS (`bonus2_css_2_1p`), which on
+(`remove_flag`); `game_over_end` returns the menu to page 1 (the human's saved Size stays; only the CPU ports read 0). Multi-Man, Cruel, Bonus 3 and HRC first open the Bonus 2 CSS (`bonus2_css_2_1p`), which on
 exit steps the RNG 1 to 64 times by the frame count, rolls a random fighter and costume when the Random token was picked, and starts the 1P game on the
 mode's stage. Page 2 has five rows (Remix 1P, All-Star, Multiman, Cruel Multiman, HRC), the cursor wraps at the last row.
 
@@ -67,7 +67,7 @@ unused stages. The stage loop retries until a stage is free and never ends if al
 
 - Progress counts fighters: 1 opponent per match below 4 faced, 2 below 0x12, 3 up to 0x1B; `advance_allstar` adds 1, 2 or 3 per win, `progress_advancement` goes to the
   Rest Area (stage 0) or the next stage type (2, 4, 5 and the final 0xC), `end_allstar` forces stage 0xD when `end_game_flag` is set (the Game Clear screen),
-  `screen_set_end`: a Practice reset restarts the match, otherwise the 1P menu; `pause_exit` exits to the 1P menu (and clears the size settings in Remix 1P).
+  `screen_set_end`: a Practice reset restarts the match, otherwise the 1P menu; `pause_exit` exits to the 1P menu (in Remix 1P it calls `clear_settings_for_1p_`, which leaves the human's own Size setting alone).
 - Rest Area (`rest_area_setup`, `rest_area_routine`): three hearts (`allstar_hearts` counts those used, `heart_counter`), `heart_persist` keeps them from fading,
   series icons of the fighters left (file 0xD8B, `icon_offset_table`, ten per row at x 30 + 9n, y 30 + 11 * row, or y 180 with the Dragon King HUD) and world-space
   portraits of the next opponents (400 x 400, y 1000, z -20, alpha 0xA0, x -1000 / -600 / -200); no CPU spawn, no time limit, `skip_go`, the damage meter is shown
@@ -194,7 +194,7 @@ credits slow down at the first Remix name.
 | `remix_1p_randomization` | `sc1PRemix1PRandomize` (`sc1premix1p.c`, picks in `sc1premix1prules.c`: fighter, stage, distinct Kirby powers, boss, Sonic stage), called from `mnplayers1pgame.c` at START; the path is read through `sc1PRemix1PGetStage`, `GetComputer`, `GetCard`; stage rows from the Remix image (`sc1premix1pdata.c`) |
 | Remix 1P matches | hooks in `sc1PGameSetupStageAll` (`sc1pgame.c`): polygon / team / giant / Yoshi / Kirby / Metal Bros rows, `sc1PRemix1PSetupEnemy`, `sc1PRemix1PEnemyLevel` (level 10 on Very Hard) |
 | title cards | `sc1pintro.c` (name text, team and giant text, Yoshi and tiny cards, doubles, Metal Bros, costume and port fixes) with `sc1premixintro.c` for the per-fighter tables and `sc1pintrorules.c` for the state-free decisions (test `test_1p_intro_rules.c`) |
-| Giga Bowser | `sc1PRemix1PIsFinalBoss`, `sc1PRemix1PBossHitPoints` (`SSB64_REMIX_1P_BOSS_HP` overrides), `ftbosscommon.c`, `ftmain.c` boss branch, `sc1PRemix1PBlocksCpuUpSpecial` in `ftcommonspecialhi.c`, `sc1PGameBossSetBossPlayer`, `sc1PRemix1POnPauseExit`, the "H.P." HUD (`ifCommonPlayerDamageUpdateDigits` in `ifcommon.c`: max H.P. minus damage, 200 / 250 / 300 by difficulty for Giga Bowser, 300 for Master Hand) |
+| Giga Bowser | `sc1PRemix1PIsFinalBoss`, `sc1PRemix1PBossHitPoints` (`SSB64_REMIX_1P_BOSS_HP` overrides), `ftbosscommon.c`, `ftmain.c` boss branch, `sc1PRemix1PBlocksCpuUpSpecial` in `ftcommonspecialhi.c`, `sc1PGameBossSetBossPlayer`, the "H.P." HUD (`ifCommonPlayerDamageUpdateDigits` in `ifcommon.c`: max H.P. minus damage, 200 / 250 / 300 by difficulty for Giga Bowser, 300 for Master Hand) |
 | `allstar_randomization` and progress | `sc1PRemixAllstarRandomize/StepStage/GetStage/GetComputer` (`sc1premixallstar.c`; `sc1PRemixAllstarPickOrder` in `sc1premix1prules.c` sends the slot to another fighter instead of looping when a fighter's three stages are taken); progress thresholds `SC1PREMIX_ALLSTAR_*_PROGRESS` (`SSB64_ALLSTAR_PROGRESS` sets the start); hooks in `sc1pmanager.c` |
 | Rest Area | `sc1PRemixAllstarSetupRestArea`, `OnHeartUsed`, `Update` (exit clipping), icons `sc1premixallstarrest.c` (rules `sc1premixallstarrestrules.c`), portraits `sc1premixallstarrestportraits.c` (display proc on link 6, RGBA16 32 x 32 from file 0xA05); hearts counted in `ftcommonget.c` |
 | percent carry, limbo, final | `sc1PRemixAllstarPlayerDamage/RecordPercent/OnPlayerKo/OnContinue`, `sc1PRemixAllstarKeepsRunState`, `sc1PRemixAllstarPrepareFinal/FinalFkind/FinalCostume` |

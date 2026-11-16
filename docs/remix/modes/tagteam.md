@@ -24,7 +24,7 @@ Port code: `decomp/src/gm/gmremixtagteam.c` (queues, swap, steal), `gmremixtagte
   for N/A ports, draws the cached icon of a filled slot and a default dot otherwise (Master Hand gets a smaller scale).
 - `update_queue_` hooks (token select, costume change, fighter sync and the four toggles FFA / teams / team change) call `update_slot_`, which writes
   character, costume and shade into `character_queues[port][current_slot]` (Classic Sonic flag included) and caches the stock icon texture and
-  palettes; `update_previous_icons_` shifts earlier slots (costume ids away from duplicates in FFA, shades up for teammates with the same fighter).
+  palettes; `update_previous_icons_` shifts earlier slots (costume ids away from duplicates in FFA, shades up for teammates with the same fighter). The port does the same in `mnPlayersVSTagTeamRefreshQueue` (`mnplayersvs.c`: `mnPlayersVSUpdateGateAll` for the mode toggle, the team button) through `mnRemixTagTeamCssRewritePrevious` (`mnRemixTagTeamCssRulesRewritePrevious`): slots before the current one get the default costume plus one per earlier port with the same fighter in the slot (FFA) or the team costume and shade (teams); the current slot gets the panel costume at every toggle. Empty previous slots stay empty (the asm reads their NONE id as a fighter and writes a costume nobody reads).
 - `move_to_next_slot_on_pickup`: taking the token (not recalling it) goes to the next slot, clamped to the stock count; the pickup wait is 2 frames
   instead of 30 (`speed_up_token_pickup_`). B with a held token empties the slot and goes back one (`clear_slot_and_go_to_previous_slot_`).
   A over a portrait recalls (`check_recall_with_a_`). A stock count change clamps `current_slot` and clears the slots above it.

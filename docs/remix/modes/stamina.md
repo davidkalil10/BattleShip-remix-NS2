@@ -70,15 +70,15 @@ Tests: `tests/remix/test_stamina_rules.c` (`gmremixstaminarules.c`: total HP, HP
 ### Menu and CSS
 
 `mndef.h` extends `MNVSModeRule` with `nMNVSModeRuleStamina` (2) and `nMNVSModeRuleStaminaTeam` (5); `nMNVSModeRuleLast` points to the last value of the
-build. `mnremixvsstamina.c` draws the rule value (Stamina image at x 176, Stamina Team as two images at 0.875 scale, x 165 and 224, y 78), the
-"Stamina." label at the Stock label position (106, 114), "H.P." at (212, 120), the 3-digit HP value (x 197 / 205 / 209 by digit count) and the CSS
+build. `mnremixvsstamina.c` draws the rule value (Stamina image at x 176, Stamina Team as two images squeezed horizontally to 0.875 (scalex only, as `_position_stamina_team`), x 166 and 224, y 78), the
+"Stamina." label at (84.5, 113), the Time label position with the asm x (`_stamina_hp`), "H.P." at (212, 120), the 3-digit HP value (x 197 / 205 / 209 by digit count) and the CSS
 value (x 210 / 214); the sprites come from the VS menu file (`sMNVSModeFiles[1]`) at offsets 0x6D28 (Stamina), 0x6B28 ("Stamina.") and 0x6E28
 ("H.P."). `mnVSModeSaveSettings` stores the flag and `game_rules = TIMED_STOCK` for both values; the rule is restored from the flag when the menu
 opens; Stamina counts as a free-for-all rule for team shading. On the CSS, `mnPlayersVSMakeStockSetting` shows the HP and the arrows call
-`mnRemixVSStaminaScrollHP`; the "H.P." background uses the goal picker image path. The panel menu Initial Damage entry is limited to the HP
+`mnRemixVSStaminaScrollHP`; the yellow picker uses the "H.P." background (image offset 0x1ADE0, `mnRemixVSStaminaCssPickerOffset`, `stamina_hp_display_._bg`) in `mnPlayersVSMakeStockSelect`. The panel menu Initial Damage entry is limited to the HP
 (`mnRemixPanelMenuRulesStaminaDamage`, `mnremixcsspanelmenuinput.c`).
 
-HP steps: `mnRemixVSStaminaStepHP` moves 1 below 10, 10 from 10 to 990 and 1 above 990, clamped to 1..999, for both the VS menu and the CSS.
+HP steps: `mnRemixVSStaminaStepHP` (VS menu) moves 1 for a button, and with the stick 10 with the asm snaps (1 to 9 up to 10, 990 to 998 up to 999, only 999 wraps to 1); the CSS arrows move 10 (`mnRemixVSStaminaRulesCssStep`).
 
 ### Deviations from the asm
 

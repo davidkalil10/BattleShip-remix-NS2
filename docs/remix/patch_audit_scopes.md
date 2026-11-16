@@ -98,7 +98,7 @@ Format: asm file:line | scope | verdict | evidence.
 - :2179 | `singleplayer_polygon_team_costume_fix_` | GAP
 - :2240 | `duo_team_costume_preview_fix_` (4) | PORTED | sc1pintro.c:265-277, 1707-1731
 - :2383-2420 | `replace_victory_image_` (6) | ADAPTED | mncongra.c:288-310, mnremixgalleryrules.c:58+
-- :2551 | `env_mapping_fix_` | GAP (low confidence)
+- :2551 | `env_mapping_fix_` | GAP (low confidence); the Continue / Game Over case (:2593-2603) is a flag set by mnPlayers1PGameContinueStartScene (sysRemixEnvMapSetContinueScreen), because the port keeps scene_curr at the 1P battle there (T14.6-g07)
 - :2633 | `fix_port_index_` (4) | GAP
 
 ##### SinglePlayerModes.asm, lines < 3600 (auditor A)
@@ -163,9 +163,9 @@ Format: asm file:line | scope | verdict | evidence.
 - 5304 `remix_yoshi_card`, 5327 `remix_yoshi_card_shade_skip`, 5353 `remix_yoshi_card_costumes` PORTED (sc1pintro.c:1675-1688, 1750)
 - 5401 `remix_team_shade_start`, 5447 `remix_team_shade_ko` PORTED (sc1pgame.c:1448-1458, 1722-1727)
 - 5492/5497 `tiny_team_screen_card` STUB
-- 5644 `doubles_card_1`, 5674 `doubles_card_2` PORTED (sc1pintro.c:265-277); 5707 `starfox_costume` PORTED (sc1pmanager.c:531-535); 5736 `doubles_file_loading`, 5772 `giant_file_loading`, 5801 `giant_card` PORTED (sc1pintro.c:2583-2591, 1763)
+- 5644 `doubles_card_1`, 5674 `doubles_card_2` PORTED (sc1pintro.c:265-277); 5707 `starfox_costume` PORTED (sc1pmanager.c:531-538: Luigi to DK, and a Fox ally takes the alternate-costume branch like the asm's at = Fox); 5736 `doubles_file_loading`, 5772 `giant_file_loading`, 5801 `giant_card` PORTED (sc1pintro.c:2583-2591, 1763)
 - 5824 `remix_kirby_card` PORTED (sc1pintro.c:1280); 5848 `remix_kirby_selection`, 5873 `remix_kirby_skip` PORTED (sc1pgame.c:1747); 5899 `remix_kirby_selection_initial` PORTED (sc1pgame.c:1570); 5921 `remix_1p_kirby_load` ADAPTED
-- 5942 `_final_stage_spawn` PORTED (sc1pgame.c:1308-1313); 6022 `_giga_usp_prevent` PORTED (ftcommonspecialhi.c:73, sc1premix1p.c:430); 6081 `game_over_end` PORTED (mn1pcontinue.c:1037-1045)
+- 5942 `_final_stage_spawn` PORTED (sc1pgame.c:1308-1313); 6022 `_giga_usp_prevent` PORTED (ftcommonspecialhi.c:73, sc1premix1p.c:430); 6081 `game_over_end` PORTED (mn1pcontinue.c:1037-1045; page flag only, the human's saved size is kept like `clear_settings_for_1p_`)
 - 6955 `player_percent` STUB; 7003 `clear_percent` STUB; 7030 `clear_percent_continue` PORTED (sc1pmanager.c:708)
 - 7081 `rest_area_and_hrc_spawning`, 7111 `..._fix` ADAPTED (HRC half: `sc1PRemixHrcFighterKind`, sc1premixhrc.c, gives the Sandbag fighter kind 5; the slot stays a CPU, deviations.md 5.7); 7154 `instant_spawn` PORTED (sc1pgame.c:1324); 7186 `limbo_clear` GAP (ammo half); 7221 `skip_go` PORTED (sc1pgame.c:1980)
 - 7815 `heart_persist` GAP; 7850 `progress_advancement` ADAPTED; 7891 `screen_set_end` ADAPTED; 7918 `heart_counter` PORTED (ftcommonget.c:118); 7950 `advance_allstar` ADAPTED; 7989 `pause_exit` PORTED (sc1pmanager.c:668-675)
@@ -283,7 +283,7 @@ Format: asm file:lines (patch count if more than 4) | scope | verdict | evidence
 - VsRemixMenu.asm:969 | disable_mode_toggle_ | **PORTED** | mnplayersvs.c:3179-3185
 - VsRemixMenu.asm:992 | update_announcer_on_toggle_ | **PORTED** | mnplayersvs.c:3243 mnRemixCssModeKeepsToggleVoice
 - VsRemixMenu.asm:1009..1047 (8) | add_row_to_results_ (KOTH Times, Smashketball FGs) | **PORTED** | mnvsresults.c:2411-2416, 2473-2478, 3472-3582
-- css/Damage.asm:51 | char_init_ (initial damage) | **PORTED** | ftremixpanel.c ftRemixPanelGetInitialDamage, called from ftManagerMakeFighter only (the ra test: a respawn keeps 0%)
+- css/Damage.asm:51 | char_init_ (initial damage) | **PORTED** | ftremixpanel.c ftRemixPanelGetInitialDamage, called from ftManagerMakeFighter only (the ra test: a respawn keeps 0%); All-Star skips the panel value (Damage.asm:75-77, T14.6-g07)
 - css/DpadControl.asm:47,55 | dont_set_shield_mask_ / set_shield_mask_ | **PORTED** | ftRemixDpadControlSetButtonMasks
 - css/DpadControl.asm:99 | set_R_macro | **PORTED** | ftremixdpad.c ftRemixDpadControlController (R becomes A+L)
 - css/DpadControl.asm:136 | css_cursor_and_dpad_controls_ (global controller hook) | **GAP** | new: only the match-side transform exists (ftremixdpad.c); nothing reads Toggles.entry_dpad_css_control, no D-pad cursor on the CSS, no menu-wide Stick Swap, no Training pause D-pad menu
@@ -305,7 +305,7 @@ Format: asm file:line, scope, verdict, evidence.
 
 ##### Camera.asm
 - Camera.asm:46 override_camera_type_ PORTED gmcamera.c:1282 + grremixcamera.c:20 (19 stages -> Inishie routine).
-- Camera.asm:108 set_initial_coordinates_ ADAPTED gmcamera.c:1281 `gmRemixCameraSetupDefault` (gmremixcameramode.c:262; fixed-view tables match Camera.asm:1060-1330; the `camera_pan_offsets_` clear depends on #20).
+- Camera.asm:108 set_initial_coordinates_ ADAPTED gmcamera.c:1281 `gmRemixCameraSetupDefault` (gmremixcameramode.c:262; fixed-view tables match Camera.asm:1060-1330; the `camera_pan_offsets_` clear is `gmRemixCameraPanReset`, called first in `gmRemixCameraSetupDefault`, in every Camera Mode; M14 T14.6).
 - Camera.asm:462 fixed_camera_boss_ PORTED gmcamera.c:841.
 - Camera.asm:486 cinematic_entry_ PORTED ifcommon.c:2636 `gmRemixCameraCinematicFocus`.
 - Camera.asm:522 fixed_camera_always_ PORTED gmcamera.c:950 `gmRemixCameraSetStatusIsFrozen`.
@@ -335,7 +335,7 @@ Format: asm file:line, scope, verdict, evidence.
 - :120 mk_clone_hazard_removal_ STUB #16.
 - :153 planet_zebes_acid_ (no hazards) PORTED grzebes.c:277; :159 (no movement) PORTED grzebes.c:246; :165 (AI) GAP known (Phase 6).
 - :260 hyrule_castle_tornadoes_ PORTED grhyrule.c:368.
-- :271 ai_extend_hyrule_tornado_check GAP known (Phase 6).
+- :271 ai_extend_hyrule_tornado_check PORTED ftcomputer.c `ftComputerCheckTargetItemOrTwister` via `ftRemixAiHyruleTornadoApplies` (ftremixaistage.c; stages 0x04, 0x67, 0x68, 0x97; M14 T14.6).
 - :299 congo_jungle_barrel_ GAP #5.
 - :384 saffron_city_pokemon_ PORTED gryamabuki.c:253.
 - :431 saffron_city_pokemon_rate_init GAP #13. :477 saffron_city_pokemon_rate GAP #13.
@@ -353,7 +353,7 @@ Format: asm file:line, scope, verdict, evidence.
 - :2980 dreamland_downtime_initially_ PORTED grremixdreamland.c:56. :3009 dreamland_downtime_ PORTED :64. :3038 dreamland_wind_speed_multiplier_ PORTED :99 (Super and Hyper share 0.0006 in the asm; Japanese 0.0003; 1P keeps vanilla). :3092 dreamland_wind_speed_max_ PORTED :80 (the Super-gets-30 quirk is kept). :3130 dream_land_wind_parameters PORTED :132 (Dream Greens edges +-3811, top 1000, bottom -10 equal the vanilla constants; Super 1.09375 and Hyper 1.1953125 box scale).
 - :3201/3232/3257/3279 dream_greens_hardcoding_1-4 PORTED grpupupu.c:771 block. :3303/3325/3349/3373 dream_greens_hardcoding_animation_1-4 PORTED grpupupu.c:638-723 (offsets 0x00, 0x20, 0x60, 0x78 match the asm).
 - :3397/3419/3441 mk_remix_hardcoding_1-3 PORTED (dead behind #16): grinishie.c:377, 394, 273. :3463 mk_remix_hardcoding_4 PORTED grinishie.c:606. :3485/3507/3531 mk_remix_hardcoding_5-7 PORTED (dead behind #16): itpakkun.c:184, 185, 295. :3555 mk_remix_hardcoding_8 PORTED itpowerblock.c:117.
-- :3580 mk_remix_hardcoding_9 GAP known (Phase 6).
+- :3580 mk_remix_hardcoding_9 PORTED ftcomputer.c `ftComputerGetObjectiveStatus` via `ftRemixAiDroppingPlatformApplies` (ftremixaistage.c; MK 0x08, MK Remix 0x9B, Big Boo's Haunt 0xC0, Yoshi's Island II 0x8E below y -100, Great Bay 0x36 below y -1000; M14 T14.6).
 - :4356 sonic_btp_setup GAP #9.
 - :4437 casino_night_side_bumper_bounce PORTED ftcommonwalldamage.c:47 + grremixcasino.c:36 (0.8 -> 1.1, FGM 0x3D6, surface > 0x16 check).
 - :4481 casino_night_side_bumper_knockback GAP #3.
@@ -388,12 +388,12 @@ Format: asm file:line, scope, verdict, evidence.
 - :1214 adjust_heap_check_ NA: extends the free-heap check into the 8 MB expansion RAM (CharacterSelect.expansion_expansion_ram), PC has no fixed heap limit.
 - :1252, :1256, :1260, :1264, :1268 reduce_heap_space_ NA: lowers the vanilla heap end 0x80392A00 -> 0x803903E0 so Remix code in RDRAM is not overwritten.
 - :1334, :1349 update_stage_icons_ ADAPTED mnmaps.c:1549-1560 + mnremixstagepages.c (icon offsets from `Stages.icon_offset_table`).
-- :1842 right_check_, :2153 right_, :2204 left_, :2252 down_, :2300 up_, :2436 a_, :2497 b_, :2533 directional_checks_ ADAPTED mnmaps.c:2989 `mnMapsFuncRun` + mnremixstagepager.c / mnremixstagegridrules.c (3 x 6 grid, 5 pages, page flip).
+- :1842 right_check_, :2153 right_, :2204 left_, :2252 down_, :2300 up_, :2436 a_, :2497 b_, :2533 directional_checks_ ADAPTED mnmaps.c:2989 `mnMapsFuncRun` + mnremixstagepager.c / mnremixstagegridrules.c (3 x 6 grid, 5 pages, page flip; M14 T14.6-g02: R/Z page flip plays FGM 164 outside the Roulette, a direction held or `sMNMapsScrollWait` != 0 drops R/Z/L/C-Down, `a_` awayMode `mnRemixStageGridRulesAfkSelects`, `get_header_` Time Twister -> TIME_TWISTER_SSS in `mnMapsLoadMapFile`).
 - :2645, :2652, :2661 training_id_fix_ STUB #24. :2698 (mpCollisionInitGroundData) PORTED mpcollision.c:4113. :2704, :2707 (mnMapsAllocModelHeaps) PORTED mnmaps.c:474.
 - :2715, :2721, :2730 bg_animation_ PORTED: ef/efground.c `efGroundMakeAppearActor` reads `efRemixGroundGetData` (ef/efremixground.c): vanilla rows for ids 0..7, the 27 add_bg_animation stages (:5078-5265) from ef/efremixgroundrules.c, none for the rest.
 - :2778, :2781 bg_type PORTED gr/grwallpaper.c:381-390, `grRemixWallpaperRulesKind` (grremixwallpaperrules.c): REMIX_RTTF -> Bonus3, NULL-function stages static, the set_bg_type calls (:5065-5275) Bonus3 (Flat Zone, Flat Zone II, GB Land), Sector (Dragon King, Dragon King Remix, N64, N64 Remix, Frosty Village, Sector Z DL/O/Remix) or static (Yoshi's Island DL/O), every other added stage common.
 - :4517 setup_ ADAPTED mnremixstagepanel.c (Hazards / Movement rows, cursor colour, L toggle).
-- :5323 swap_stage_ (stage select on) PORTED mnmaps.c:2623 `mnMapsRemixPickRandomGroundKind`; :5331 swap_stage_ (stage select off) GAP #23.
+- :5323 swap_stage_ (stage select on) PORTED mnmaps.c:2623 `mnMapsRemixPickRandomGroundKind`; :5331 swap_stage_ (stage select off) PORTED mnremixstagerandom.c `mnRemixStageRandomPickStageSelectOff` (M14 T14.6-g02: the previous stage is left out of the list, the redraw loop of 0x8013AA1C).
 - :5455 random_fix_ ADAPTED/NA (low confidence): advances the N64 RNG by frame count on entering the stage select; port stage pick uses `syUtilsRandTimeUCharRange` (osGetTime, sys/utils.c:235). Music RNG not checked.
 
 ##### Surface.asm
@@ -430,9 +430,9 @@ Format: asm file:line | scope | verdict | evidence. `n` = number of patch rows i
 - Item.asm:877 | always_update_item_frequency_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:929-955 (mnVSItemSwitchSetItemToggles keeps item_appearance_rate even with every toggle off)
 - Item.asm:895 | prevent_1p_custom_item_spawns_ (n=1) | GAP | sc/sc1pmode/sc1pgame.c:1221 copies stagesetup->item_toggles unmasked; no mask 0xFFFFF/zero extended toggles for vanilla 1P, no mask 0xDFFFFFCF + default extended toggles for All-Star (sc1premixallstar.c:270 only handles the rest area). itremixspawn.c:76 relies on the rate rows of gkind 0x13..0x1C being zero, but vanilla 1P stages use VS gkinds (sc1pgame.c:361-620).
 - Item.asm:996 | initialize_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:778-820 (mnVSItemSwitchGetItemSettings reads bits 20-31 of item_toggles and gITRemixExtendedToggles bit n-12)
-- Item.asm:1049 | save_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:823-900 (mnVSItemSwitchSetItemSettings + itRemixSaveExtendedToggles)
+- Item.asm:1049 | save_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:823-900 (mnVSItemSwitchSetItemSettings + itRemixSaveExtendedToggles); the all-off exit in mnVSItemSwitchSetItemToggles clears the extended row bits and saves them too (M14 g08)
 - Item.asm:1127 | item_switch_cursor_ (n=2) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:1159,1205 (L_TRIG/R_TRIG removed from the option masks), 1288-1297 (L = toggle all, R = flip page)
-- Item.asm:1136 | handle_r_l_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:975 (mnVSItemSwitchToggleAllPageItems), :998 (mnVSItemSwitchFlipPage). Deviation: asm L flips from vanilla row 1 and sets all 15 vanilla + 13 custom values; port flips only the current page from that page's first row.
+- Item.asm:1136 | handle_r_l_ (n=1) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:975 (mnVSItemSwitchToggleAllPageItems), :998 (mnVSItemSwitchFlipPage). Deviation: asm L flips from vanilla row 1 and sets all 15 vanilla + 13 custom values; port flips only the current page from that page's first row. L and R are polled every tic from the first one, like the asm epilogue hook (M14 g08).
 - Item.asm:1303 | restrict_cursor_ (n=2) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:600,1109,1136 (mnVSItemSwitchGetPageLastOptionID)
 - Item.asm:1338 | handle_custom_item_values_ (n=5) | ADAPTED | mn/mnvsmode/mnvsitemswitch.c:567-630 + 1157-1285 (page-aware status accessors)
 - Item.asm:1588 | clear_items_in_1p_ (n=2) | ADAPTED | sc/scmanager.c:1273 calls itRemixClearActiveItems on every scene change (superset of RTTF/BTT/BTP init). Poison.clear_poison_ part: see STUB row below.
@@ -1091,11 +1091,11 @@ Format: asm file:first line, `scope`, xN patches, verdict, evidence.
 - Stamina.asm:1365 `action_hit_crash_prevent` x1 - GAP - GAP: ftParamStopVoiceRunProcDamage (ftparam.c:429) lacks (1) the reset of AirDodge.air_dash_player_port_array on every hit (all modes; ftRemixAirDodgeResetAirDash is only called from mpcommon.c:452 and ftmanager.c:782, so Air Dash is not refreshed by a hit, toggles.md) and (2) the clear of dead.wait (0xB18) of a defeated Stamina fighter
 - Stamina.asm:1430 `egg_crash_prevent` x1 - PORTED - ftcommondead.c:261 ftRemixStaminaSkipsDeadWaitInit
 - Stamina.asm:1516 `overkill_prevent` x3 - ADAPTED - HUD half: ftCommonDeadInitStatusVars early return (ftcommondead.c:254) stops a second KO; menu halves: mnvsmode.c nMNVSModeRuleLast (mndef.h:176) and arrows :517,:531
-- Stamina.asm:1578 `add_to_rule_button_` x10 - PORTED - mnvsmode.c:369,1184-1262,1342-1356; mnremixvsstamina.c:110 (positions 176/165/224, scale 0.875)
-- Stamina.asm:1700 `add_to_stock_time_button_` x5 - PORTED - mnvsmode.c:728 mnRemixVSStaminaMakeTimeStockLabels
+- Stamina.asm:1578 `add_to_rule_button_` x10 - PORTED - mnvsmode.c:369,1184-1262,1342-1356; mnremixvsstamina.c:110 (positions 176/166/224, scalex 0.875 only; M14 T14.6-g03 G03-3)
+- Stamina.asm:1700 `add_to_stock_time_button_` x5 - PORTED - mnvsmode.c:728 mnRemixVSStaminaMakeTimeStockLabels (Stamina. at 84.5/113, M14 T14.6-g03 G03-2)
 - Stamina.asm:1780 `add_to_stock_time_value_` x6 - STUB - value/position ported (mnremixvsstamina.c:132). STUB: scroll rules differ. Asm: D-pad/L/R = +-1, stick = +-10 with snaps (1<->10, 990, 999) in the VS menu; port mnRemixVSStaminaStepHP uses +-1 below 10 and above 990, +-10 else, for every input (:68-90)
 - Stamina.asm:1992 `stamina_scrolling_` x2 - STUB - STUB: CSS HP scroll (mnplayersvs.c:5284,5320 -> mnRemixVSStaminaScrollHP) clamps instead of wrapping (asm wraps 999->1, 1->999, steps 1->10->20) and does not call CharacterSelectDebugMenu.Damage.restrict_damage_for_stamina_ (initial damage above the new HP stays; modes/stamina.md admits it)
-- Stamina.asm:2066 `stamina_hp_display_` x2 - PORTED - mnplayersvs.c:2338 mnRemixVSStaminaMakeCSSValue (H.P. background via goal picker image offset)
+- Stamina.asm:2066 `stamina_hp_display_` x2 - PORTED - mnplayersvs.c:2338 mnRemixVSStaminaMakeCSSValue (H.P. background: image offset 0x1ADE0 through mnRemixVSStaminaCssPickerOffset in mnPlayersVSMakeStockSelect, M14 T14.6-g03 G03-4)
 - TagTeam.asm:694 `use_character_queues_on_load_` x3 - ADAPTED - gmRemixTagTeamApplyStartSlot / BuildQueues (gmremixtagteam.c, f20 table); scvsbattle.c:276
 - TagTeam.asm:988 `load_next_char_` x1 - PORTED - ftcommondead.c:650 swap, gmRemixTagTeamGetSlotOfPort
 - TagTeam.asm:1505 `load_all_files_` x1 - NA - N64 heap slots (always_load/alt_heap_pointer) - the port loads files per kind once (modes/tagteam.md)
@@ -1103,7 +1103,7 @@ Format: asm file:first line, `scope`, xN patches, verdict, evidence.
 - TagTeam.asm:1589 `use_largest_anim_heap_` x1 - ADAPTED - gmRemixTagTeamGetFigatreeHeap (one largest-size heap per port)
 - TagTeam.asm:1618 `show_all_icons_` x2 - ADAPTED - gmremixtagteamicons.c + ifcommon.c:1172 gmRemixTagTeamApplyStockIcon
 - TagTeam.asm:1747 `handle_stock_stealing_` x1 - ADAPTED - ifcommon.c:1481 gmRemixTagTeamStealStock
-- TagTeam.asm:1819 `update_queue_` x10 - ADAPTED - mnPlayersVSTagTeamWriteSlot at mnplayersvs.c:336,3859,4897; toggle FFA/teams/team change (6 patches) have no write: the CSS icon costume is derived at draw time (mnremixtagteamcssicons.c:97) and the match recomputes team costumes at start - equivalent, low confidence
+- TagTeam.asm:1819 `update_queue_` x10 - ADAPTED - mnPlayersVSTagTeamWriteSlot at mnplayersvs.c:336,3859,4897; toggle FFA/teams/team change (6 patches) now write through mnPlayersVSTagTeamRefreshQueue (update_slot_ plus mnRemixTagTeamCssRewritePrevious = update_previous_icons_, M14 T14.6-g03 G03-5); before that they had no write: the CSS icon costume is derived at draw time (mnremixtagteamcssicons.c:97) and the match recomputes team costumes at start - equivalent, low confidence
 - TagTeam.asm:2365 `move_to_next_slot_on_pickup` x1 - PORTED - mnplayersvs.c:4517
 - TagTeam.asm:2400 `clear_slot_and_go_to_previous_slot_` x1 - PORTED - mnplayersvs.c:5197-5228
 - TagTeam.asm:2512 `adjust_current_slot_on_stock_count_change_` x1 - PORTED - mnplayersvs.c:2356

@@ -71,6 +71,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     test_blueshell_rules.c
     test_dekunut_rules.c
     test_turnip_rules.c
+    test_itemswitch_rules.c
     test_basketball_bounce_rules.c
     test_conkergrenade_rules.c
     test_franklinbadge_rules.c
@@ -239,6 +240,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixblueshellrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixdekunutrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixturniprules.c
+    ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixspawnrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixbasketballrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixconkergrenaderules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/it/itremix/itremixfranklinbadgerules.c

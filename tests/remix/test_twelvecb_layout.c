@@ -130,6 +130,21 @@ static void testStockPaddingFollowsTheArrowsAndTheDigits(void)
     CHECK_EQ(-7, mnRemixTwelveCBLayoutStockPadding(1, 10));
 }
 
+static void testSetArrowZonesAreInclusiveAndTheRightOneIs33Wide(void)
+{
+    CHECK_EQ(0, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 91.0F));
+    CHECK_EQ(-1, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 91.5F));
+    CHECK_EQ(-1, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 123.0F));
+    CHECK_EQ(1, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 123.5F));
+    CHECK_EQ(1, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 155.5F));
+    CHECK_EQ(1, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 156.5F));
+    CHECK_EQ(0, mnRemixTwelveCBLayoutSetArrowAt(91.5F, 156.75F));
+    CHECK_EQ(-1, mnRemixTwelveCBLayoutSetArrowAt(159.0F, 159.0F));
+    CHECK_EQ(1, mnRemixTwelveCBLayoutSetArrowAt(159.0F, 191.0F));
+    CHECK_EQ(1, mnRemixTwelveCBLayoutSetArrowAt(159.0F, 224.0F));
+    CHECK_EQ(0, mnRemixTwelveCBLayoutSetArrowAt(159.0F, 224.5F));
+}
+
 void remixTestTwelveCBLayout(void)
 {
     printf("twelvecb layout\n");
@@ -142,4 +157,5 @@ void remixTestTwelveCBLayout(void)
     RUN_TEST(testHitTestRejectsRowsBelowTheGrid);
     RUN_TEST(testSlotOfFkindFindsThePlayersOwnPortrait);
     RUN_TEST(testStockPaddingFollowsTheArrowsAndTheDigits);
+    RUN_TEST(testSetArrowZonesAreInclusiveAndTheRightOneIs33Wide);
 }

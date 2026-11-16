@@ -36,7 +36,7 @@
 
   Where Smash Remix itself has a bug, the port keeps the corrected behaviour.
 - **Stages, modes, items and fighters checked against Smash Remix.** The same comparison was run on the rest of the
-  ported game logic, and about 120 differences were fixed. Some of them:
+  ported game logic, and about 150 differences were fixed. Some of them:
   - Pirate Land's cannon moves and fires with its flash; Rainbow Road's Chain Chomp charges down the track.
   - The animated backgrounds of 27 stages play; stages use their own wallpaper kind.
   - Great Bay, Twilight City and Pirate Land water no longer slows a jump out of it.
@@ -52,6 +52,11 @@
   - Pause and results: extra pause controls on every pause type, Match Stats underlines and Highest Taken, Player Tag
     outline.
   - Announcer calls (Long KO, Clang, Close match) and the level 10 CPU in a few situations.
+  - CPUs avoid the tornado on the Hyrule Castle variants and leave the dropping platforms of Big Boo's Haunt,
+    Yoshi's Island II and Great Bay.
+  - Stage select: the random stage does not repeat the last one, page switches play their sound.
+  - 12-Character Battle character select: J/E flags, leaving with B keeps the battle.
+  - Special Zoom also runs in 1P; a Game Over or pause exit no longer resets your Size setting.
 - **Windows: a clear message when Windows blocks the ROM extractor.** When Smart App Control or another application
   control policy stops `torch.exe` on the first launch, the error now says so instead of only showing a code.
 - **Packaging.** The Linux AppImage uses the Smash Remix icon instead of the vanilla one, the Windows zip no longer

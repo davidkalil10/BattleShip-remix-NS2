@@ -128,6 +128,43 @@ static void testZebesBasedStagesHaveNoAcidWithHazardsOff(void)
     CHECK_EQ(0, ftRemixAiStageHasZebesAcid(nGRRemixStage_NORFAIR, 0));
 }
 
+static void testHyruleBasedStagesHaveTheTornado(void)
+{
+    CHECK_TRUE(ftRemixAiStageHasHyruleTornado(nGRRemixStage_HYRULE_CASTLE));
+    CHECK_TRUE(ftRemixAiStageHasHyruleTornado(nGRRemixStage_HCASTLE_DL));
+    CHECK_TRUE(ftRemixAiStageHasHyruleTornado(nGRRemixStage_HCASTLE_O));
+    CHECK_TRUE(ftRemixAiStageHasHyruleTornado(nGRRemixStage_HCASTLE_REMIX));
+}
+
+static void testOtherStagesHaveNoHyruleTornado(void)
+{
+    CHECK_EQ(0, ftRemixAiStageHasHyruleTornado(nGRRemixStage_PEACHS_CASTLE));
+    CHECK_EQ(0, ftRemixAiStageHasHyruleTornado(nGRRemixStage_MUSHROOM_KINGDOM));
+}
+
+static void testDroppingPlatformStagesFleeBelowMinusOneHundred(void)
+{
+    CHECK_TRUE(ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_MUSHROOM_KINGDOM, -100.5F));
+    CHECK_TRUE(ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_MK_REMIX, -300.0F));
+    CHECK_TRUE(ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_BIG_BOOS_HAUNT, -300.0F));
+    CHECK_TRUE(ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_YOSHIS_ISLAND_II, -300.0F));
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_MK_REMIX, -100.0F));
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_BIG_BOOS_HAUNT, 0.0F));
+}
+
+static void testGreatBayFleesBelowMinusOneThousand(void)
+{
+    CHECK_TRUE(ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_GREAT_BAY, -1000.5F));
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_GREAT_BAY, -999.0F));
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_GREAT_BAY, -300.0F));
+}
+
+static void testOtherStagesNeverFleeDroppingPlatforms(void)
+{
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_PEACHS_CASTLE, -5000.0F));
+    CHECK_EQ(0, ftRemixAiStageFleesDroppingPlatform(nGRRemixStage_HYRULE_CASTLE, -5000.0F));
+}
+
 static void testOtherStagesHaveNoZebesAcid(void)
 {
     CHECK_EQ(0, ftRemixAiStageHasZebesAcid(nGRRemixStage_PEACHS_CASTLE, 1));
@@ -157,4 +194,9 @@ void remixTestAiSharedRules(void)
     RUN_TEST(testZebesBasedStagesHaveAcidWithHazardsOn);
     RUN_TEST(testZebesBasedStagesHaveNoAcidWithHazardsOff);
     RUN_TEST(testOtherStagesHaveNoZebesAcid);
+    RUN_TEST(testHyruleBasedStagesHaveTheTornado);
+    RUN_TEST(testOtherStagesHaveNoHyruleTornado);
+    RUN_TEST(testDroppingPlatformStagesFleeBelowMinusOneHundred);
+    RUN_TEST(testGreatBayFleesBelowMinusOneThousand);
+    RUN_TEST(testOtherStagesNeverFleeDroppingPlatforms);
 }

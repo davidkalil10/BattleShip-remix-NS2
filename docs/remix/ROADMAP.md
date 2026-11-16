@@ -59,7 +59,7 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
 | M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
-| M14 Equivalence audit of the non-toggle logic | closed 2026-11-16: 23 pilot findings and 116 from the 22 audit batches, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; the parts not covered are listed under T14.3 |
+| M14 Equivalence audit of the non-toggle logic | closed 2026-11-16: 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; one open owner decision (G04-4, Random in the 12CB CSS) |
 
 - **Next step:** the owner's pass on the Switch and the PS5 with the M14 build.
 - **Last checkpoint:** M14 closed (2026-11-16; outer `75bce99`, decomp `e14a2575a`).
@@ -669,6 +669,46 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
     initial script) was not checked for the other fighters.
 - [x] T14.4 `hazards.md`, the mode docs, `announcer.md`, `menus.md`, `panel.md`, `deviations.md`,
   `patch_audit_scopes.md` and the `docs/bugs/` write-ups updated with each lot.
+- [x] T14.5 Second pass, read-only (2026-11-16): the parts listed as not covered above, 15 batches (g01 to g15), same
+  method. 256 routines equal to the asm, 36 confirmed differences in 10 batches, 11 already documented, 13 refuted.
+  No difference in g05 (Remix 1P randomization, duo and polygon selection), g09 (`Size.asm`), g10 (`GFX.asm`,
+  `CharEnvColor.asm`, `moveset.asm`, `Spawn.asm`, sword trail), g14 (the Kirby branches of Wario, Marina, Conker,
+  Lanky, Peach, Wolf, Piano and the Dedede hat hooks) and g15 (initial scripts of every Remix fighter, entry routines,
+  the shared fighter files, the N* folders).
+- [x] T14.6 Fix the T14.5 findings (2026-11-16), lead reruns on the committed build (all rc=0, no abort/assert line):
+  - g01 (camera, CPU stage checks): G01-1 CPUs avoid the tornado on Hyrule Castle DL, Omega and Remix (`g01a_torn*`:
+    the twister check runs on every call on stages 4, 103, 104, 151); G01-2 CPUs leave a dropping platform on Mushroom
+    Kingdom Remix, Big Boo's Haunt and Yoshi's Island II, G01-3 and the Great Bay turtle below y -1000 (`g01a_*`:
+    Recover begins on the forced frames, not at y -900); G01-4 the pause pan offsets are cleared when a battle camera
+    is made (`g01a_pan`).
+  - g02 (stage select): G02-1 the random stage with Stage Select off never repeats the previous one (3000 draws);
+    G02-2 R/Z page switch sound; G02-3 C-Down variant sound, deviation; G02-4 the idle auto-select; G02-5 Time Twister
+    preview file; G02-6 R/Z, L and C-Down are exclusive of a cursor move (`g02_snd`, `g02_sim`).
+  - g03 (Stamina VS menu, Tag Team CSS): G03-1 H.P. stick step ends at 999; G03-2 Stamina label position; G03-3
+    Stamina Team rule text; G03-4 the H.P. picker background (`g03_*_after`); G03-5 Tag Team CSS toggles rewrite the
+    queue (`g03_tt_after`).
+  - g04 (12CB CSS): G04-1 J/E flags on the panel; G04-2 a set change re-evaluates the panel fighter (`g04_a2`); G04-3
+    a same-character portrait change refreshes the panel (`g04_a3`); G04-5 leaving with B keeps the battle
+    (`g04_leave1`); G04-6 set-arrow hit zones (`g04_a6`). G04-4 open: the asm Z/R cycle includes the Random entry and
+    the port has no Random portrait flow in the 12CB CSS (`modes/twelvecb.md`, owner decision).
+  - g06: G06-1 the Fox ally of the Mario Bros. row takes the alternate costume (`g06a_after1`); G06-2 Game Over keeps
+    the human's saved Size (`g06b_after`). Same cause, fixed by the lead: the Remix 1P pause exit no longer writes
+    Size 0 (`lead_pexit_after`: `remix_panel_set` 0 hits, 1 before).
+  - g07: G07-1 the panel Initial Damage is not applied in All-Star (`g07a_after`); G07-2 the Continue screen has the
+    env-mapping lights (`g07b_after`).
+  - g08 (items): G08-1 the Cloaking Device spawn runs the Maxim Tomato tail (13 arrows for 13 spawns); G08-2 the Item
+    Switch exit saves the extended mask with everything off; G08-3 L and R are read from tic 1; the Turnip keeps its
+    "never despawn" bit like Mr. Saturn (`g08_*_after`).
+  - g11 (CSS panel menu): G11-1 Reset clears the Manual and Last stock counts; G11-2 a Stock change refreshes the Tag
+    Team queue; G11-3 arrows blink 10 on, 10 off (`g11*_rerun`); G11-4 CPU-port panel values after 1P, deviation.
+  - g12: G12-1 the Special Zoom gate accepts the 1P and Remix mode scenes (`g12zoom_*_after`: the decisive-stock check
+    runs; no zoom was seen firing in these runs, the scripted inputs score no KO); G12-2 throw announcer damage,
+    deviation; G12-3 the menu music alternate roll on every entry (`g12bgm_after`).
+  - g13: G13-1 `_find_closest_ledge` lookup by loop index, deviation.
+  - Still not compared, by their nature: data tables read from the Remix image (stage, title-card, All-Star and
+    announcer tables, GFX routine streams), routines the asm builds with `OS.copy_segment` from vanilla code (checked
+    against the decomp C, not the ROM bytes), display-list and render-order details, and the unreachable Banzai Bill
+    and Scuttle Minion.
 
 ---
 
