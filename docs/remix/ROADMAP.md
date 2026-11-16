@@ -62,7 +62,7 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M14 Equivalence audit of the non-toggle logic | closed 2026-11-16: 23 pilot findings and 116 from the 22 audit batches, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; the parts not covered are listed under T14.3 |
 
 - **Next step:** the owner's pass on the Switch and the PS5 with the M14 build.
-- **Last checkpoint:** M13 closed (2026-11-15; outer `8332d12`, decomp `3413abab6`).
+- **Last checkpoint:** M14 closed (2026-11-16; outer `75bce99`, decomp `e14a2575a`).
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
 
