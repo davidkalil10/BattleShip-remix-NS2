@@ -8,6 +8,9 @@ on:
     branches: [ main, master, 'feature/**' ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-switch2:
     name: Switch 2 (Ounce / libounce + OunceVK)
