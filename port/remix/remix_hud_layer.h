@@ -4,8 +4,7 @@
  *
  * Smash Remix draws every string as an object of a room (a display link), so the cursor, the tokens and the panels of the
  * scene sort against it. An owner opens a layer for a room and binds its slot ranges to it; the put calls do not change. A
- * bound slot is drawn by the layer object with the game renderer and no longer by the overlay; a slot with no layer stays on
- * the overlay. Layers and routes last one scene (remix_hud_text_clear forgets them).
+ * bound slot is drawn by the layer object with the game renderer; a slot with no layer is not drawn. Layers and routes last one scene (remix_hud_text_clear forgets them).
  *
  * A bound slot lives in game tics: it is drawn by the frame that follows its put and is gone when the owner stops putting it
  * (remix_hud_layer_put_is_live). remix_hud_text_hide still hides at once.
@@ -41,12 +40,12 @@ typedef struct RemixHudLayerRect
  * Opens a layer for the current scene.
  *
  * @return Its id, or REMIX_HUD_LAYER_NONE when the scene has no layer left or the font tables are missing (both go to the
- *         log), or when SSB64_REMIX_TEXT_OVERLAY=1 forces every slot to the overlay.
+ *         log).
  */
 int remix_hud_layer_open(void);
 
 /**
- * Binds a slot range to a layer (remix_hud_routes_bind). A refused range goes to the log and stays on the overlay.
+ * Binds a slot range to a layer (remix_hud_routes_bind). A refused range goes to the log and is not drawn.
  *
  * @param layer Id from remix_hud_layer_open.
  * @param kind RemixHudSlotKind of the slots.

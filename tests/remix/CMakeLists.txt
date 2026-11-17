@@ -83,6 +83,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     test_font_decode.c
     test_group_display_rules.c
     test_sprite_rules.c
+    test_inputdisplay_rules.c
     test_font_layout.c
     test_hud_layer_rules.c
     test_bgm_rules.c
@@ -307,6 +308,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     ${CMAKE_SOURCE_DIR}/decomp/src/if/ifremixcountdownrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/gm/gmremixcamerapanrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/if/ifremixdragonkinghudrules.c
+    ${CMAKE_SOURCE_DIR}/decomp/src/if/ifremixinputdisplayrules.c
 )
 target_compile_definitions(remix_mode_tests PRIVATE PORT=1 REGION_REMIX=1)
 target_include_directories(remix_mode_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stub ${CMAKE_SOURCE_DIR}/decomp/src ${CMAKE_SOURCE_DIR}/port/remix ${CMAKE_SOURCE_DIR}/port)

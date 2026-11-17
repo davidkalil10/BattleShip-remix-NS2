@@ -63,12 +63,10 @@ after the initial count is stored, as `stamina_stock` runs later.
 
 ## Positioned HUD text (`port/remix/remix_hud_text.h`)
 
-The Remix draws scores, counters and legends with its own font, Kabel (`File.CUSTOM_FONT` 0xA15), through `Render.draw_string_`. The port rebuilds that font at run time from the user's own .o2r
-(`port/remix/remix_font.cpp`; the glyph sprites come from the extracted file, the advance widths from the Remix RAM image `Render.character_offsets_custom`) and draws it in the ImGui overlay, falling back to the
-ImGui font only when the font file is missing. A caller puts a label every frame with the arguments of the asm call:
+The Remix draws scores, counters and legends with its own font, Kabel (`File.CUSTOM_FONT` 0xA15), through `Render.draw_string_`. The port draws it with text layers (game objects in the display link of the asm, `docs/remix/text_layers.md`): the glyph sprites come from the file of the user's own .o2r, the advance widths from the Remix RAM image `Render.character_offsets_custom` (`port/remix/remix_font.cpp`). A caller puts a label every frame with the arguments of the asm call:
 `remix_hud_text_put(slot, text, x, y, 0xRRGGBBAA, scale, align)` (also `_put_fit` for `Render.apply_max_width_`, `_putf` with printf format, `remix_hud_bar_put` for the KOTH meters and
 `remix_hud_rect_put` for `Render.draw_rectangle`), in N64 screen coordinates (320 x 240), `y` being the top of the 16 pixel glyph box. A label lives two frames, so a hook that stops calling it hides it;
-there are 128 text slots, 16 bar slots and 48 rectangle slots, and each owner defines its slots in its own file (the slot map is in the header). Labels are hidden at every scene change.
+there are 128 text slots, 16 bar slots and 48 rectangle slots, and each owner defines its slots in its own file (the slot map is in the header) and binds them to a layer; a slot with no layer is not drawn. Labels are hidden at every scene change.
 
 Facts of `Render.draw_string_` that the port reproduces (Render.asm 117-121, 600-638, 1629-1740):
 

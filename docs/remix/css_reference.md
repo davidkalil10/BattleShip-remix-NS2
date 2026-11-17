@@ -400,8 +400,9 @@ with the pure layout and Custom rules in `mnremixtwelvecblayout.c` and `mnremixt
 - **Goal picker**: the asm checks the picker press before the other buttons; the port checks it after the arrows. The tap branch makes
   "no fast cycling" automatic.
 - **Smashketball type** after a toggle keeps the blue channel of the sprite file, as the asm does.
-- **12CB**: the Custom set is edited by the same inputs. The overlay text
-  (Kabel) is above the game, the sprites are game objects; no text sits under a sprite. `TKOs` is a string in the asm that nothing
+- **12CB**: the Custom set is edited by the same inputs. The text
+  (Kabel) is drawn by text layers in the asm rooms (`text_layers.md`, "Layers as built"), so the cursor hands and tokens pass over
+  it; the legend and its marks hide while the panel menu of the token holder is open. `TKOs` is a string in the asm that nothing
   draws.
 - **Teams**: `sys/netreplay.c` still uses the vanilla `dIFCommonPlayerTeamColorIDs` (netplay replays); the results `x_teams` table has
   three entries and the Remix does not patch the team branch, so yellow reads the next array (175.0) like the asm.

@@ -60,10 +60,10 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
 | M14 Equivalence audit of the non-toggle logic | done 2026-11-17 (T14.1 to T14.6 on 2026-11-16, T14.7 on 2026-11-17): 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) implemented under T14.7 |
-| M15 Remix text in the game's display layers | open: the Remix text is a port overlay drawn over the whole game image, so the cursor, tokens and menu panels that Remix draws in front of it end up behind it |
+| M15 Remix text in the game's display layers | done 2026-11-17: every Remix text is drawn by the game in the asm's display layers; the port overlay is gone |
 
-- **Next step:** M15 T15.3, first lot: the CSS panel menu and the other character select texts.
-- **Last checkpoint:** M14 closed with T14.7 (2026-11-17; decomp `459b45a91`).
+- **Next step:** owner passes on the migrated screens; before any tag, build Windows and macOS (not buildable on the Linux machine) and rewrite the release notes Highlights.
+- **Last checkpoint:** M15 closed (2026-11-17): T15.3 and T15.4, overlay removed.
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
 
@@ -760,7 +760,7 @@ that covers them in Remix (room 0x39).
   - No `DLBuffer`, abort or assert line in any log. The layer text is softer and a little darker at the edges than the
     overlay's, as the game multiplies the colour by the intensity of the glyph texel.
   - Deviation kept: the drop of a short glyph in a squeezed string (row in `deviations.md`).
-- [ ] T15.3 Move the screens over, one lot per screen family, each with an in-game test that shows the layer order
+- [x] T15.3 Move the screens over, one lot per screen family, each with an in-game test that shows the layer order
   (cursor over the text, panel over the text) and a comparison of the text position with the current overlay:
   the 12CB character select and results; the CSS panel menu and the VS, 1P, Training and Bonus selects; the stage
   select; Training (Z menu, action rows, legends: the hide workaround and its `deviations.md` row go away); the pause
@@ -771,8 +771,16 @@ that covers them in Remix (room 0x39).
   rows) is the reference case: its text already had a widescreen fix on the overlay
   (`docs/bugs/remix_hud_text_widescreen_stretch_2026-11-13.md`), so on all four cards the text must sit inside its
   card in each frame, as it does today.
-- [ ] T15.4 Remove what the overlay no longer needs, update `menus.md`, `panel.md`, `deviations.md` and the mode docs,
+- [x] T15.4 Remove what the overlay no longer needs, update `menus.md`, `panel.md`, `deviations.md` and the mode docs,
   and build every platform locally (desktop, Switch, PS5, Android) before any tag.
+  Done 2026-11-17. Four lots (CSS panel menu and the VS, 1P, Training and Bonus selects with the 12CB Custom legend; 12CB, VS
+  results and Match Stats; battle HUD; Training, pause, stage select, title, Item Switch, banner and Input Display), each
+  checked in game against the forced overlay and in the three picture frames, then reviewed twice. The six non-layer findings
+  were fixed with their screens; the Training action rows and Match Stats tag name deviation rows are gone. The overlay draw
+  path and its env var are removed; `text_layers.md` describes the built system. Lead runs: `lead_t153_pm` (four panel menus:
+  the hands pass over Shield and the text sits inside each card) and `lead_t153_12cb` (12CB match). 8516 unit checks, 0
+  failed. Built locally: desktop Linux, Switch, PS5 and Android; Windows and macOS were not built (no host).
+
 ---
 
 ## Progress estimate (update at every checkpoint)

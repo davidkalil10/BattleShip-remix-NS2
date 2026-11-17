@@ -1238,7 +1238,7 @@ Format: asm:lines | scope | verdict | evidence (port file:line or reason). Rows 
 - Handicap.asm:22 `use_handicap_` | PORTED | ft/ftremix/ftremixhandicap.c:19
 - Hitstun.asm:6 `hitstun_` | PORTED | ft/ftparam.c:1792 (divisor 2.5)
 - InputDelay.asm:19 `apply_input_delay_` | PORTED | ft/ftremix/ftremixinputdelay.c: delay applied to the fighters' controller reads of human fighters only; the asm delays the OS-level controller struct (also pause/menus). Narrower scope, low impact
-- InputDisplay.asm:940,946,953 `adjust_timer_position_` | GAP | the timer stays at y=30 (if/ifcommon.c:2716); the asm lowers it to y=52 when port 4's Input Display is at the top. The ImGui row is centred at the top (port/remix/remix_input_display.cpp:211)
+- InputDisplay.asm:940,946,953 `adjust_timer_position_` | GAP | the timer stays at y=30 (if/ifcommon.c:2716); the asm lowers it to y=52 when port 4's Input Display is at the top. The Input Display is now game sprites next to each percent HUD (T15.3 lot D), so only the timer shift is left
 - JabLock.asm:7 `down_initial_` | PORTED | ft/ftcommon/ftcommondownwaitbounce.c:160
 - JabLock.asm:29 `handle_lock_` | PORTED | ft/ftcommon/ftcommondamage.c:654
 - JabLock.asm:67 `handle_reset_` | PORTED | ft/ftcommon/ftcommondownattack.c:26

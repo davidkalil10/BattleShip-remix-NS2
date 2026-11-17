@@ -32,7 +32,7 @@ ROMs (with SHA), Remix version and the desktop, Switch, Android and PS5 build st
 | [`panel.md`](panel.md) | The CSS player panel options: values, asm, port module, deviations |
 | [`announcer.md`](announcer.md) | PokemonAnnouncer and the other announcer voices |
 | [`menus.md`](menus.md) | Settings menu, VS and 1P menus, stage select, results, Character Data, credits, gallery, title and other screens |
-| [`text_layers.md`](text_layers.md) | Every Remix text, bar and rectangle of the port overlay with its asm room, the layer order of each screen and the cases where the overlay order is wrong (M15) |
+| [`text_layers.md`](text_layers.md) | How every Remix text, bar and rectangle is drawn by text layers in the asm rooms, the layers of each screen as built, the limits and the inventory of the Remix calls behind each put (M15) |
 | [`css_reference.md`](css_reference.md) | The Remix character select (grid, tables, files, modes, teams, 12CB) and the port's four CSS screens |
 | [`modes_base.md`](modes_base.md) | Common base of the modes: match mode, Timed Stock, positioned HUD text |
 | [`modes/`](modes/) | One doc per mode: `koth`, `smashketball`, `stamina`, `tugofwar`, `twelvecb`, `tagteam`, `training`, `singleplayer` |

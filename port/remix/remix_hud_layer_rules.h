@@ -3,8 +3,8 @@
  * lives and where every glyph of a string goes. No game, ImGui or libultraship dependency, so the headless unit tests check
  * them.
  *
- * A layer is a game object in the display link (room) of the asm; the slots bound to it are drawn by the game renderer
- * instead of the overlay. The glyph placement is Render.draw_string_ and Render.apply_max_width_ (Render.asm 1569-1846).
+ * A layer is a game object in the display link (room) of the asm; the slots bound to it are drawn
+ * by the game renderer. The glyph placement is Render.draw_string_ and Render.apply_max_width_ (Render.asm 1569-1846).
  */
 
 #ifndef PORT_REMIX_REMIX_HUD_LAYER_RULES_H
@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-/** Layer id of a slot that no layer draws: it stays on the overlay. */
+/** Layer id of a slot that no layer draws. */
 #define REMIX_HUD_LAYER_NONE 0
 /** Most layers one scene can open; ids go from 1 to this. */
 #define REMIX_HUD_LAYERS_MAX 8

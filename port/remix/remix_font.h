@@ -1,10 +1,9 @@
 /**
- * remix_font.h - the Smash Remix HUD font as a port texture atlas, built at run time from the user's own .o2r.
+ * remix_font.h - metrics of the Smash Remix HUD font.
  *
- * Remix draws every HUD string with the "Kabel" bitmap font (File.CUSTOM_FONT). The glyph sprites are decoded from the
- * file already extracted into the .o2r (reloc_misc/file_2581), the advance widths come from the Remix RAM image
- * (Render.character_offsets_custom), and the result is uploaded as one GUI texture. Nothing of the ROM is stored in the
- * repository.
+ * Remix draws every HUD string with the "Kabel" bitmap font (File.CUSTOM_FONT). The glyph sprites are drawn by the text
+ * layers from the font file of the .o2r (decomp/src/if/ifremixtextlayer.c); the advance widths and heights come from the
+ * Remix RAM image (Render.character_offsets_custom). Nothing of the ROM is stored in the repository.
  */
 
 #ifndef PORT_REMIX_REMIX_FONT_H
@@ -12,26 +11,13 @@
 
 #ifdef REGION_REMIX
 
-#include <imgui.h>
-
 #include <cstdint>
 #include <string>
 
 namespace RemixFont {
 
-/** Height in pixels of one glyph sprite at scale 1.0 (FONTSIZE_DEFAULT). */
-constexpr float kGlyphHeight = 16.0f;
-
 /**
- * Builds the atlas on first use. Must run on the thread that owns the ImGui renderer.
- *
- * @return true when the font is available; false when the font file or the RAM image is missing (callers then fall back).
- */
-bool Ensure();
-
-/**
- * Reads the glyph width and height tables from the Remix RAM image on first use. Needs no renderer, so the game thread may
- * call it.
+ * Reads the glyph width and height tables from the Remix RAM image on first use.
  *
  * @return true when the tables are available; false when the RAM image has none.
  */
@@ -54,33 +40,6 @@ int MaxCharacter();
  * @return Width in N64 screen units (one font pixel is one unit at scale 1.0).
  */
 float Measure(const std::string &text, float scale);
-
-/**
- * Horizontal squeeze Render.apply_max_width_ applies to a string: maxWidth over the width from the first glyph to the right
- * edge of the last glyph sprite when that is wider than maxWidth, else 1.
- *
- * @param text Text to fit.
- * @param scale Font scale.
- * @param maxWidth Widest the string may be in N64 screen units; zero or less means no limit.
- * @return Factor for Draw's widthFactor, 1 when the text already fits.
- */
-float FitFactor(const std::string &text, float scale, float maxWidth);
-
-/**
- * Draws a string with its top-left corner at position.
- *
- * @param drawList Draw list receiving the glyph quads.
- * @param position Top-left corner in window pixels.
- * @param pixelsPerUnit Window pixels per N64 screen unit, horizontally and vertically.
- * @param scale Remix font scale (0.875 for the 12-Character Battle numbers).
- * @param color ImGui colour used as the tint.
- * @param text Text to draw.
- * @param widthFactor Horizontal squeeze applied to glyphs and advances (Render.apply_max_width_ flattens only the X axis).
- * @param glyphScale Enlarges every glyph sprite from its top-left corner and leaves the advances alone (PlayerTag.asm
- *        create_custom_tag_ multiplies the scale of each character image of the black copy and keeps its position).
- */
-void Draw(ImDrawList *drawList, ImVec2 position, ImVec2 pixelsPerUnit, float scale, ImU32 color, const std::string &text,
-          float widthFactor, float glyphScale = 1.0f);
 
 } // namespace RemixFont
 

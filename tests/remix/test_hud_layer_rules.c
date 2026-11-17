@@ -47,7 +47,7 @@ static int sixteenths(float value)
     return (int)(value * 16.0f);
 }
 
-static void testUnboundSlotStaysOnTheOverlay(void)
+static void testUnboundSlotHasNoLayer(void)
 {
     RemixHudRoutes routes;
 
@@ -376,7 +376,7 @@ static void testEmptyTextAndFullBufferWriteNoMoreThanTheCapacity(void)
 
 void remixTestHudLayerRules(void)
 {
-    RUN_TEST(testUnboundSlotStaysOnTheOverlay);
+    RUN_TEST(testUnboundSlotHasNoLayer);
     RUN_TEST(testLayersAreNumberedFromOneUpToTheLimit);
     RUN_TEST(testBoundRangeBelongsToItsLayerOnly);
     RUN_TEST(testEachSlotKindHasItsOwnRoutes);

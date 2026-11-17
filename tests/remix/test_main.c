@@ -84,6 +84,7 @@ extern void remixTestVsStatsRules(void);
 extern void remixTestFontDecode(void);
 extern void remixTestGroupDisplayRules(void);
 extern void remixTestSpriteRules(void);
+extern void remixTestInputDisplayRules(void);
 extern void remixTestFontLayout(void);
 extern void remixTestHudLayerRules(void);
 extern void remixTestBgmRules(void);
@@ -222,6 +223,7 @@ int main(void)
     remixTestFontDecode();
     remixTestGroupDisplayRules();
     remixTestSpriteRules();
+    remixTestInputDisplayRules();
     remixTestFontLayout();
     remixTestHudLayerRules();
     remixTestBgmRules();

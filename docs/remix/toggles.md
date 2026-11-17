@@ -112,7 +112,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Hold To Exit Training** (`hold_to_exit_training`; 0 off, 1 on; default 0/1/0/0)  
   Asm: Training.asm: leaving the Training needs A to be held, with a `(Hold A)` label on the menu.  
-  Port: sc/sc1pmode/sc1ptrainingremixexit.c:62 and :95 (label through the `remix_hud_text` overlay).
+  Port: sc/sc1pmode/sc1ptrainingremixexit.c:62 and :95 (label through `remix_hud_text`, drawn by a text layer).
 
 - **Improved Combo Meter** (`improved_combo_meter`; 0 off, 1 on; default 1/0/1/1)  
   Asm: Combo.asm `improve_meter_`: the combo count is not reset while the victim is in one of 21 listed actions (captured, thrown, stunned, tornado, barrel, egg lay and others) or in knockback hitstun.  
@@ -345,7 +345,7 @@ The asm Options-screen port (`disable_options_functionality_`) and the fifth Mod
 
 - **Music Title at Match Start** (`show_music_title`; 0 off, 1 on; default 1/0/1/1)  
   Asm: BGM.asm `show_music_title_`: at the GO lights a translucent bar shows the track name and the game name; it disappears with GO!.  
-  Port: `gmRemixMusicTitleLookup` (gm/gmremixmusictitle.c:63; the title of the track playing, else the stage `bgm_id` that BGM.asm reads) with names from port/remix/remix_music_title.cpp, drawn through the `remix_hud_text` overlay.
+  Port: `gmRemixMusicTitleLookup` (gm/gmremixmusictitle.c:63; the title of the track playing, else the stage `bgm_id` that BGM.asm reads) with names from port/remix/remix_music_title.cpp, drawn through `remix_hud_text` by a text layer.
 
 - **BGM Volume** (`bgm_volume`; 0..10; default 10)  
   Asm: BGM.asm `master_bgm_volume`: BGM volume is scaled by level/10 before the 30720 clamp.  
@@ -436,7 +436,7 @@ These are port registries over the Remix CSS and Training menus, not `Toggles.as
 
 | Page | Registry | CVar | Run override | Contents |
 |---|---|---|---|---|
-| Player Panel P1..P4 | `port/remix/remix_player_panel.cpp` (`remix_panel_get/set`) | `gRemix.Panel.<Key>.P<port>` | `SSB64_REMIX_PANEL="Size.2=1;Damage.1=50"` | 21 options per port: Shield, PlayerTag, Visibility, Skeleton, ModelDisplay, InputDisplay (Input HUD Off/Top/Bottom, drawn by `port/remix/remix_input_display.cpp`), Size, StockMode, Knockback, InputDelay, Handicap, StartWith, TauntItem, TauntButton, KirbyHat, DpadFunctions, DpadControl, Damage, PoisonDmg, Practice1P, StockCount. The header comment still says 20; the enum has 21 (`REMIX_PANEL_COUNT`). |
+| Player Panel P1..P4 | `port/remix/remix_player_panel.cpp` (`remix_panel_get/set`) | `gRemix.Panel.<Key>.P<port>` | `SSB64_REMIX_PANEL="Size.2=1;Damage.1=50"` | 21 options per port: Shield, PlayerTag, Visibility, Skeleton, ModelDisplay, InputDisplay (Input HUD Off/Top/Bottom, drawn by the game sprites of `if/ifremixinputdisplay.c`), Size, StockMode, Knockback, InputDelay, Handicap, StartWith, TauntItem, TauntButton, KirbyHat, DpadFunctions, DpadControl, Damage, PoisonDmg, Practice1P, StockCount. The header comment still says 20; the enum has 21 (`REMIX_PANEL_COUNT`). |
 | Player Tags | same file | `gRemix.Panel.TagName.<1..20>` | `SSB64_REMIX_TAG_NAMES="2=afk"` | Names of the 20 custom tags (`css/PlayerTag.asm`). A port shows the name when its PlayerTag option selects the tag. The tag text `afk` enables the 1P AFK helpers (`sc/sc1pmode/sc1premixenemyafk.h`); `cube` (Kirby Cube) has no counterpart. |
 | Training | `port/remix/remix_training.cpp` (`remix_training_get`) | `gRemix.Training.<Key>` | `SSB64_REMIX_TRAINING="ShieldBreak=1;Oos=3;SpamPractice=7"` | Keys ShieldBreak, Oos, Music, StageBg, Tech, DiType, DiStrength, DiDirection, DiFirstHit, Dpad, DiPractice, SpamPractice, SpamInterval, SpamRandom, Percent1..4, ResetSetsPercent1..4, Type1..4, Character1..4, Costume1..4, Spawn1..4 (`Training.asm` 3899-3913). |
 | Modes | `port/remix/remix_modes.cpp` | `gRemix.Modes.SmashketballType` (0 basketball, 1 soccer) | none | The Smashketball type toggle of the VS character select. |

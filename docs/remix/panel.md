@@ -78,7 +78,7 @@ Values are from `css/X.asm`; module files are under `decomp/src/ft/ftremix/` unl
 | Visibility | 0 Default, 1 Cloaked, 2 None, 3 Dark | `CharEnvColor.asm` | `ftremixvisibility.c`, `ftremixenvcolor.c` |
 | Skeleton | 0 Disabled, 1 Enabled | `Skeleton.asm` (0x800F24B0, 0x800F2228) | `ftremixskeleton.c` |
 | Model | 0 Default, 1 Hi Poly, 2 Lo Poly | `Costumes.asm force_hi_lo_poly_` | `ftremixhitboxdisplay.c` |
-| Input HUD | 0 Disabled, 1 Top, 2 Bottom | `InputDisplay.asm` | `ftremixinputdisplay.c`, `port/remix/remix_input_display.cpp` |
+| Input HUD | 0 Disabled, 1 Top, 2 Bottom | `InputDisplay.asm` | `ftremixinputdisplay.c`, `if/ifremixinputdisplay.c`, `if/ifremixinputdisplayrules.c` |
 | Size | 0 Default, 1 Giant, 2 Tiny | `Size.asm` | `ftremixsize.c` |
 | Stock | 0 Default, 1 Last, 2 Manual | `StockMode.asm` | `gm/gmremixstockmode.c` |
 | Knockback | 0 Default, 1 Random | `Knockback.asm` | `ftremixknockback.c` |
@@ -127,12 +127,12 @@ sites of `ftDisplayMainDrawAll` / `ftDisplayMainDrawSkeleton`; a fighter without
 pause swap). `ftRemixModelDisplayDetail(detail, player)` is called by `ftManagerMakeFighter` and `ftParamSetModelPartDetailAll`; How to Play,
 Demo and intro scenes are ignored.
 
-**Input HUD.** The Remix draws an N64 controller from sprites; the port draws an ImGui overlay (`RemixInputDisplayWindow`, a `GuiWindow` on
-the foreground list). `ftRemixInputDisplayUpdate` (`ftMainProcUpdateInterrupt`) sends the sample each fighter reads this frame (after Input
-Delay and the D-pad transform; CPU samples too) when the port value is not 0. The overlay anchors each port to the top or bottom of the
-window (side by side, centred), tints P1 red, P2 blue, P3 yellow, P4 green and lights a shape while its button is held (stick dot clamped
-to 80, D-pad arms, A, B, Start, C buttons, L, R, Z). `ftRemixInputDisplayClear` runs in `scManagerRunLoop` at every scene change. R is shown
-as R, not as A+Z; the match timer is not moved (`adjust_timer_position_`).
+**Input HUD.** The Remix draws an N64 controller from sprites and so does the port: `ifRemixInputDisplayMake` (end of `ifCommonPlayerDamageInitInterface`)
+makes the sprites of each port whose value is not 0, in GObj group 0x0B (hidden by the pause) and display link 0x17, placed by
+`ifremixinputdisplayrules.c` (Top or Bottom, per screen and mode). `ftRemixInputDisplayUpdate` (`ftMainProcUpdateInterrupt`) sends the sample each
+fighter reads this frame (after Input Delay and the D-pad transform; CPU samples too) and `ifRemixInputDisplayApply` tints the buttons, moves the
+joystick and fades its gate. `ifRemixInputDisplayClear` runs from `gmRemixModeSceneClear` at every scene change and at a Training reset, so no block
+keeps sprites of a freed scene. R is shown as R, not as A+Z; the match timer is not moved (`adjust_timer_position_`).
 
 **Size.** `state_table` is copied to `match_state_table`; Giant and Tiny use `multiplier_table`. `ftRemixSizeInitFighter` takes the panel
 value (or the state a mode forces, such as the Remix 1P giant and tiny stages) and sets the multiplier (Giant 2.25, Tiny 0.5) except on How
@@ -250,11 +250,11 @@ could zero it); a retry replays the stage with no continue, level drop or stage 
 - The menu button hides with the doors and when the panel is disabled; the asm creates it once. Hiding is by flags: targets are forced hidden each
   frame and the flags seen before the hide are restored, so a target the CSS legitimately hides while the menu is open can reappear at close until
   the CSS sets it again.
-- One blink timer per panel instead of one per arrow (shown for the stored values 1 to 10, hidden for 11 to 19 and 0, as the asm tests the value before the wrap); the text is the ImGui overlay (above the game), the sprites are game objects.
+- One blink timer per panel instead of one per arrow (shown for the stored values 1 to 10, hidden for 11 to 19 and 0, as the asm tests the value before the wrap); the text is drawn by a text layer in the panel card room (`text_layers.md`), so the cursor, tokens and doors pass over it; the sprites are game objects.
 - Press order: VS puts the menu press before the 12CB press inside the A-tap block; 1P, Training and Bonus after the puck grab, like the asm hook.
 - `SinglePlayer.high_score_enabled` does not exist in the port; the Gameplay/Pokemon toggle checks and the enemy-port check of
   `check_high_scores_enabled` (2396-2417) are not in the refreshed value.
-- Stock Count is a port option; Input HUD is an overlay with port colours and layout.
+- Stock Count is a port option; Input HUD is made of game sprites; the match timer is not moved (`adjust_timer_position_`).
 - Visibility Cloaked uses the cloaking state; the per-part render-mode lists of `CharEnvColor.custom_display_lists_*` are open (GP-6); Skeleton needs a skeleton entry 1; the Handicap value reaches only the knockback table.
 
 ---

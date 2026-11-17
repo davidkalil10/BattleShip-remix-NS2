@@ -108,7 +108,6 @@ extern "C" void ps5_install_crash_trace(void);
 #include "remix/remix_player_panel.h"
 #include "remix/remix_training.h"
 #include "remix/remix_hud_text.h"
-#include "remix/remix_input_display.h"
 #include "remix/remix_toggles.h"
 #include "remix/remix_ram_image.h"
 #include "focus.h"
@@ -984,10 +983,6 @@ static int PortInitImpl(int argc, char* argv[]) {
 			port_log("SSB64: attaching Port menu ...\n");
 			auto portMenu = std::make_shared<ssb64::PortMenu>();
 			gui->SetMenu(portMenu);
-#ifdef REGION_REMIX
-			gui->AddGuiWindow(remix_input_display_make_window());
-			gui->AddGuiWindow(remix_hud_text_make_window());
-#endif
 #if !defined(__ANDROID__) && !defined(__PS5__) && !defined(BATTLESHIP_UWP)
 			gui->AddGuiWindow(ssb64::MakeUpdatePopupWindow());
 #endif

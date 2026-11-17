@@ -296,8 +296,8 @@ title banner (`port/remix/remix_music_title.*`, 308 titles generated from `BGM.a
 ## 10. Text, fonts and sprites
 
 Remix draws text with its Kabel font and positions it with `Render.draw_string_`. `port/remix/remix_font*.{c,cpp}` decodes the font from the user's `.o2r` (layout rules of `draw_string_` and `apply_max_width_` in pure C:
-`remix_font_layout.c`, tested) and `remix_hud_text.{h,cpp}` draws labels as an overlay window: callers pass the asm arguments (X, Y of the glyph box top, scale, alignment) in N64 screen coordinates and call
-`remix_hud_text_put(slot, ...)` every frame (a label lives for the frame it was put in and the next one); the slot map is documented in the header. `remix_input_display.cpp` draws the Input Display controllers.
+`remix_font_layout.c`, tested) and `remix_hud_text.{h,cpp}` stores the labels that text layers (game objects in the asm rooms, `docs/remix/text_layers.md`) draw: callers pass the asm arguments (X, Y of the glyph box top, scale, alignment) in N64 screen coordinates and call
+`remix_hud_text_put(slot, ...)` every frame (a label lives for the frame it was put in and the next one); the slot map is documented in the header. The Input Display is drawn by game sprites (`decomp/src/if/ifremixinputdisplay.c`).
 Remix sprites that vanilla code lacks (button glyphs, extension sprites, stock icons with extra palettes) are real SObjs: `if/ifremixsprite.*` and `ifremixspriterules.c` (offset and colour table, tint = PRIM, palette = ENV).
 
 ## 11. Key decisions
@@ -314,7 +314,7 @@ Remix sprites that vanilla code lacks (button glyphs, extension sprites, stock i
 | Pure rules separated from game code | Rules compile standalone and are unit tested; the game code supplies the state |
 | Vanilla builds exclude all Remix sources; hooks keep the original in `#else` | The original game stays equal to the decomp |
 | No N64 byte offsets on LP64 structs | Struct layouts differ; scratch words go through `ftremixfields` |
-| Kabel text as an overlay | The vanilla game has no such font; the overlay reproduces the asm positions |
+| Kabel text through `remix_hud_text` | The vanilla game has no such font; the text layers reproduce the asm positions and rooms |
 
 ## 12. Test harness
 

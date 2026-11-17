@@ -66,6 +66,14 @@ static void testMenuArrowLivesInTheMainMenuImagesFile(void)
     CHECK_EQ(0xDD90, (int)ifRemixSpriteRulesGetEntry(IFREMIX_SPRITE_MENU_ARROW)->sprite_offset);
 }
 
+static void testInputDisplaySpritesLiveInTheCssImagesFile(void)
+{
+    CHECK_EQ(0xA06, (int)ifRemixSpriteRulesGetEntry(IFREMIX_SPRITE_INPUT_DPAD)->file_id);
+    CHECK_EQ(0x2378, (int)ifRemixSpriteRulesGetEntry(IFREMIX_SPRITE_INPUT_DPAD)->sprite_offset);
+    CHECK_EQ(0x20B8, (int)ifRemixSpriteRulesGetEntry(IFREMIX_SPRITE_INPUT_GATE)->sprite_offset);
+    CHECK_EQ(0x2218, (int)ifRemixSpriteRulesGetEntry(IFREMIX_SPRITE_INPUT_STICK)->sprite_offset);
+}
+
 static void testOutOfRangeIdHasNoEntry(void)
 {
     CHECK_TRUE(ifRemixSpriteRulesGetEntry(-1) == NULL);
@@ -101,6 +109,7 @@ void remixTestSpriteRules(void)
     RUN_TEST(testMultimanIconAndCrossFiles);
     RUN_TEST(testStartButtonLivesInTheSoundTestFile);
     RUN_TEST(testMenuArrowLivesInTheMainMenuImagesFile);
+    RUN_TEST(testInputDisplaySpritesLiveInTheCssImagesFile);
     RUN_TEST(testOutOfRangeIdHasNoEntry);
     RUN_TEST(testUnpackColorSplitsTheBytes);
 }

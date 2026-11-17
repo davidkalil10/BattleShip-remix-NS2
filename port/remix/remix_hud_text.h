@@ -1,15 +1,13 @@
 /**
- * remix_hud_text.h - positioned HUD text of the Remix VS modes (scores, counters, labels) drawn as a port overlay.
+ * remix_hud_text.h - positioned HUD text of the Remix VS modes (scores, counters, labels) drawn by text layers.
  *
- * Remix draws these with its own font (Kabel); the port rebuilds that font from the user's .o2r (remix_font.h) and falls back to
- * the ImGui font only when the font file is missing. Callers pass the exact arguments of the asm Render.draw_string_ call
- * (X, Y of the glyph box top, scale, alignment). The match hooks call
- * remix_hud_text_put every frame for every label they want visible: a label is shown for the frame it was put in and the
- * next one, so a hook that stops calling it hides the label. Positions are in the N64 screen (320 x 240), the overlay
- * maps them to the 4:3 game image centred in the window.
+ * Remix draws these with its own font (Kabel); the layers (remix_hud_layer.h) draw its glyphs with the game renderer from the
+ * user's .o2r. Callers pass the exact arguments of the asm Render.draw_string_ call (X, Y of the glyph box top, scale,
+ * alignment). The match hooks call remix_hud_text_put every frame for every label they want visible: a label is shown for the frame it was put in and the
+ * next one, so a hook that stops calling it hides the label. Positions are in the N64 screen (320 x 240).
  *
- * An owner may bind its slots to a text layer (remix_hud_layer.h): the same puts are then drawn by a game object in the
- * display link of the asm instead of the overlay, and live one drawn frame counted in game tics.
+ * An owner binds its slots to a text layer (remix_hud_layer.h): the puts are drawn by a game object in the display link
+ * of the asm, and live one drawn frame counted in game tics. A slot with no layer is not drawn.
  */
 
 #ifndef PORT_REMIX_REMIX_HUD_TEXT_H
@@ -169,15 +167,6 @@ void remix_hud_text_clear(void);
 
 #ifdef __cplusplus
 }
-
-namespace Ship {
-class GuiWindow;
-}
-
-#include <memory>
-
-/** Creates the overlay window that draws the labels. The port adds it to the Gui once at start-up. */
-std::shared_ptr<Ship::GuiWindow> remix_hud_text_make_window();
 #endif
 
 #endif /* PORT_REMIX_REMIX_HUD_TEXT_H */
