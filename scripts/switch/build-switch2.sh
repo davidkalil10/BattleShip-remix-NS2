@@ -33,18 +33,21 @@ cmake -B "$BUILD_DIR" -S "$REPO_ROOT" \
 cmake --build "$BUILD_DIR" --target GenerateF3DO2R ssb64_nro -j "$JOBS"
 
 NRO_NAME="BattleShip.nro"
+ELF_NAME="BattleShip.elf"
 MAP_NAME="BattleShip-switch2.map"
 if [ "$SSB64_VERSION" = "jp" ]; then
     NRO_NAME="BattleShip-JP.nro"
+    ELF_NAME="BattleShip-JP.elf"
     MAP_NAME="BattleShip-JP-switch2.map"
 elif [ "$SSB64_VERSION" = "remix" ]; then
     NRO_NAME="BattleShip-Remix.nro"
+    ELF_NAME="BattleShip-Remix.elf"
     MAP_NAME="BattleShip-Remix-switch2.map"
 fi
 
 python3 "$REPO_ROOT/tools/verify_switch2_package.py" \
     --nro "$BUILD_DIR/$NRO_NAME" \
-    --elf "$BUILD_DIR/ssb64.elf" \
+    --elf "$BUILD_DIR/$ELF_NAME" \
     --map "$BUILD_DIR/$MAP_NAME"
 
 echo "Built Switch 2 NRO: $BUILD_DIR/$NRO_NAME"
