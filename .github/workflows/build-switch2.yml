@@ -33,6 +33,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          persist-credentials: false
       - name: Mark the checkout safe for git describe
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Test the package verifier
