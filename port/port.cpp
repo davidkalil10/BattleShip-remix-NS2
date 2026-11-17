@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-#ifdef __PS5__
+#if defined(__PS5__) || defined(__SWITCH2__)
 #include <unistd.h>
 #endif
 #include <string>
@@ -983,7 +983,7 @@ static int PortInitImpl(int argc, char* argv[]) {
 			port_log("SSB64: attaching Port menu ...\n");
 			auto portMenu = std::make_shared<ssb64::PortMenu>();
 			gui->SetMenu(portMenu);
-#if !defined(__ANDROID__) && !defined(__PS5__) && !defined(BATTLESHIP_UWP)
+#if !defined(__ANDROID__) && !defined(__PS5__) && !defined(BATTLESHIP_UWP) && !defined(__SWITCH2__)
 			gui->AddGuiWindow(ssb64::MakeUpdatePopupWindow());
 #endif
 			port_log("SSB64: Port menu attached\n");
@@ -1402,6 +1402,39 @@ static bool port_use_utf8_narrow_strings(void) {
 }
 #endif
 
+#ifdef __SWITCH2__
+/**
+ * Makes the folder that holds the game archives the working directory when the loader started the .nro
+ * with another one. The current folder is tried first, then the folder of argv[0], then
+ * sdmc:/switch/<SSB64_APP_NAME>; a folder with the main archive wins over one that only has f3d.o2r.
+ *
+ * @param argc argument count of main.
+ * @param argv arguments of main; argv[0] is the path of the .nro when the loader passes one.
+ * @return true when the working directory now holds a game archive, false when no candidate has one.
+ */
+static bool port_switch2_enter_app_directory(int argc, char* argv[])
+{
+	std::error_code ec;
+	std::vector<std::string> candidates = { "." };
+	if (argc >= 1 && argv[0] != nullptr) {
+		const std::string nroPath = argv[0];
+		const size_t separator = nroPath.find_last_of('/');
+		if (separator != std::string::npos) {
+			candidates.push_back(nroPath.substr(0, separator));
+		}
+	}
+	candidates.push_back(std::string("sdmc:/switch/") + SSB64_APP_NAME);
+	for (const char* archiveName : { SSB64_O2R_NAME, "f3d.o2r" }) {
+		for (const std::string& dir : candidates) {
+			if (std::filesystem::exists(dir + "/" + archiveName, ec) && chdir(dir.c_str()) == 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+#endif
+
 int main(int argc, char* argv[]) {
 	PS5_BOOT_TRACE("main entered");
 #ifdef __PS5__
@@ -1418,55 +1451,13 @@ int main(int argc, char* argv[]) {
 	 * Ship::Context will later use for the user's saves and o2r. */
 	{
 		std::string logPath;
-#ifdef __SWITCH__
-		/* App-owned early Switch init: socket/nxlink stdio, applet-mode
-		 * detection and error-applet plumbing. Run before port_log_init so
-		 * early logs stream over nxlink as well. */
+#ifdef __SWITCH2__
+		/* Early init first so nxlink carries the log from its first line; env.txt is then read from
+		 * the folder port_switch2_enter_app_directory selected. */
 		Ship::Switch::Init(Ship::SwitchPhase::PreInitPhase);
-		{
-			std::error_code ec;
-			if (!std::filesystem::exists(SSB64_O2R_NAME, ec) && !std::filesystem::exists("f3d.o2r", ec)) {
-				std::vector<std::string> candidates;
-				if (argc >= 1 && argv[0] != nullptr) {
-					const std::string arg0 = argv[0];
-					const size_t sep = arg0.find_last_of('/');
-					if (sep != std::string::npos) {
-						candidates.push_back(arg0.substr(0, sep));
-					}
-				}
-				candidates.push_back(std::string("sdmc:/switch/") + SSB64_APP_NAME);
-				candidates.push_back(std::string("/switch/") + SSB64_APP_NAME);
-				candidates.push_back("sdmc:/switch/BattleShip-Remix");
-				candidates.push_back("/switch/BattleShip-Remix");
-				candidates.push_back("sdmc:/switch/BattleShip-remix-NS2");
-				candidates.push_back("/switch/BattleShip-remix-NS2");
-				candidates.push_back("sdmc:/switch");
-				candidates.push_back("/switch");
-				for (const char* switchRoot : { "sdmc:/switch", "/switch" }) {
-					for (const auto& entry : std::filesystem::directory_iterator(switchRoot, ec)) {
-						if (entry.is_directory(ec)) {
-							candidates.push_back(entry.path().generic_string());
-						}
-					}
-				}
-				bool switchedDir = false;
-				for (const auto& dir : candidates) {
-					if (std::filesystem::exists(dir + "/" + SSB64_O2R_NAME, ec)) {
-						chdir(dir.c_str());
-						switchedDir = true;
-						break;
-					}
-				}
-				if (!switchedDir) {
-					for (const auto& dir : candidates) {
-						if (std::filesystem::exists(dir + "/f3d.o2r", ec)) {
-							chdir(dir.c_str());
-							break;
-						}
-					}
-				}
-			}
-		}
+		const bool archiveFolderFound = port_switch2_enter_app_directory(argc, argv);
+#endif
+#ifdef __SWITCH__
 		port_switch_load_env_file("env.txt");
 #endif
 #ifdef __PS5__
@@ -1487,6 +1478,14 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		port_log_init(logPath.c_str());
+#ifdef __SWITCH2__
+		{
+			std::error_code cwdError;
+			const std::string workingDirectory = std::filesystem::current_path(cwdError).generic_string();
+			port_log("SSB64: working directory '%s'%s\n", workingDirectory.c_str(),
+			         archiveFolderFound ? "" : " (no folder with " SSB64_O2R_NAME " or f3d.o2r was found)");
+		}
+#endif
 	}
 	PS5_BOOT_TRACE("log opened");
 	port_log("SSB64: main entered\n");
@@ -1496,7 +1495,13 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
-#ifdef __SWITCH__
+/* The Switch 2 build ran the early init above and has no updater, so nothing stages an update. */
+#if defined(__SWITCH__) && !defined(__SWITCH2__)
+	/* App-owned early Switch init: socket/nxlink stdio, applet-mode
+	 * detection and error-applet plumbing. libultraship drives only the
+	 * PostInitPhase half from Context::Init — without this PreInit call
+	 * there is no nxlink logging and applet-mode boots die on allocation. */
+	Ship::Switch::Init(Ship::SwitchPhase::PreInitPhase);
 	/* Finish an update the in-game updater staged: libultraship keeps
 	 * f3d.o2r and the game archive open once it starts, and HOS cannot
 	 * replace open files, so this has to happen before anything opens. */

@@ -30,12 +30,6 @@ std::string RealAppBundlePath() {
         std::filesystem::path exe(buf, buf + len);
         return exe.parent_path().string();
     }
-#elif defined(__SWITCH__)
-#ifdef SSB64_APP_NAME
-    return std::string("sdmc:/switch/") + SSB64_APP_NAME;
-#else
-    return "sdmc:/switch/BattleShip-Remix";
-#endif
 #endif
     return Ship::Context::GetAppBundlePath();
 }

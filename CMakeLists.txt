@@ -201,27 +201,6 @@ endif()
 # Subdirectories: libultraship
 ################################################################################
 
-if (NINTENDO_SWITCH2 AND EXISTS "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch")
-    find_package(Git QUIET)
-    if (GIT_FOUND)
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} -C "${CMAKE_SOURCE_DIR}/libultraship" apply --check "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch"
-            RESULT_VARIABLE _LUS_PATCH_CHECK
-            OUTPUT_QUIET ERROR_QUIET
-        )
-        if (_LUS_PATCH_CHECK EQUAL 0)
-            message(STATUS "Applying Switch 2 patch to libultraship submodule...")
-            execute_process(
-                COMMAND ${GIT_EXECUTABLE} -C "${CMAKE_SOURCE_DIR}/libultraship" apply "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch"
-                RESULT_VARIABLE _LUS_PATCH_APPLY
-            )
-            if (NOT _LUS_PATCH_APPLY EQUAL 0)
-                message(FATAL_ERROR "Failed to apply patches/libultraship-switch2.patch")
-            endif()
-        endif()
-    endif()
-endif()
-
 add_subdirectory(libultraship ${CMAKE_BINARY_DIR}/libultraship)
 
 ################################################################################
@@ -625,6 +604,13 @@ if (CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
     list(FILTER SSB64_SRC_PORT EXCLUDE REGEX "port/port_window_icon\\.cpp$")
     list(FILTER SSB64_SRC_PORT EXCLUDE REGEX
         "port/enhancements/(Updater|DiscordRichPresence|ShaderDownloader)\\.cpp$")
+    # NINTENDO_SWITCH2 and the __SWITCH2__ compile definition come from libounce's Switch2.cmake toolchain file.
+    if (NINTENDO_SWITCH2)
+        # Experimental build that no release carries: no updater, start-up popup or staged-update step.
+        list(FILTER SSB64_SRC_PORT EXCLUDE REGEX "port/enhancements/(UpdaterSwitch|SwitchHttp)\\.cpp$")
+        list(FILTER SSB64_SRC_PORT EXCLUDE REGEX "port/gui/UpdatePopup\\.cpp$")
+        list(FILTER SSB64_SRC_PORT EXCLUDE REGEX "port/switch_update_apply\\.cpp$")
+    endif()
 elseif (CMAKE_SYSTEM_NAME STREQUAL "PS5")
     # Native title: no ucontext, no extraction wizard, no native dialogs, no window icon and no
     # curl/discord shell integrations (updates come through the homebrew store).

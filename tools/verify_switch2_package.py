@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Verify Nintendo Switch 2 (Ounce / libounce + OunceVK) NRO, ELF, and linker map
-artifacts for BattleShip-remix-NS2.
+Verify the Nintendo Switch 2 (libounce + OunceVK) NRO, ELF and linker map that
+scripts/switch/build-switch2.sh produces.
 """
 
 from __future__ import annotations

@@ -12,6 +12,9 @@ name: Release (Remix)
 # disabled in the fork's Actions settings.
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:

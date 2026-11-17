@@ -1,53 +1,58 @@
-#!/usr/bin/env bash
-# Configure and build BattleShip-Remix.nro for Nintendo Switch 2 (Ounce / libounce + OunceVK).
+#!/bin/zsh
+# BattleShip — Nintendo Switch 2 build (experimental; contained toolchain, no system state).
+#
+# Same flow as scripts/switch/build.sh, with libounce's Switch2.cmake toolchain file in place of
+# devkitPro's Switch.cmake (scripts/switch/setup-switch2-toolchain.sh adds it under .toolchain/).
+# The result is checked by tools/verify_switch2_package.py: an .nro with the Switch 2 startup tag
+# that links libounce and OunceVK and nothing from libnx. Assets are generated host-side, as for
+# the Switch.
+#
+# Usage: [VERSION=us|jp|remix] scripts/switch/build-switch2.sh [us|jp|remix] [extra cmake args...]
+
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-BUILD_DIR="${BUILD_DIR:-$REPO_ROOT/build-switch2}"
-JOBS="${JOBS:-$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
-SSB64_VERSION="${SSB64_VERSION:-remix}"
+ROOT=${0:A:h:h:h}
+source "$ROOT/.toolchain/env.sh"
 
-export DEVKITPRO="${DEVKITPRO:-/opt/devkitpro}"
-export PATH="$DEVKITPRO/tools/bin:$DEVKITPRO/devkitA64/bin:$PATH"
+VER="${VERSION:-remix}"
+if [[ "${1:-}" == "us" || "${1:-}" == "jp" || "${1:-}" == "remix" ]]; then
+  VER="$1"
+  shift
+fi
+[[ "$VER" == "us" || "$VER" == "jp" || "$VER" == "remix" ]] || { echo "VERSION must be us|jp|remix (got '$VER')" >&2; exit 1; }
+case "$VER" in
+  remix) APP_NAME="BattleShip-Remix" ;;
+  jp) APP_NAME="BattleShip-JP" ;;
+  *) APP_NAME="BattleShip" ;;
+esac
 
-TOOLCHAIN="$DEVKITPRO/libounce/cmake/Switch2.cmake"
-if [ ! -f "$TOOLCHAIN" ]; then
-    echo "error: $TOOLCHAIN not found. Install ounce-devkit (libounce + ounce-tools + OunceVK) first." >&2
-    exit 1
+BUILD_DIR="$ROOT/build-switch2"
+HOST_PYTHON="$ROOT/.toolchain/host/venv/bin/python"
+TOOLCHAIN_FILE="$DEVKITPRO/libounce/cmake/Switch2.cmake"
+
+[[ -f "$TOOLCHAIN_FILE" ]] || { echo "$TOOLCHAIN_FILE not found; run scripts/switch/setup-switch2-toolchain.sh first" >&2; exit 1; }
+
+# tools/render_nameplates.py and generate_arrow_svg.py need Pillow to bake CSS headers
+if [[ ! -x "$HOST_PYTHON" ]]; then
+  uv venv "$ROOT/.toolchain/host/venv"
+  uv pip install --python "$HOST_PYTHON" pillow
 fi
 
-if [ -f "$REPO_ROOT/patches/libultraship-switch2.patch" ]; then
-    if git -C "$REPO_ROOT/libultraship" apply --check "$REPO_ROOT/patches/libultraship-switch2.patch" 2>/dev/null; then
-        echo "==> Applying patches/libultraship-switch2.patch to libultraship..."
-        git -C "$REPO_ROOT/libultraship" apply "$REPO_ROOT/patches/libultraship-switch2.patch"
-    fi
-fi
+cmake -S "$ROOT" -B "$BUILD_DIR" -GNinja \
+  -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" \
+  -DPython3_EXECUTABLE="$HOST_PYTHON" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBATTLESHIP_SWITCH=ON \
+  -DDISABLE_SCRIPTING=ON \
+  -DSSB64_VERSION="$VER" \
+  "$@"
 
-cmake -B "$BUILD_DIR" -S "$REPO_ROOT" \
-    -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBATTLESHIP_SWITCH=ON \
-    -DDISABLE_SCRIPTING=ON \
-    -DSSB64_VERSION="$SSB64_VERSION"
+cmake --build "$BUILD_DIR" --target ssb64_nro -j "${JOBS:-4}"
 
-cmake --build "$BUILD_DIR" --target GenerateF3DO2R ssb64_nro -j "$JOBS"
+"$HOST_PYTHON" -I "$ROOT/tools/verify_switch2_package.py" \
+  --nro "$BUILD_DIR/$APP_NAME.nro" \
+  --elf "$BUILD_DIR/$APP_NAME.elf" \
+  --map "$BUILD_DIR/$APP_NAME-switch2.map"
 
-NRO_NAME="BattleShip.nro"
-ELF_NAME="BattleShip.elf"
-MAP_NAME="BattleShip-switch2.map"
-if [ "$SSB64_VERSION" = "jp" ]; then
-    NRO_NAME="BattleShip-JP.nro"
-    ELF_NAME="BattleShip-JP.elf"
-    MAP_NAME="BattleShip-JP-switch2.map"
-elif [ "$SSB64_VERSION" = "remix" ]; then
-    NRO_NAME="BattleShip-Remix.nro"
-    ELF_NAME="BattleShip-Remix.elf"
-    MAP_NAME="BattleShip-Remix-switch2.map"
-fi
-
-python3 "$REPO_ROOT/tools/verify_switch2_package.py" \
-    --nro "$BUILD_DIR/$NRO_NAME" \
-    --elf "$BUILD_DIR/$ELF_NAME" \
-    --map "$BUILD_DIR/$MAP_NAME"
-
-echo "Built Switch 2 NRO: $BUILD_DIR/$NRO_NAME"
+echo
+echo "NRO: $BUILD_DIR/$APP_NAME.nro"
