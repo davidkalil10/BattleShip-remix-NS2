@@ -59,9 +59,10 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
 | M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
-| M14 Equivalence audit of the non-toggle logic | closed 2026-11-16: 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; one open owner decision (G04-4, Random in the 12CB CSS) |
+| M14 Equivalence audit of the non-toggle logic | open for T14.7 only; T14.1 to T14.6 done 2026-11-16: 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) is being implemented under T14.7 |
+| M15 Remix text in the game's display layers | open: the Remix text is a port overlay drawn over the whole game image, so the cursor, tokens and menu panels that Remix draws in front of it end up behind it |
 
-- **Next step:** the owner's pass on the Switch and the PS5 with the M14 build.
+- **Next step:** T14.7 (Random entry of the 12CB Custom set), then M15 T15.1.
 - **Last checkpoint:** M14 closed (2026-11-16; outer `2122e20`, decomp `f5e81bab6`).
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
@@ -689,8 +690,7 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
     queue (`g03_tt_after`).
   - g04 (12CB CSS): G04-1 J/E flags on the panel; G04-2 a set change re-evaluates the panel fighter (`g04_a2`); G04-3
     a same-character portrait change refreshes the panel (`g04_a3`); G04-5 leaving with B keeps the battle
-    (`g04_leave1`); G04-6 set-arrow hit zones (`g04_a6`). G04-4 open: the asm Z/R cycle includes the Random entry and
-    the port has no Random portrait flow in the 12CB CSS (`modes/twelvecb.md`, owner decision).
+    (`g04_leave1`); G04-6 set-arrow hit zones (`g04_a6`). G04-4 (the Random entry of the Z/R cycle) is T14.7.
   - g06: G06-1 the Fox ally of the Mario Bros. row takes the alternate costume (`g06a_after1`); G06-2 Game Over keeps
     the human's saved Size (`g06b_after`). Same cause, fixed by the lead: the Remix 1P pause exit no longer writes
     Size 0 (`lead_pexit_after`: `remix_panel_set` 0 hits, 1 before).
@@ -710,6 +710,39 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
     against the decomp C, not the ROM bytes), display-list and render-order details, and the unreachable Banzai Bill
     and Scuttle Minion.
 
+- [ ] T14.7 G04-4, the Random entry of the 12CB Custom set (`TwelveCharBattle.asm` `check_input_` 4226-4300 over
+  `Training.entry_id_to_char_id`, whose last entry is the Random placeholder; `was_random` at 31, 468-480, 2155-2180,
+  2524-2541, 3666-3672): Z/R reaches the "?" portrait in both directions, a game started from it draws a random
+  fighter, and the slot goes back to "?" as the asm does. It is plain Remix behaviour missing from the port, not an
+  owner decision; it missed the release that carried the rest of M14.
+
+### M15. Remix text in the game's display layers (opened 2026-11-17)
+
+Smash Remix draws its strings as objects of the game (`Render.draw_string_`, `Render.draw_texture_`), each in a room
+(a display link with its own camera), so every other layer of the screen sorts against them: in the 12CB character
+select the text is in room 0x1E (camera priority 35) and the cursor in link 32 (priority 20, drawn later), so the hand
+passes in front of "Character Set" and the set names. The port draws all of it through `remix_hud_text` (text, bars
+and rectangles; about 100 call sites in 29 files) as an overlay over the finished game image, so the text covers the
+cursor, the tokens and any panel that Remix draws in front of it. One consequence already has a workaround and a
+`deviations.md` row: the Training action rows hide while the Z menu is open, because the overlay would cross the menu
+that covers them in Remix (room 0x39).
+
+- [ ] T15.1 Inventory, read-only: for every `remix_hud_text_put*`, `remix_hud_rect_put` and `remix_hud_bar_put` call,
+  the asm call it stands for with its room, group and z-index, the camera that draws that room and what Remix draws
+  before and after it on the same screen (cursor, tokens, panels, pause and menu rectangles). Output: a table per
+  screen in `menus.md` with the layer each text belongs to and the cases where the overlay order is visibly wrong.
+- [ ] T15.2 Draw path: the Kabel glyphs (already rebuilt from the user's `.o2r` by `remix_font`) drawn by the game
+  renderer in the display link the asm uses, with the same position, scale, alignment, colour and widescreen mapping
+  as today. Decide from T15.1 whether one path serves every screen or the overlay stays for text that Remix itself
+  draws over everything; unit tests for the layout rules that are pure.
+- [ ] T15.3 Move the screens over, one lot per screen family, each with an in-game test that shows the layer order
+  (cursor over the text, panel over the text) and a comparison of the text position with the current overlay:
+  the 12CB character select and results; the CSS panel menu and the VS, 1P, Training and Bonus selects; the stage
+  select; Training (Z menu, action rows, legends: the hide workaround and its `deviations.md` row go away); the pause
+  legend and Gentlemen's Reset; the battle HUD texts (player tags, KOTH, Smashketball, Tag Team, HRC, Multi-Man); the
+  results screen and Match Stats; the title version and the Item Switch legend.
+- [ ] T15.4 Remove what the overlay no longer needs, update `menus.md`, `panel.md`, `deviations.md` and the mode docs,
+  and build every platform locally (desktop, Switch, PS5, Android) before any tag.
 ---
 
 ## Progress estimate (update at every checkpoint)
