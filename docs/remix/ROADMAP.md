@@ -756,6 +756,11 @@ that covers them in Remix (room 0x39).
   select; Training (Z menu, action rows, legends: the hide workaround and its `deviations.md` row go away); the pause
   legend and Gentlemen's Reset; the battle HUD texts (player tags, KOTH, Smashketball, Tag Team, HRC, Multi-Man); the
   results screen and Match Stats; the title version and the Item Switch legend.
+  Every lot is also checked in the three picture frames: widescreen with 2D stretched, widescreen with 2D centred
+  4:3, and widescreen off. The CSS panel menu (the button on each card and its Shield, Player Tag and Visibility
+  rows) is the reference case: its text already had a widescreen fix on the overlay
+  (`docs/bugs/remix_hud_text_widescreen_stretch_2026-11-13.md`), so on all four cards the text must sit inside its
+  card in each frame, as it does today.
 - [ ] T15.4 Remove what the overlay no longer needs, update `menus.md`, `panel.md`, `deviations.md` and the mode docs,
   and build every platform locally (desktop, Switch, PS5, Android) before any tag.
 ---
