@@ -741,7 +741,7 @@ that covers them in Remix (room 0x39).
   overlay order is visibly wrong: all 25 of the character selects (the cursor, held and dropped tokens pass over the
   text in Remix), 8 of the battle HUD, 3 of the results, 2 Training action rows and the title version. The stage
   select, the pause legend, Gentlemen's Reset and the rest of Training already match, because Remix draws those
-  strings in the front-most link. Each batch was rechecked against the asm by a second reader (25 corrections
+  strings in the front-most link. Each batch was rechecked against the asm by a second reader (19 corrections, the ones that change a verdict
   applied). The audit also lists seven differences that are not layer order (lifetime of "Game NN", a missing hide of
   the 12CB Custom legend, the Training rows over the vanilla pause menu, two sprites on a different link, the Input
   Display path, the unclipped music banner), to fix with their screens in T15.3.
