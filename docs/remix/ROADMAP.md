@@ -62,7 +62,7 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M14 Equivalence audit of the non-toggle logic | done 2026-11-17 (T14.1 to T14.6 on 2026-11-16, T14.7 on 2026-11-17): 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) implemented under T14.7 |
 | M15 Remix text in the game's display layers | open: the Remix text is a port overlay drawn over the whole game image, so the cursor, tokens and menu panels that Remix draws in front of it end up behind it |
 
-- **Next step:** M15 T15.1.
+- **Next step:** M15 T15.2.
 - **Last checkpoint:** M14 closed with T14.7 (2026-11-17; decomp `459b45a91`).
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
@@ -736,14 +736,20 @@ cursor, the tokens and any panel that Remix draws in front of it. One consequenc
 `deviations.md` row: the Training action rows hide while the Z menu is open, because the overlay would cross the menu
 that covers them in Remix (room 0x39).
 
-- [ ] T15.1 Inventory, read-only: for every `remix_hud_text_put*`, `remix_hud_rect_put` and `remix_hud_bar_put` call,
-  the asm call it stands for with its room, group and z-index, the camera that draws that room and what Remix draws
-  before and after it on the same screen (cursor, tokens, panels, pause and menu rectangles). Output: a table per
-  screen in `menus.md` with the layer each text belongs to and the cases where the overlay order is visibly wrong.
+- [x] T15.1 Inventory, read-only (2026-11-17): [`text_layers.md`](text_layers.md) lists the 88 overlay call sites by
+  screen family with the asm call, room and group of each, the camera order of every screen and the 39 calls whose
+  overlay order is visibly wrong: all 25 of the character selects (the cursor, held and dropped tokens pass over the
+  text in Remix), 8 of the battle HUD, 3 of the results, 2 Training action rows and the title version. The stage
+  select, the pause legend, Gentlemen's Reset and the rest of Training already match, because Remix draws those
+  strings in the front-most link. Each batch was rechecked against the asm by a second reader (25 corrections
+  applied). The audit also lists seven differences that are not layer order (lifetime of "Game NN", a missing hide of
+  the 12CB Custom legend, the Training rows over the vanilla pause menu, two sprites on a different link, the Input
+  Display path, the unclipped music banner), to fix with their screens in T15.3.
 - [ ] T15.2 Draw path: the Kabel glyphs (already rebuilt from the user's `.o2r` by `remix_font`) drawn by the game
   renderer in the display link the asm uses, with the same position, scale, alignment, colour and widescreen mapping
-  as today. Decide from T15.1 whether one path serves every screen or the overlay stays for text that Remix itself
-  draws over everything; unit tests for the layout rules that are pure.
+  as today. Direction from T15.1 (`text_layers.md`, "Input for T15.2"): the `remix_hud_text` API and slots stay,
+  each owner binds its slot range to a layer (a GObj in the asm's display link that draws with the game's sprite
+  functions), and unbound slots stay on the overlay; unit tests for the layout rules that are pure.
 - [ ] T15.3 Move the screens over, one lot per screen family, each with an in-game test that shows the layer order
   (cursor over the text, panel over the text) and a comparison of the text position with the current overlay:
   the 12CB character select and results; the CSS panel menu and the VS, 1P, Training and Bonus selects; the stage
