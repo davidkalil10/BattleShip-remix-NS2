@@ -17,6 +17,10 @@ Verification by running the real game headless with environment overrides, scree
    - Size `-j` from the machine's cores and memory (`nproc` or `sysctl -n hw.ncpu`).
 
    Run Bash with `dangerouslyDisableSandbox: true` (the game needs the window server).
+
+   The updater version is the newest tag at configure time. After a new release tag, run `cmake -S $PWD -B <build dir>`
+   again: a build configured before it opens the "Update available" popup, which blocks the game input, so every run
+   times out (`rc=124`) with few screenshots.
 2. **Never rebuild while a sweep runs**: the sweep keeps launching `build/BattleShip-Remix`.
 3. Every run writes its own log and save (`SSB64_LOG_PATH`, `SSB64_SAVE_PATH`), so game batches run in parallel with
    `parallel.sh`; only validation by the lead counts (workers never run or sign off a batch).

@@ -284,6 +284,63 @@ static void testUndoGameReturnsTheStocksLostThisGame(void)
     CHECK_EQ(-1, state.current_game);
 }
 
+static void startRandomGame(GMRemixTwelveCBState *state, int32_t portrait0, int32_t portrait1, int32_t random0, int32_t random1)
+{
+    const int32_t fkinds[GMREMIX_TWELVECB_PLAYERS] = { 1, 2 };
+    const int32_t stocks[GMREMIX_TWELVECB_PLAYERS] = { 3, 3 };
+    const int32_t was_random[GMREMIX_TWELVECB_PLAYERS] = { random0, random1 };
+
+    gmRemixTwelveCBSetNextPortrait(state, 0, portrait0);
+    gmRemixTwelveCBSetNextPortrait(state, 1, portrait1);
+    gmRemixTwelveCBStartGame(state, fkinds, stocks, was_random);
+}
+
+static void testCollectRandomPortraitsListsTheGamesStartedFromRandom(void)
+{
+    GMRemixTwelveCBState state;
+    int32_t portraits[GMREMIX_TWELVECB_GAMES];
+
+    gmRemixTwelveCBInit(&state);
+    startRandomGame(&state, 1, 5, 1, 0);
+    startRandomGame(&state, 2, 6, 0, 0);
+    startRandomGame(&state, 3, 7, 1, 1);
+
+    CHECK_EQ(2, gmRemixTwelveCBCollectRandomPortraits(&state, 0, 0, portraits));
+    CHECK_EQ(1, portraits[0]);
+    CHECK_EQ(3, portraits[1]);
+    CHECK_EQ(1, gmRemixTwelveCBCollectRandomPortraits(&state, 1, 0, portraits));
+    CHECK_EQ(7, portraits[0]);
+    CHECK_EQ(1, gmRemixTwelveCBCollectRandomPortraits(&state, 0, state.current_game, portraits));
+    CHECK_EQ(3, portraits[0]);
+}
+
+static void testCollectRandomPortraitsIsEmptyBeforeTheBattleStartsOrForABadPort(void)
+{
+    GMRemixTwelveCBState state;
+    int32_t portraits[GMREMIX_TWELVECB_GAMES];
+
+    gmRemixTwelveCBInit(&state);
+
+    CHECK_EQ(0, gmRemixTwelveCBCollectRandomPortraits(&state, 0, 0, portraits));
+    startRandomGame(&state, 1, 5, 1, 1);
+    CHECK_EQ(0, gmRemixTwelveCBCollectRandomPortraits(&state, 2, 0, portraits));
+}
+
+static void testUndoGameForgetsTheRandomFlagOfTheGame(void)
+{
+    GMRemixTwelveCBState state;
+    int32_t portraits[GMREMIX_TWELVECB_GAMES];
+
+    gmRemixTwelveCBInit(&state);
+    startRandomGame(&state, 1, 5, 1, 1);
+    startRandomGame(&state, 2, 6, 0, 1);
+    gmRemixTwelveCBUndoGame(&state);
+
+    CHECK_EQ(1, gmRemixTwelveCBCollectRandomPortraits(&state, 0, 0, portraits));
+    CHECK_EQ(0, state.players[0].matches[1].was_random);
+    CHECK_EQ(0, state.players[1].matches[1].was_random);
+}
+
 static void testUndoGameCountsAPlayerThatLostEveryStock(void)
 {
     GMRemixTwelveCBState state;
@@ -434,6 +491,9 @@ void remixTestTwelveCBRules(void)
     RUN_TEST(testWinnerKeepsHisPortraitOnceTheBattleIsOver);
     RUN_TEST(testOnlyTheTwoPlayersMayPauseATwelveCharacterBattle);
     RUN_TEST(testUndoGameReturnsTheStocksLostThisGame);
+    RUN_TEST(testCollectRandomPortraitsListsTheGamesStartedFromRandom);
+    RUN_TEST(testCollectRandomPortraitsIsEmptyBeforeTheBattleStartsOrForABadPort);
+    RUN_TEST(testUndoGameForgetsTheRandomFlagOfTheGame);
     RUN_TEST(testUndoGameCountsAPlayerThatLostEveryStock);
     RUN_TEST(testUndoGameKeepsTheEarlierGamesAndTheStatus);
     RUN_TEST(testUndoGameBeforeAnyGameChangesNothing);

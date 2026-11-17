@@ -78,6 +78,38 @@ static void testCycleWrapsAndSkipsTheSandbag(void)
     CHECK_EQ(0, mnRemixTwelveCBCustomFkind(0));
 }
 
+static void testCycleReachesTheRandomEntryInBothDirections(void)
+{
+    const int roster[] = { 0, 1, 2, 60, 3, 4, REMIX_ID_RANDOM };
+    const int count = 7;
+
+    mnRemixTwelveCBCustomReset();
+    mnRemixTwelveCBCustomSetFkind(0, 0, 4);
+
+    mnRemixTwelveCBCustomCycle(0, 1, roster, count, SANDBAG);
+    CHECK_EQ(REMIX_ID_RANDOM, mnRemixTwelveCBCustomFkind(0));
+    mnRemixTwelveCBCustomCycle(0, 1, roster, count, SANDBAG);
+    CHECK_EQ(0, mnRemixTwelveCBCustomFkind(0));
+    mnRemixTwelveCBCustomCycle(0, -1, roster, count, SANDBAG);
+    CHECK_EQ(REMIX_ID_RANDOM, mnRemixTwelveCBCustomFkind(0));
+    mnRemixTwelveCBCustomCycle(0, -1, roster, count, SANDBAG);
+    CHECK_EQ(4, mnRemixTwelveCBCustomFkind(0));
+}
+
+static void testSetFkindWritesOnlyTheOwnTableAndRejectsInvalidArguments(void)
+{
+    mnRemixTwelveCBCustomReset();
+    mnRemixTwelveCBCustomSetFkind(1, 5, REMIX_ID_RANDOM);
+
+    CHECK_EQ(REMIX_ID_RANDOM, mnRemixTwelveCBCustomFkindOf(1, 5));
+    CHECK_EQ(REMIX_ID_RANDOM, mnRemixTwelveCBCustomFkind(5));
+    CHECK_EQ(mnRemixTwelveCBLayoutFkind(0, 5), mnRemixTwelveCBCustomFkindOf(0, 5));
+
+    mnRemixTwelveCBCustomSetFkind(2, 5, 7);
+    mnRemixTwelveCBCustomSetFkind(1, 24, 7);
+    CHECK_EQ(REMIX_ID_RANDOM, mnRemixTwelveCBCustomFkindOf(1, 5));
+}
+
 static void testCycleRejectsAnInvalidSlotOrAnEmptyRoster(void)
 {
     mnRemixTwelveCBCustomReset();
@@ -286,6 +318,8 @@ void remixTestTwelveCBCustom(void)
     RUN_TEST(testBothHalvesOfARowShareTheEntryOfTheOwner);
     RUN_TEST(testCycleMovesOnePortraitOfTheOwnerOnly);
     RUN_TEST(testCycleWrapsAndSkipsTheSandbag);
+    RUN_TEST(testCycleReachesTheRandomEntryInBothDirections);
+    RUN_TEST(testSetFkindWritesOnlyTheOwnTableAndRejectsInvalidArguments);
     RUN_TEST(testCycleRejectsAnInvalidSlotOrAnEmptyRoster);
     RUN_TEST(testApplyAllFillsOnlyThatPlayer);
     RUN_TEST(testPresetWalksTheFourSetsAndComesBack);

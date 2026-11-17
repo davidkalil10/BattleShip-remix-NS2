@@ -59,11 +59,11 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M11 Finalization | closed 2026-11-06: "Remix playable" (T9.3) reported; ledger `patch_audit.md` 266 `done`, 4 `n/a`, 0 `open`; `parity.md` 277 `ported`, 2 `adapted`, 10 `n/a`, 0 `partial` |
 | M12 Platforms and releases | releases from `release-remix.yml` (desktop, Switch, PS5, Android) |
 | M13 Toggle parity audit | closed 2026-11-15: 35 findings in 10 of the 11 batches, each fixed with a lead smoke test or kept as a `deviations.md` row |
-| M14 Equivalence audit of the non-toggle logic | open for T14.7 only; T14.1 to T14.6 done 2026-11-16: 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) is being implemented under T14.7 |
+| M14 Equivalence audit of the non-toggle logic | done 2026-11-17 (T14.1 to T14.6 on 2026-11-16, T14.7 on 2026-11-17): 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) implemented under T14.7 |
 | M15 Remix text in the game's display layers | open: the Remix text is a port overlay drawn over the whole game image, so the cursor, tokens and menu panels that Remix draws in front of it end up behind it |
 
-- **Next step:** T14.7 (Random entry of the 12CB Custom set), then M15 T15.1.
-- **Last checkpoint:** M14 closed (2026-11-16; outer `2122e20`, decomp `f5e81bab6`).
+- **Next step:** M15 T15.1.
+- **Last checkpoint:** M14 closed with T14.7 (2026-11-17; decomp `459b45a91`).
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
 
@@ -690,7 +690,7 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
     queue (`g03_tt_after`).
   - g04 (12CB CSS): G04-1 J/E flags on the panel; G04-2 a set change re-evaluates the panel fighter (`g04_a2`); G04-3
     a same-character portrait change refreshes the panel (`g04_a3`); G04-5 leaving with B keeps the battle
-    (`g04_leave1`); G04-6 set-arrow hit zones (`g04_a6`). G04-4 (the Random entry of the Z/R cycle) is T14.7.
+    (`g04_leave1`); G04-6 set-arrow hit zones (`g04_a6`). G04-4 (the Random entry of the Z/R cycle) was done as T14.7.
   - g06: G06-1 the Fox ally of the Mario Bros. row takes the alternate costume (`g06a_after1`); G06-2 Game Over keeps
     the human's saved Size (`g06b_after`). Same cause, fixed by the lead: the Remix 1P pause exit no longer writes
     Size 0 (`lead_pexit_after`: `remix_panel_set` 0 hits, 1 before).
@@ -710,11 +710,20 @@ tree and share files, so M14 is one commit in `decomp` and one in the outer repo
     against the decomp C, not the ROM bytes), display-list and render-order details, and the unreachable Banzai Bill
     and Scuttle Minion.
 
-- [ ] T14.7 G04-4, the Random entry of the 12CB Custom set (`TwelveCharBattle.asm` `check_input_` 4226-4300 over
-  `Training.entry_id_to_char_id`, whose last entry is the Random placeholder; `was_random` at 31, 468-480, 2155-2180,
-  2524-2541, 3666-3672): Z/R reaches the "?" portrait in both directions, a game started from it draws a random
-  fighter, and the slot goes back to "?" as the asm does. It is plain Remix behaviour missing from the port, not an
-  owner decision; it missed the release that carried the rest of M14.
+- [x] T14.7 G04-4, the Random entry of the 12CB Custom set (`TwelveCharBattle.asm` `check_input_` 4226-4300 over
+  `Training.entry_id_to_char_id`, whose last entry is the Random placeholder; `was_random` in `game_setup_` 5295-5322,
+  `gentlemens_reset_` 3666-3690, `handle_reset_` 2122-2185). Plain Remix behaviour that was missing from the port, not
+  an owner decision; it missed the release that carried the rest of M14. Lead runs (2026-11-17, 12CB CSS, P1 on the
+  Custom set over the Mario slot), unit tests 8340 checks, 0 failed:
+  - `lead_g44_cycle`: Z from Mario shows "?" (panel RANDOM), Z again Poly Crash, R back to "?", R to Mario.
+  - `lead_g44_match`: the game starts with a rolled fighter (`game 0 p1 fkind 1 ... random 1`); back on the CSS the
+    slot shows Fox, dimmed as defeated, Best Character FOX.
+  - `lead_g44_winner`: same game won by P1; on the CSS his token sits on the slot, now Fox, panel FOX.
+  - `lead_g44_undo`: game taken back from the pause (`game taken back, now game -1, pool 24 / 24`); the slot is "?"
+    again with the token on it, panel RANDOM.
+  - `lead_g44_reset`: the RESET button puts the "?" back and the pools at 24 / 24.
+  - `lead_g44_reg` (`css12cb_match_ko_back.txt`, no Random): unchanged, `random 0`.
+  - Deviation kept: a taken-back game also forgets `was_random` (the asm leaves it set), row in `deviations.md`.
 
 ### M15. Remix text in the game's display layers (opened 2026-11-17)
 
