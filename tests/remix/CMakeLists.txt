@@ -84,6 +84,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     test_group_display_rules.c
     test_sprite_rules.c
     test_font_layout.c
+    test_hud_layer_rules.c
     test_bgm_rules.c
     test_twelvecb_layout.c
     test_twelvecb_custom.c
@@ -139,6 +140,7 @@ add_executable(remix_mode_tests EXCLUDE_FROM_ALL
     ${CMAKE_SOURCE_DIR}/port/bridge/sprite_bitmap_row.c
     ${CMAKE_SOURCE_DIR}/port/remix/remix_font_decode.c
     ${CMAKE_SOURCE_DIR}/port/remix/remix_font_layout.c
+    ${CMAKE_SOURCE_DIR}/port/remix/remix_hud_layer_rules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/gm/gmremixtwelvecbrules.c
     ${CMAKE_SOURCE_DIR}/decomp/src/sc/sc1pmode/sc1premixmodename.c
     ${CMAKE_SOURCE_DIR}/decomp/src/sc/sc1pmode/sc1premixmoderules.c

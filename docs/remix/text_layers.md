@@ -61,27 +61,28 @@ Draw order, first (under) to last (over); the number is the camera priority.
 
 | Port call | Text | asm | Room, group | Wrong order |
 |---|---|---|---|---|
-| `gmremixtwelvecbhud.c:52` | "Stocks Remaining" header (160,126) centred, scale 0.875 | TwelveCharBattle.asm:5093 | 0x1E; 8 | yes |
-| `gmremixtwelvecbhud.c:57` | stocks remaining number of P1 (x 124) and P2 (x 192), y 140, red/blue | TwelveCharBattle.asm:5094-5095 (Render.draw_number) | 0x1E; 8 (GROUP_ALWAYS) | yes |
-| `gmremixtwelvecbhud.c:75` | "Character Set" header (160,160), only while the battle is not started | TwelveCharBattle.asm:5098 | 0x1E; 9 | yes |
-| `gmremixtwelvecbhud.c:86` | character set name of each player (Default/Japanese/Polygon/Remix/Custom) at x 124 / 192 | TwelveCharBattle.asm:5099-5100 (Render.draw_string_pointer) | 0x1E; 9 | yes |
-| `gmremixtwelvecbhud.c:101` | "Best Character" header (160,160), once the battle has started | TwelveCharBattle.asm:5109 | 0x1E; 10 | yes |
-| `gmremixtwelvecbhud.c:110` | best character name of each player (x 124 / 192, y 174, max width 72) | TwelveCharBattle.asm:5110-5118 | 0x1E; 10 | yes |
-| `gmremixtwelvecbhud.c:115` | TKO count of the best character of each player (x 124 / 192, y 187) | TwelveCharBattle.asm:5120-5121 (Render.draw_number) | 0x1E; 10 | yes |
+| `gmremixtwelvecbhud.c:60` | "Stocks Remaining" header (160,126) centred, scale 0.875 | TwelveCharBattle.asm:5093 | 0x1E; 8 | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:65` | stocks remaining number of P1 (x 124) and P2 (x 192), y 140, red/blue | TwelveCharBattle.asm:5094-5095 (Render.draw_number) | 0x1E; 8 (GROUP_ALWAYS) | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:83` | "Character Set" header (160,160), only while the battle is not started | TwelveCharBattle.asm:5098 | 0x1E; 9 | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:94` | character set name of each player (Default/Japanese/Polygon/Remix/Custom) at x 124 / 192 | TwelveCharBattle.asm:5099-5100 (Render.draw_string_pointer) | 0x1E; 9 | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:109` | "Best Character" header (160,160), once the battle has started | TwelveCharBattle.asm:5109 | 0x1E; 10 | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:118` | best character name of each player (x 124 / 192, y 174, max width 72) | TwelveCharBattle.asm:5110-5118 | 0x1E; 10 | fixed: layer (T15.2) |
+| `gmremixtwelvecbhud.c:123` | TKO count of the best character of each player (x 124 / 192, y 187) | TwelveCharBattle.asm:5120-5121 (Render.draw_number) | 0x1E; 10 | fixed: layer (T15.2) |
 | `mnremixtwelvecbcustomlegend.c:175` | Custom set legend texts: ": Set All" (41 or 247.5, 217), ": Presets" (105 or 173, 187) | TwelveCharBattle.asm:4730-4744 (Set All), 4774-4788 (Presets) | 0x1C; 0x16 | yes |
 | `mnremixtwelvecbcustomlegend.c:181` | three 2x2 marks on the legend D-pad icons; y 188 yellow, 208 yellow, 216 | TwelveCharBattle.asm:4911, 4915, 4919 (Render.draw_rectangle) | 0x1C; 0x16 | yes |
 | `mnremixtwelvecbstockmanual.c:121` | left blinking yellow 1x1 mark on the D-pad icon of the Manual stock controls | CharacterSelect.asm:5852-5861 (Render.draw_rectangle 1x1 YELLOW) | 0x38; 0x13 | yes |
 | `mnremixtwelvecbstockmanual.c:123` | right blinking yellow 1x1 mark on the D-pad icon (digits_x - 20, 196) | CharacterSelect.asm:5864-5870 (Render.draw_rectangle 1x1 YELLOW) | 0x38; 0x13 | yes |
 
-Wrong order cases:
+Wrong order cases (the `gmremixtwelvecbhud.c` ones describe the overlay; since T15.2 those texts are drawn by layers in
+room 0x1E and the hand and the tokens pass over them):
 
-- `gmremixtwelvecbhud.c:52`: A cursor hand (or the token it carries, or a dropped token) moved across the middle of the screen at y 126-140 is drawn over the header in Remix; in the port the header is drawn over the hand/token.
-- `gmremixtwelvecbhud.c:57`: Cursor hand or token passing over (124 or 192, 140): Remix draws it over the number, the port draws the number over it.
-- `gmremixtwelvecbhud.c:75`: Known case: the cursor hand over "Character Set" is covered by the text in the port (the player moves the hand here to press the set arrows at y 175).
-- `gmremixtwelvecbhud.c:86`: The hand pressing the set arrows (y 175.5, x 91.5/153/159/221) sits over the set name; Remix shows the hand on top, the port shows the name on top of the hand.
-- `gmremixtwelvecbhud.c:101`: Cursor hand or token crossing the middle column at y 160-175 is hidden behind the header in the port.
-- `gmremixtwelvecbhud.c:110`: Cursor hand or token over the name: text on top in the port, hand on top in Remix.
-- `gmremixtwelvecbhud.c:115`: The hand going to the Reset button (136,206) passes over the TKO numbers; the port draws the numbers over the hand.
+- `gmremixtwelvecbhud.c:60`: A cursor hand (or the token it carries, or a dropped token) moved across the middle of the screen at y 126-140 is drawn over the header in Remix; in the port the header is drawn over the hand/token.
+- `gmremixtwelvecbhud.c:65`: Cursor hand or token passing over (124 or 192, 140): Remix draws it over the number, the port draws the number over it.
+- `gmremixtwelvecbhud.c:83`: Known case: the cursor hand over "Character Set" is covered by the text in the port (the player moves the hand here to press the set arrows at y 175).
+- `gmremixtwelvecbhud.c:94`: The hand pressing the set arrows (y 175.5, x 91.5/153/159/221) sits over the set name; Remix shows the hand on top, the port shows the name on top of the hand.
+- `gmremixtwelvecbhud.c:109`: Cursor hand or token crossing the middle column at y 160-175 is hidden behind the header in the port.
+- `gmremixtwelvecbhud.c:118`: Cursor hand or token over the name: text on top in the port, hand on top in Remix.
+- `gmremixtwelvecbhud.c:123`: The hand going to the Reset button (136,206) passes over the TKO numbers; the port draws the numbers over the hand.
 - `mnremixtwelvecbcustomlegend.c:175`: The other player's hand or token (or a dropped token) crossing the legend at y 187-230 is drawn over it in Remix and under it in the port. The holder's own hand is over the portraits while the legend shows.
 - `mnremixtwelvecbcustomlegend.c:181`: A hand or token of the other player over the D-pad icons shows the 2x2 marks on top of it in the port.
 - `mnremixtwelvecbstockmanual.c:121`: A hand placed over the D-pad icon shows a 1 pixel yellow dot on top of it in the port; in Remix the hand covers the dot. One pixel, 11 frames of every 20.
@@ -141,7 +142,7 @@ No wrong order case.
 
 | Port call | Text | asm | Room, group | Wrong order |
 |---|---|---|---|---|
-| `gmremixtwelvecbhud.c:152` | "Game NN" under the results header (32,46) | TwelveCharBattle.asm:1946 | 0x1F; 0x16 | yes |
+| `gmremixtwelvecbhud.c:182` | "Game NN" under the results header (32,46) | TwelveCharBattle.asm:1946 | 0x1F; 0x16 | yes |
 | `mnremixvsstatspages.c:249` | right aligned value (or "-") per active port of a row | VsStats.asm:432-457 | room 0x1F; page group | no |
 | `mnremixvsstatspages.c:267` | striped background (0x40407040) of every second value row | VsStats.asm:394-401 | room 0x1F; page group | no |
 | `mnremixvsstatspages.c:285` | row labels | VsStats.asm:405-419 (draw_line_ label) | room 0x1F; page group | no |
@@ -158,7 +159,7 @@ No wrong order case.
 
 Wrong order cases:
 
-- `gmremixtwelvecbhud.c:152`: Mostly a lifetime difference: the asm creates "Game NN" with the results label at tic 120 (tic 1 only on No Contest), the port puts it from tic 1, so it shows 119 tics early, alone over the entry wipe.
+- `gmremixtwelvecbhud.c:182`: Mostly a lifetime difference: the asm creates "Game NN" with the results label at tic 120 (tic 1 only on No Contest), the port puts it from tic 1, so it shows 119 tics early, alone over the entry wipe.
 - `mnvsresults.c:1261`: From tic 180 the tag sprite is darkened by the tint and the results rows are drawn over it, but the overlay name stays at full brightness and covers the row digits/arrows that cross it (tags sit at x 35..258, y 50..103, the same area as the rows).
 - `mnvsresults.c:3762`: The port puts the text every frame from tic 1 (mnVSResultsFuncRun), so for the first 119 frames "Game NN" is shown alone, over the scene-entry transition wipe and before the mode header it belongs to; Remix shows it only together with the header.
 
@@ -275,3 +276,56 @@ Not layer order, found while reading; each is checked and fixed under T15.3 with
   commands per glyph, up to 80 labels on a Match Stats page); a sprite camera for the links that have none (22, 0x37,
   0x38, 0x39); text near the border is clipped by the 10..310 x 10..230 sprite scissor, as on the console; the life of
   a put counted in game tics instead of ImGui frames.
+
+## Draw path (T15.2)
+
+How a slot gets drawn by the game instead of the overlay. Built and tested on one screen, the 12-Character Battle
+character select; the other screens move in T15.3.
+
+- **Layer.** `ifRemixTextLayerMake(gobj_link, dl_link, dl_priority)` (`decomp/src/if/ifremixtextlayer.{c,h}`) makes one
+  GObj in the group and the room of the asm. Its display function draws the slots bound to it with the game renderer:
+  rectangles, then bars (fill and white flash), then labels in slot order, the order of the overlay.
+- **Binding.** The owner calls `ifRemixTextLayerBindLabels`, `ifRemixTextLayerBindRects` or `ifRemixTextLayerBindBars`
+  with a slot range, once, at the end of the scene setup (as `Render.setup_` runs after it), and keeps its
+  `remix_hud_text` puts as they are. A bound slot is skipped by the overlay; a slot with no layer stays on it. A slot
+  has one layer and a scene has at most 8 (`REMIX_HUD_LAYERS_MAX`); a refused bind goes to the log and the slots stay
+  on the overlay. `remix_hud_text_clear` forgets layers and routes at every scene change.
+- **Glyphs.** The font file 0xA15 is loaded into the scene heap by `ifRemixSpriteGetFile`, as the other Remix sprite
+  files. Each glyph is the Sprite of the file (16 x 16, IA 8-bit, one bitmap, attribute 0x0201; checked on the 96
+  glyphs of the `.o2r`) drawn through `lbCommonPrepSObjAttr` and `lbCommonPrepSObjDraw` from an SObj that lives for the
+  call, with the position, scale and colour of the glyph. No object is made or freed per frame.
+- **Layout.** `remix_hud_layer_place_glyphs` (`port/remix/remix_hud_layer_rules.{c,h}`, unit tests in
+  `tests/remix/test_hud_layer_rules.c`) gives x, y and the two scales of every glyph from the arguments of the put,
+  with the advance, fit and aligned width rules of `remix_font_layout`. The route table and the life of a put are in
+  the same file; `port/remix/remix_hud_layer.h` is the interface between the slot store and the layer object.
+- **Rectangles and bars** are filled as `Render.draw_rectangle_` with alpha: primitive colour, `G_RM_CLD_SURF`, whole
+  pixels (the corner and the size truncated one by one, cut to the 320 x 240 frame; the overlay keeps fractions), and
+  `lbCommonClearExternSpriteParams` after them.
+- **Life of a put.** A bound slot is stamped with the game tic count (`dSYTaskmanUpdateCount`) and is drawn while the
+  stamp is at most one frame interval old, so it shows in the frame that follows the put and is gone in the next one
+  when the owner stops putting it. `remix_hud_text_hide` still hides at once.
+- **Testing.** `SSB64_REMIX_TEXT_OVERLAY=1` makes no layer, so every slot is drawn by the overlay; the same input run
+  with and without it gives the two images to compare.
+
+Measured on the 12CB character select, window 1100 x 734, Stretch, Center 4:3 and widescreen off: every text sits on
+the same window pixel in both paths (no shift at 3.3 window pixels per N64 pixel). The look differs as the asm does
+from the overlay: the game filters the glyph and multiplies its colour by the intensity of the IA texel, so the edges
+are softer and darker than the overlay's, which used the alpha alone with no filter.
+
+Limits found, for T15.3:
+
+- **Display list buffer.** A glyph costs about 13 `Gfx`. The 12CB character select peaks at 1987 of the 2750 `Gfx` of
+  `dMNPlayersVSTaskmanSetup` with its about 50 glyphs, so that buffer was not raised. A screen with more text needs
+  the room counted first (four open panel menus are about 240 glyphs, a Match Stats page up to 80 labels); an overflow
+  only writes `DLBuffer OVERFLOW` to the log.
+- **File table.** `ifRemixSpriteGetFile` holds 8 files per scene; the font takes one (the 12CB select uses 1 of 8).
+- **Sprite camera.** The display link must be drawn by a camera whose display function is `lbCommonDrawSprite`; it
+  sets the sprite state and the scissor the glyphs need. A link without one (22 in the battle, and the
+  Remix rooms 0x37, 0x38 and 0x39 wherever the scene has no camera for them) needs a camera first, as
+  `mnRemixVSStatsSceneMakeCamera` makes one.
+- **Clipping.** The glyphs are cut at the camera viewport, at most 10..310 x 10..230, by the sprite code itself; a
+  rectangle is cut only by the RDP scissor the camera leaves set (not measured), never by the sprite scissor.
+- **Font metrics.** A layer needs the width table of the Remix RAM image and the font file; when either is missing
+  the make returns NULL and the text stays on the overlay.
+- **Port menu.** The overlay hides its text while the port menu is open; layer text is part of the game image and
+  stays under the menu.

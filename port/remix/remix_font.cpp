@@ -43,6 +43,7 @@ constexpr float kLineBaseHeight = 14.0f;
 enum class FontState { NotLoaded, Ready, Failed };
 
 FontState sState = FontState::NotLoaded;
+FontState sMetricsState = FontState::NotLoaded;
 ImTextureID sTexture = nullptr;
 std::array<uint8_t, REMIX_FONT_LAST_CHARACTER + 1> sWidths{};
 std::array<uint8_t, REMIX_FONT_LAST_CHARACTER + 1> sHeights{};
@@ -142,8 +143,7 @@ bool Ensure() {
         spdlog::warn("remix_font: resource {} not found in the o2r; HUD text falls back to the ImGui font", kFontResource);
         return false;
     }
-    ReadWidths();
-    if (sWidths['A'] == 0) {
+    if (!EnsureMetrics()) {
         spdlog::warn("remix_font: Remix RAM image has no glyph widths; HUD text falls back to the ImGui font");
         return false;
     }
@@ -153,6 +153,26 @@ bool Ensure() {
     }
     sState = FontState::Ready;
     return true;
+}
+
+bool EnsureMetrics() {
+    if (sMetricsState == FontState::NotLoaded) {
+        ReadWidths();
+        sMetricsState = (sWidths['A'] != 0) ? FontState::Ready : FontState::Failed;
+    }
+    return sMetricsState == FontState::Ready;
+}
+
+const uint8_t *Widths() {
+    return sWidths.data();
+}
+
+const uint8_t *Heights() {
+    return sHeights.data();
+}
+
+int MaxCharacter() {
+    return REMIX_FONT_LAST_CHARACTER;
 }
 
 float Measure(const std::string &text, float scale) {

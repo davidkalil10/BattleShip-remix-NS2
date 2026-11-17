@@ -6,14 +6,14 @@
 
 #define SPACE_CHARACTER 0x20
 
-static int hasGlyph(int character, int max_character)
+int remix_font_layout_has_glyph(int character, int max_character)
 {
     return (character > SPACE_CHARACTER) && (character <= max_character);
 }
 
 float remix_font_layout_advance(int character, const uint8_t *widths, int max_character, float scale)
 {
-    if (!hasGlyph(character, max_character))
+    if (!remix_font_layout_has_glyph(character, max_character))
     {
         return REMIX_FONT_LAYOUT_SPACE_ADVANCE * scale;
     }
@@ -42,7 +42,7 @@ float remix_font_layout_fit_width(const char *text, const uint8_t *widths, int m
     {
         int character = (unsigned char)*text;
 
-        if (hasGlyph(character, max_character))
+        if (remix_font_layout_has_glyph(character, max_character))
         {
             if (!has_glyph)
             {

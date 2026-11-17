@@ -20,6 +20,9 @@ extern "C" {
 #define REMIX_FONT_FIRST_CHARACTER 0x21
 #define REMIX_FONT_LAST_CHARACTER 0x80
 #define REMIX_FONT_GLYPH_SIZE 16
+/** Offset of the Sprite header of the first glyph in the font file, and the distance between two glyph blocks. */
+#define REMIX_FONT_FIRST_SPRITE_OFFSET 0x118
+#define REMIX_FONT_GLYPH_BLOCK_SIZE 0x160
 #define REMIX_FONT_GLYPH_RGBA_BYTES (REMIX_FONT_GLYPH_SIZE * REMIX_FONT_GLYPH_SIZE * 4)
 
 /**

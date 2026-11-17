@@ -4,8 +4,6 @@
 
 #include "remix_font_decode.h"
 
-#define GLYPH_BLOCK_SIZE 0x160
-#define SPRITE_OFFSET_OF_FIRST_GLYPH 0x118
 #define BITMAP_BEHIND_SPRITE 0x10
 #define BITMAP_BUFFER_TOKEN_OFFSET 8
 #define BITMAP_WIDTH_OFFSET 0
@@ -46,7 +44,7 @@ int remix_font_decode_glyph(const uint8_t *file, size_t size, int character, uin
     {
         return 0;
     }
-    spriteOffset = SPRITE_OFFSET_OF_FIRST_GLYPH + (size_t)GLYPH_BLOCK_SIZE * (size_t)(character - REMIX_FONT_FIRST_CHARACTER);
+    spriteOffset = REMIX_FONT_FIRST_SPRITE_OFFSET + (size_t)REMIX_FONT_GLYPH_BLOCK_SIZE * (size_t)(character - REMIX_FONT_FIRST_CHARACTER);
     bitmapOffset = spriteOffset - BITMAP_BEHIND_SPRITE;
     if (bitmapOffset + BITMAP_BUFFER_TOKEN_OFFSET + 4 > size)
     {

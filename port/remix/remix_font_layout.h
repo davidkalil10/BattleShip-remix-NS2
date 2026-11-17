@@ -20,6 +20,11 @@ extern "C" {
 #define REMIX_FONT_LAYOUT_SPACE_ADVANCE 4
 
 /**
+ * Whether a character draws a glyph sprite: every code after the space up to max_character.
+ */
+int remix_font_layout_has_glyph(int character, int max_character);
+
+/**
  * Horizontal advance of one character.
  *
  * @param character Character code.

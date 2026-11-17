@@ -7,6 +7,9 @@
  * remix_hud_text_put every frame for every label they want visible: a label is shown for the frame it was put in and the
  * next one, so a hook that stops calling it hides the label. Positions are in the N64 screen (320 x 240), the overlay
  * maps them to the 4:3 game image centred in the window.
+ *
+ * An owner may bind its slots to a text layer (remix_hud_layer.h): the same puts are then drawn by a game object in the
+ * display link of the asm instead of the overlay, and live one drawn frame counted in game tics.
  */
 
 #ifndef PORT_REMIX_REMIX_HUD_TEXT_H

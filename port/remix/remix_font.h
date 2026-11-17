@@ -14,6 +14,7 @@
 
 #include <imgui.h>
 
+#include <cstdint>
 #include <string>
 
 namespace RemixFont {
@@ -27,6 +28,23 @@ constexpr float kGlyphHeight = 16.0f;
  * @return true when the font is available; false when the font file or the RAM image is missing (callers then fall back).
  */
 bool Ensure();
+
+/**
+ * Reads the glyph width and height tables from the Remix RAM image on first use. Needs no renderer, so the game thread may
+ * call it.
+ *
+ * @return true when the tables are available; false when the RAM image has none.
+ */
+bool EnsureMetrics();
+
+/** Table width of every character code 0..MaxCharacter() (Render.character_offsets_custom byte 0); filled by EnsureMetrics. */
+const uint8_t *Widths();
+
+/** Table height of every character code 0..MaxCharacter() (Render.character_offsets_custom byte 1); filled by EnsureMetrics. */
+const uint8_t *Heights();
+
+/** Last character code of the font. */
+int MaxCharacter();
 
 /**
  * Width of a string as Render.draw_string_ lays it out.

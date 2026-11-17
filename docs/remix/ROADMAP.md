@@ -62,7 +62,7 @@ on 2026-11-15. Releases are not tracked here: they follow `AGENTS.md` ("Releases
 | M14 Equivalence audit of the non-toggle logic | done 2026-11-17 (T14.1 to T14.6 on 2026-11-16, T14.7 on 2026-11-17): 23 pilot findings, 116 from the 22 audit batches and 36 from the second pass on the parts first left uncovered, each fixed with a lead smoke test, kept as a `deviations.md` row or not reproduced; G04-4 (Random in the 12CB Custom set) implemented under T14.7 |
 | M15 Remix text in the game's display layers | open: the Remix text is a port overlay drawn over the whole game image, so the cursor, tokens and menu panels that Remix draws in front of it end up behind it |
 
-- **Next step:** M15 T15.2.
+- **Next step:** M15 T15.3, first lot: the CSS panel menu and the other character select texts.
 - **Last checkpoint:** M14 closed with T14.7 (2026-11-17; decomp `459b45a91`).
 - **Overall estimate:** 100% by the table at the end of this file, which counts presence (every asm patch hooked); the
   equivalence of the non-toggle logic is what M14 measures.
@@ -745,11 +745,21 @@ that covers them in Remix (room 0x39).
   applied). The audit also lists seven differences that are not layer order (lifetime of "Game NN", a missing hide of
   the 12CB Custom legend, the Training rows over the vanilla pause menu, two sprites on a different link, the Input
   Display path, the unclipped music banner), to fix with their screens in T15.3.
-- [ ] T15.2 Draw path: the Kabel glyphs (already rebuilt from the user's `.o2r` by `remix_font`) drawn by the game
-  renderer in the display link the asm uses, with the same position, scale, alignment, colour and widescreen mapping
-  as today. Direction from T15.1 (`text_layers.md`, "Input for T15.2"): the `remix_hud_text` API and slots stay,
-  each owner binds its slot range to a layer (a GObj in the asm's display link that draws with the game's sprite
-  functions), and unbound slots stay on the overlay; unit tests for the layout rules that are pure.
+- [x] T15.2 Draw path (2026-11-17): a layer is a GObj in the asm's group and display link
+  (`ifRemixTextLayerMake`, `decomp/src/if/ifremixtextlayer.c`) that draws the slots bound to it with the game's sprite
+  functions, from the Sprites of the Remix font file; the `remix_hud_text` API, slots and put calls stay, and a slot
+  with no layer stays on the overlay. Pure rules (route table, life of a put in game tics, per-glyph layout, rectangle
+  pixels) in `port/remix/remix_hud_layer_rules.c` with unit tests (8465 checks, 0 failed). Mechanism and limits in
+  `text_layers.md`, "Draw path". Pilot: the 12CB character select texts in room 0x1E, groups 8, 9 and 10. Lead runs,
+  each against the same input with `SSB64_REMIX_TEXT_OVERLAY=1`:
+  - `lead_t152_layer` / `lead_t152_overlay`: the P1 hand covers "Character Set" and the set name on the layer, the
+    text covers the hand on the overlay; same text position.
+  - `lead_t152_best` / `lead_t152_best_ov` (after a game): "Best Character", DONKEY / LINK and the pools 22 / 24 drawn
+    by the layer under the hand.
+  - `lead_t152_center_*` (2D centred 4:3) and `lead_t152_off_*` (widescreen off): same position as the overlay.
+  - No `DLBuffer`, abort or assert line in any log. The layer text is softer and a little darker at the edges than the
+    overlay's, as the game multiplies the colour by the intensity of the glyph texel.
+  - Deviation kept: the drop of a short glyph in a squeezed string (row in `deviations.md`).
 - [ ] T15.3 Move the screens over, one lot per screen family, each with an in-game test that shows the layer order
   (cursor over the text, panel over the text) and a comparison of the text position with the current overlay:
   the 12CB character select and results; the CSS panel menu and the VS, 1P, Training and Bonus selects; the stage

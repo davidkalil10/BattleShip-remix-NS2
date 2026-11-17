@@ -101,6 +101,7 @@ its jab combo; use the CPU item sweep instead.
 | lldb `expr` on a menu routine | A port-menu button can be tested without a click: break on a per-frame function of the scene (`breakpoint set -n mnDataFuncRun -i 120`), `expr (void)scRemixScreensOpen(4, 5)`, `breakpoint delete 1`, `continue` (run `l5_screens_gallery`) |
 | `SSB64_REMIX_CHARDATA_MOTIONS=<k1,k2,...>` | Character Data screen: the demo motions cycle through these `MNCharactersMotionKind` values (decimal: SpecialHi 0, SpecialN 1, SpecialLw 2, Wait 14, Attack1 18, AttackAirF 27, Win1..Win4 33..36) instead of the random pick |
 | `SSB64_REMIX_AI_LOG=1` | Logs `[remix-ai] recover_begin t= port= fkind= lvl= x= y=` when a CPU enters the recover objective and `recover_end t= port= result=ok|ko` when it lands or catches a ledge, or is KO'd |
+| `SSB64_REMIX_TEXT_OVERLAY=1` | Every Remix text slot goes back to the port overlay: no text layer is made (`docs/remix/text_layers.md`, "Draw path"). Run the same input with and without it, one after the other, and compare the two screenshots to check position, size and layer order of a screen moved to a layer |
 | `SSB64_VS_ALL_CPU=1` | The VS shortcut makes P1 a CPU too (level from `SSB64_VS_CPU_LEVEL`) |
 | `VS_TIMEOUT=<s>` | Timeout of one `vs.sh` run (default 300 s) |
 | `SSB64_INPUT_SCRIPT=<file>` | Controller script (format above) |
