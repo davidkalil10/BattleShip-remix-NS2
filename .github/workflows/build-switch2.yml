@@ -32,8 +32,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Run Switch 2 package verification unit tests
-        run: python3 tests/test_switch2_package.py
+      - name: Configure git safe directories & run verifier unit tests
+        run: |
+          set -euo pipefail
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/decomp"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/libultraship"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/torch"
+          python3 tests/test_switch2_package.py
 
       - name: Install Switch portlibs (with dkp-pacman retry) and ounce-devkit
         run: |
@@ -58,26 +64,15 @@ jobs:
             test -f /opt/devkitpro/portlibs/switch/lib/libcurl.a
           fi
 
-          mkdir -p /tmp/ounce-devkit
-          cd /tmp/ounce-devkit
-          BASE_URL="https://github.com/ighor/ounce-devkit/releases/download/${OUNCE_DEVKIT_TAG}"
-          for pkg in \
-            "libounce-26.11.15-1-any.pkg.tar.xz" \
-            "ounce-tools-1.15.22-1-any.pkg.tar.xz" \
-            "ounce-pkg-config-0.28-1-any.pkg.tar.xz" \
-            "OunceVK-2026.11.15-1-any.pkg.tar.zst"; do
-            curl -fL --retry 4 --retry-delay 5 -O "${BASE_URL}/${pkg}"
-          done
-          dkp-pacman -U --noconfirm \
-            libounce-26.11.15-1-any.pkg.tar.xz \
-            ounce-tools-1.15.22-1-any.pkg.tar.xz \
-            ounce-pkg-config-0.28-1-any.pkg.tar.xz \
-            OunceVK-2026.11.15-1-any.pkg.tar.zst
-
-          git clone https://github.com/ighor/ounce-devkit.git /tmp/ounce-devkit-src
-          git -C /tmp/ounce-devkit-src checkout "${OUNCE_DEVKIT_COMMIT}"
-          cp -f /tmp/ounce-devkit-src/libounce/cmake/Switch2.cmake /opt/devkitpro/libounce/cmake/Switch2.cmake
-          cp -f /tmp/ounce-devkit-src/libounce/cmake/Platform/Switch2.cmake /opt/devkitpro/libounce/cmake/Platform/Switch2.cmake
+          sdk="${RUNNER_TEMP:-/tmp}/ounce-devkit"
+          rm -rf "$sdk"
+          git init "$sdk"
+          git -C "$sdk" fetch --depth=1 https://github.com/ouncebrew/ounce-devkit.git "$OUNCE_DEVKIT_COMMIT"
+          git -C "$sdk" checkout --detach FETCH_HEAD
+          test "$(git -C "$sdk" rev-parse HEAD)" = "$OUNCE_DEVKIT_COMMIT"
+          bash "$sdk/install.sh" "$OUNCE_DEVKIT_TAG"
+          test -f /opt/devkitpro/libounce/cmake/Switch2.cmake
+          test -f /opt/devkitpro/portlibs/switch2/lib/libEGL.a
 
       - name: Build BattleShip-Remix.nro for Switch 2
         run: |
