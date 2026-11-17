@@ -13,9 +13,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import verify_switch2_package as vsp  # noqa: E402
 
 
-def _make_nro(magic: bytes = b"OUN0", extra_payload: bytes = b"") -> bytes:
-    buf = bytearray(0x100)
-    buf[0x10:0x14] = magic
+def _make_nro(include_oun0: bool = True, extra_payload: bytes = b"") -> bytes:
+    buf = bytearray(0x200)
+    mod_off = 0x80
+    struct.pack_into("<I", buf, 0x04, mod_off)
+    buf[0x10:0x14] = b"NRO0"
+    buf[mod_off : mod_off + 4] = b"MOD0"
+    at = mod_off + 0x1C
+    buf[at : at + 4] = b"LNY0"
+    at += 12
+    if include_oun0:
+        buf[at : at + 4] = b"OUN0"
+        struct.pack_into("<II", buf, at + 4, 2, 1)
     buf.extend(extra_payload)
     struct.pack_into("<I", buf, 0x18, len(buf))
     buf.extend(b"ASET" + b"\x00" * 32)
@@ -26,20 +35,20 @@ class TestVerifySwitch2Package(unittest.TestCase):
     def test_valid_oun0_nro_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             nro = Path(tmp) / "BattleShip-Remix.nro"
-            nro.write_bytes(_make_nro(b"OUN0"))
+            nro.write_bytes(_make_nro(include_oun0=True))
             self.assertEqual(vsp.verify_nro(nro), [])
 
-    def test_switch1_nro0_rejected(self) -> None:
+    def test_switch1_without_oun0_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             nro = Path(tmp) / "BattleShip-Remix.nro"
-            nro.write_bytes(_make_nro(b"NRO0"))
+            nro.write_bytes(_make_nro(include_oun0=False))
             errs = vsp.verify_nro(nro)
-            self.assertTrue(any("NRO0" in e for e in errs), errs)
+            self.assertTrue(any("OUN0" in e for e in errs), errs)
 
     def test_forbidden_clkrst_symbol_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             nro = Path(tmp) / "BattleShip-Remix.nro"
-            nro.write_bytes(_make_nro(b"OUN0", b"clkrstOpenSession"))
+            nro.write_bytes(_make_nro(include_oun0=True, extra_payload=b"clkrstOpenSession"))
             errs = vsp.verify_nro(nro)
             self.assertTrue(any("clkrstOpenSession" in e for e in errs), errs)
 
@@ -47,7 +56,7 @@ class TestVerifySwitch2Package(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             mp = Path(tmp) / "BattleShip-Remix-switch2.map"
             mp.write_text(
-                "/opt/devkitpro/libounce/lib/libounce.a(applet.o)\n"
+                "/opt/devkitpro/libounce/lib/libnx.a(applet.o)\n"
                 "/opt/devkitpro/portlibs/switch2/lib/libEGL.a(egl.o)\n",
                 encoding="utf-8",
             )
