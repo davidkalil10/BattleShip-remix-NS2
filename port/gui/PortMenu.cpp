@@ -1793,6 +1793,11 @@ void PortMenu::AddMenuAssets() {
     AddWidget(path, fmt::format("App directory: {}", Ship::Context::GetPathRelativeToAppDirectory("")), WIDGET_TEXT);
     AddWidget(path, fmt::format("Main archive: {}", Ship::Context::GetPathRelativeToAppDirectory(SSB64_O2R_NAME)),
               WIDGET_TEXT);
+    {
+        std::error_code cwdEc;
+        const auto cwdStr = fs::current_path(cwdEc).generic_string();
+        AddWidget(path, fmt::format("Working directory: {}", cwdStr.empty() ? "<unknown>" : cwdStr), WIDGET_TEXT);
+    }
 
 #ifdef PORT_HIRES_ENABLED
     path.sidebarName = "Mods";
