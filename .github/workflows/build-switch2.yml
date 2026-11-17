@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: devkitpro/devkita64:20260219
+    defaults:
+      run:
+        shell: bash
     env:
       OUNCE_DEVKIT_COMMIT: "0f38ba80d7ee768c5749278f127749d14ece2036"
       OUNCE_DEVKIT_TAG: "20261115b"
