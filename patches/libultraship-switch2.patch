@@ -62,10 +62,61 @@ index b3a672ac..7ad1f0a2 100644
  endif()
  
  if (CMAKE_SYSTEM_NAME STREQUAL "PS5")
+diff --git a/src/fast/backends/gfx_opengl.cpp b/src/fast/backends/gfx_opengl.cpp
+index d9a6b2cb..945a1f5b 100644
+--- a/src/fast/backends/gfx_opengl.cpp
++++ b/src/fast/backends/gfx_opengl.cpp
+@@ -39,7 +39,7 @@
+ 
+ namespace Fast {
+ int GfxRenderingAPIOGL::GetMaxTextureSize() {
+-    GLint max_texture_size;
++    GLint max_texture_size = 4096;
+     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+     return max_texture_size;
+ }
+diff --git a/src/fast/backends/gfx_sdl2.cpp b/src/fast/backends/gfx_sdl2.cpp
+index 0045c8b3..dd61a94b 100644
+--- a/src/fast/backends/gfx_sdl2.cpp
++++ b/src/fast/backends/gfx_sdl2.cpp
+@@ -397,6 +397,10 @@ void GfxWindowBackendSDL2::Init(const char* gameName, const char* gfxApiName, bo
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
++#elif defined(__SWITCH2__)
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
++    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+ #elif defined(__SWITCH__)
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+@@ -476,6 +480,13 @@ void GfxWindowBackendSDL2::Init(const char* gameName, const char* gfxApiName, bo
+ #endif
+ 
+         mCtx = SDL_GL_CreateContext(mWnd);
++        if (mCtx == nullptr) {
++            printf("SDL_GL_CreateContext failed: %s\n", SDL_GetError());
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
++            mCtx = SDL_GL_CreateContext(mWnd);
++        }
+ 
+         SDL_GL_MakeCurrent(mWnd, mCtx);
+         SDL_GL_SetSwapInterval(mVsyncEnabled ? 1 : 0);
 diff --git a/src/ship/port/switch/SwitchImpl.cpp b/src/ship/port/switch/SwitchImpl.cpp
-index 7f0820e9..111ba86e 100644
+index 7f0820e9..6fe2403b 100644
 --- a/src/ship/port/switch/SwitchImpl.cpp
 +++ b/src/ship/port/switch/SwitchImpl.cpp
+@@ -33,7 +33,7 @@ void Ship::Switch::Init(SwitchPhase phase) {
+         case PreInitPhase:
+             DetectAppletMode();
+             socketInitializeDefault();
+-#ifdef DEBUG
++#if defined(DEBUG) || defined(__SWITCH2__)
+             nxlinkStdio();
+ #endif
+             break;
 @@ -42,9 +42,11 @@ void Ship::Switch::Init(SwitchPhase phase) {
              appletSetGamePlayRecordingState(true);
              appletHook(&applet_hook_cookie, on_applet_hook, NULL);

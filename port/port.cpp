@@ -1424,6 +1424,34 @@ int main(int argc, char* argv[]) {
 	{
 		std::string logPath;
 #ifdef __SWITCH__
+		/* App-owned early Switch init: socket/nxlink stdio, applet-mode
+		 * detection and error-applet plumbing. Run before port_log_init so
+		 * early logs stream over nxlink as well. */
+		Ship::Switch::Init(Ship::SwitchPhase::PreInitPhase);
+		{
+			std::error_code ec;
+			if (!std::filesystem::exists(SSB64_O2R_NAME, ec) && !std::filesystem::exists("f3d.o2r", ec)) {
+				std::vector<std::string> candidates;
+				if (argc >= 1 && argv[0] != nullptr) {
+					const std::string arg0 = argv[0];
+					const size_t sep = arg0.find_last_of('/');
+					if (sep != std::string::npos) {
+						candidates.push_back(arg0.substr(0, sep));
+					}
+				}
+				candidates.push_back(std::string("sdmc:/switch/") + SSB64_APP_NAME);
+				candidates.push_back(std::string("/switch/") + SSB64_APP_NAME);
+				candidates.push_back("sdmc:/switch/BattleShip-Remix");
+				candidates.push_back("/switch/BattleShip-Remix");
+				for (const auto& dir : candidates) {
+					if (std::filesystem::exists(dir + "/" + SSB64_O2R_NAME, ec) ||
+					    std::filesystem::exists(dir + "/f3d.o2r", ec)) {
+						chdir(dir.c_str());
+						break;
+					}
+				}
+			}
+		}
 		port_switch_load_env_file("env.txt");
 #endif
 #ifdef __PS5__
@@ -1454,11 +1482,6 @@ int main(int argc, char* argv[]) {
 #endif
 
 #ifdef __SWITCH__
-	/* App-owned early Switch init: socket/nxlink stdio, applet-mode
-	 * detection and error-applet plumbing. libultraship drives only the
-	 * PostInitPhase half from Context::Init — without this PreInit call
-	 * there is no nxlink logging and applet-mode boots die on allocation. */
-	Ship::Switch::Init(Ship::SwitchPhase::PreInitPhase);
 	/* Finish an update the in-game updater staged: libultraship keeps
 	 * f3d.o2r and the game archive open once it starts, and HOS cannot
 	 * replace open files, so this has to happen before anything opens. */

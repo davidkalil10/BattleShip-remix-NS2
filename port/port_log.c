@@ -70,12 +70,21 @@ int port_log_get_fd(void)
 
 void port_log(const char *fmt, ...)
 {
+#ifdef __SWITCH2__
+	{
+		va_list ap_out;
+		va_start(ap_out, fmt);
+		vprintf(fmt, ap_out);
+		va_end(ap_out);
+		fflush(stdout);
+	}
+#endif
 	if (sLogFile == NULL) return;
 	va_list ap;
 	va_start(ap, fmt);
 	vfprintf(sLogFile, fmt, ap);
 	va_end(ap);
-	#if defined(BATTLESHIP_UWP)
+	#if defined(BATTLESHIP_UWP) || defined(__SWITCH2__)
 	/* Xbox Device Portal may terminate a failed UWP process before stdio's
 	 * normal-exit flush runs. Keep startup diagnostics durable so failures
 	 * can be diagnosed from LocalState without attaching a debugger. */
