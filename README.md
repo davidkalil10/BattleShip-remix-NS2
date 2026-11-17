@@ -150,6 +150,20 @@ BattleShip, the port this fork builds on, was created by [JRickey](https://githu
 
 The Remix build (ROMs, assets, desktop, Switch, Android and PS5) is described in [`docs/remix/build_and_roms.md`](docs/remix/build_and_roms.md). The generic BattleShip steps (including Windows) are in [BUILDING.md](BUILDING.md).
 
+### Nintendo Switch 2 (`ounce-devkit` / `libounce` + `OunceVK`)
+
+This fork adds native **Nintendo Switch 2 (`Ounce`)** support (`OUN0` `.nro` format):
+
+- **Runtime & Graphics:** Built with `libounce` (`Switch2.cmake`, Cortex-A78C ABI `-mcpu=cortex-a78c+crypto -mtp=soft -ftls-model=local-exec`) and `OunceVK` (`libEGL.a` Zink OpenGL-on-Vulkan translation layer).
+- **Switch 2 Hardware Safety:** Switch 1 `clkrst` / `pcv` CPU clock-rate calls (`1020 MHz` / `1785 MHz`) are disabled under `__SWITCH2__`.
+- **Build Command:**
+  ```bash
+  ./scripts/switch/build-switch2.sh
+  ```
+- **SD Card Installation (`sdmc:/switch/BattleShip-Remix/`):**
+  1. Extract `BattleShip-Remix-switch2.zip` to the root of your Switch 2 SD card (places `BattleShip-Remix.nro`, `f3d.o2r`, `config.yml`, `gamecontrollerdb.txt`, and `assets/custom/fonts/` in `/switch/BattleShip-Remix/`).
+  2. Copy `BattleShip-Remix.o2r` and `BattleShip-Remix.o2r.recipe` (generated on desktop from your Smash Remix 2.0.0 patched ROM) into `/switch/BattleShip-Remix/`.
+
 ## Architecture
 
 The port has three layers and they are kept deliberately separate:
@@ -336,6 +350,8 @@ PRs are welcome from anyone. Bugs go through the [issue form](https://github.com
 - Reference ports I learned from but did not borrow code from: [SM64 PC Port](https://github.com/sm64-port/sm64-port) (SM64), [SpaghettiKart](https://github.com/HarbourMasters/SpaghettiKart) (MK64).
 - Smash Remix: [the Smash Remix team](https://github.com/JSsixtyfour/smashremix) — the mod this fork ports; its source was the reference for every routine. No Remix ROM data is included.
 - BattleShip port: [JRickey](https://github.com/JRickey), with an enormous amount of help, debugging, and feature suggestions from contributors in our Discord server.
+- BattleShip-Remix fork: [lucasliet](https://github.com/lucasliet/BattleShip-remix) — Smash Remix 2.0.0 native port and Nintendo Switch 1 port.
+- Nintendo Switch 2 (`Ounce` / `libounce` + `OunceVK`) port & adaptation: **David Kalil Braga ([@davidkalil10](https://github.com/davidkalil10))**, with special thanks to [lucasliet](https://github.com/lucasliet), [JRickey](https://github.com/JRickey), and the [Smash Remix team](https://github.com/JSsixtyfour/smashremix).
 
 This project is **not affiliated with, endorsed by, or authorized by Nintendo.** It is a personal, non-commercial research and preservation effort. Do not upload ROMs, extracted `.o2r` archives, or any other Nintendo-owned data to issues or pull requests.
 
