@@ -1,0 +1,146 @@
+diff --git a/cmake/dependencies/switch.cmake b/cmake/dependencies/switch.cmake
+index c5fb002b..d8ee0c3e 100644
+--- a/cmake/dependencies/switch.cmake
++++ b/cmake/dependencies/switch.cmake
+@@ -1,7 +1,11 @@
+ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+ 
+ # ========= ImGui =========
+-target_include_directories(ImGui PRIVATE ${DEVKITPRO}/portlibs/switch/include/ ${DEVKITPRO}/portlibs/switch/include/SDL2)
++if (NINTENDO_SWITCH2)
++    target_include_directories(ImGui PRIVATE ${DEVKITPRO}/portlibs/switch2/include/ ${DEVKITPRO}/portlibs/switch/include/ ${DEVKITPRO}/portlibs/switch/include/SDL2)
++else()
++    target_include_directories(ImGui PRIVATE ${DEVKITPRO}/portlibs/switch/include/ ${DEVKITPRO}/portlibs/switch/include/SDL2)
++endif()
+ 
+ #=================== nlohmann-json ===================
+ find_package(nlohmann_json QUIET)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index b3a672ac..7ad1f0a2 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -176,14 +176,34 @@ if (CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
+     # ship only pkg-config files (no CMake configs), so the desktop
+     # find_package(SDL2) path doesn't exist here — wire headers and raw
+     # library names explicitly through the toolchain's DEVKITPRO root.
+-    target_include_directories(libultraship PRIVATE
+-        ${DEVKITPRO}/portlibs/switch/include
+-        ${DEVKITPRO}/portlibs/switch/include/SDL2
+-    )
+-    target_link_directories(libultraship PRIVATE ${DEVKITPRO}/portlibs/switch/lib)
+-    # libSDL2.a is static: its EGL backend pulls EGL -> glapi -> drm_nouveau
+-    # (the same set switch-sdl2's sdl2.pc lists), which must follow SDL2.
+-    target_link_libraries(libultraship PRIVATE SDL2 EGL glapi drm_nouveau glad)
++    if (NINTENDO_SWITCH2)
++        target_include_directories(libultraship PRIVATE
++            ${DEVKITPRO}/portlibs/switch2/include
++            ${DEVKITPRO}/portlibs/switch/include
++            ${DEVKITPRO}/portlibs/switch/include/SDL2
++        )
++        target_link_directories(libultraship BEFORE PRIVATE
++            ${DEVKITPRO}/portlibs/switch2/lib
++            ${DEVKITPRO}/libounce/lib
++        )
++        target_link_directories(libultraship PRIVATE ${DEVKITPRO}/portlibs/switch/lib)
++        target_link_libraries(libultraship PRIVATE
++            SDL2
++            ${DEVKITPRO}/portlibs/switch2/lib/libEGL.a
++            ${DEVKITPRO}/portlibs/switch2/lib/libglapi.a
++            ${DEVKITPRO}/portlibs/switch2/lib/libdrm_nouveau.a
++            glad
++        )
++    else()
++        target_include_directories(libultraship PRIVATE
++            ${DEVKITPRO}/portlibs/switch/include
++            ${DEVKITPRO}/portlibs/switch/include/SDL2
++        )
++        target_link_directories(libultraship PRIVATE ${DEVKITPRO}/portlibs/switch/lib)
++        # libSDL2.a is static: its EGL backend pulls EGL -> glapi -> drm_nouveau
++        # (the same set switch-sdl2's sdl2.pc lists), which must follow SDL2.
++        target_link_libraries(libultraship PRIVATE SDL2 EGL glapi drm_nouveau glad)
++    endif()
+ endif()
+ 
+ if (CMAKE_SYSTEM_NAME STREQUAL "PS5")
+diff --git a/src/ship/port/switch/SwitchImpl.cpp b/src/ship/port/switch/SwitchImpl.cpp
+index 7f0820e9..111ba86e 100644
+--- a/src/ship/port/switch/SwitchImpl.cpp
++++ b/src/ship/port/switch/SwitchImpl.cpp
+@@ -42,9 +42,11 @@ void Ship::Switch::Init(SwitchPhase phase) {
+             appletSetGamePlayRecordingState(true);
+             appletHook(&applet_hook_cookie, on_applet_hook, NULL);
+             appletSetFocusHandlingMode(AppletFocusHandlingMode_NoSuspend);
++#ifndef __SWITCH2__
+             if (!hosversionBefore(8, 0, 0)) {
+                 clkrstInitialize();
+             }
++#endif
+             hidsysInitialize();
+             padConfigureInput(8, HidNpadStyleSet_NpadStandard);
+             s32 total = 0; // unused
+@@ -55,7 +57,9 @@ void Ship::Switch::Init(SwitchPhase phase) {
+ 
+ void Ship::Switch::Exit() {
+     socketExit();
++#ifndef __SWITCH2__
+     clkrstExit();
++#endif
+     appletSetGamePlayRecordingState(false);
+ }
+ 
+@@ -131,6 +135,7 @@ void Ship::Switch::GetDisplaySize(int* width, int* height) {
+ }
+ 
+ void Ship::Switch::ApplyOverclock(void) {
++#ifndef __SWITCH2__
+     SwitchProfiles perfMode = (SwitchProfiles)CVarGetInteger(CVAR_SWITCH_PERF_MODE, (int)Ship::MAXIMUM);
+ 
+     if (perfMode >= 0 && perfMode <= Ship::POWERSAVINGM3) {
+@@ -143,6 +148,7 @@ void Ship::Switch::ApplyOverclock(void) {
+             clkrstCloseSession(&session);
+         }
+     }
++#endif
+ }
+ 
+ char* Ship::Switch::GetControllerUUID(int controller) {
+@@ -169,6 +175,7 @@ static void on_applet_hook(AppletHookType hook, void* param) {
+             hasFocus = focus_state == AppletFocusState_InFocus;
+ 
+             if (!hasFocus) {
++#ifndef __SWITCH2__
+                 if (hosversionBefore(8, 0, 0)) {
+                     pcvSetClockRate(PcvModule_CpuBus, SWITCH_CPU_SPEEDS_VALUES[Ship::STOCK]);
+                 } else {
+@@ -177,6 +184,7 @@ static void on_applet_hook(AppletHookType hook, void* param) {
+                     clkrstSetClockRate(&session, SWITCH_CPU_SPEEDS_VALUES[Ship::STOCK]);
+                     clkrstCloseSession(&session);
+                 }
++#endif
+             } else {
+                 Ship::Switch::ApplyOverclock();
+                 // reinitialize audio subsystem to fix audio problems after resuming from sleep
+@@ -246,19 +254,21 @@ void DetectAppletMode() {
+     if (at == AppletType_Application || at == AppletType_SystemApplication)
+         return;
+ 
++    constexpr size_t numRandomTexts = sizeof(RandomTexts) / sizeof(RandomTexts[0]);
+     Ship::Switch::ShowErrorApplet("You've launched the Ship while in Applet mode.\n"
+                                   "Please relaunch while in full-memory mode.\n"
+                                   "Hold R when opening any game to enter HBMenu.\n\n"
+                                   "%s.",
+-                                  RandomTexts[rand() % 25]);
++                                  RandomTexts[rand() % numRandomTexts]);
+     exit(1);
+ }
+ 
+ void Ship::Switch::ThrowMissingOTR(std::string otrPath) {
++    constexpr size_t numRandomTexts = sizeof(RandomTexts) / sizeof(RandomTexts[0]);
+     Ship::Switch::ShowErrorApplet("You've launched the Ship without an OTR/O2R file.\n"
+                                         "Please relaunch making sure %s exists.\n\n"
+                                         "%s.",
+-                                        otrPath.c_str(), RandomTexts[rand() % 25]);
++                                        otrPath.c_str(), RandomTexts[rand() % numRandomTexts]);
+     exit(2);
+ }
+ #endif

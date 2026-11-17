@@ -201,6 +201,27 @@ endif()
 # Subdirectories: libultraship
 ################################################################################
 
+if (NINTENDO_SWITCH2 AND EXISTS "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch")
+    find_package(Git QUIET)
+    if (GIT_FOUND)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} -C "${CMAKE_SOURCE_DIR}/libultraship" apply --check "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch"
+            RESULT_VARIABLE _LUS_PATCH_CHECK
+            OUTPUT_QUIET ERROR_QUIET
+        )
+        if (_LUS_PATCH_CHECK EQUAL 0)
+            message(STATUS "Applying Switch 2 patch to libultraship submodule...")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} -C "${CMAKE_SOURCE_DIR}/libultraship" apply "${CMAKE_SOURCE_DIR}/patches/libultraship-switch2.patch"
+                RESULT_VARIABLE _LUS_PATCH_APPLY
+            )
+            if (NOT _LUS_PATCH_APPLY EQUAL 0)
+                message(FATAL_ERROR "Failed to apply patches/libultraship-switch2.patch")
+            endif()
+        endif()
+    endif()
+endif()
+
 add_subdirectory(libultraship ${CMAKE_BINARY_DIR}/libultraship)
 
 ################################################################################
@@ -1111,6 +1132,18 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "NintendoSwitch")
     # ship/audio/SDLAudioPlayer.h or imgui's imconfig.h need them directly.
     add_dependencies(${PROJECT_NAME} libultraship)
     target_sources(${PROJECT_NAME} PRIVATE port/coroutine_aarch64.S)
+    if (NINTENDO_SWITCH2)
+        target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+            ${DEVKITPRO}/portlibs/switch2/include
+        )
+        target_link_directories(${PROJECT_NAME} BEFORE PRIVATE
+            ${DEVKITPRO}/portlibs/switch2/lib
+            ${DEVKITPRO}/libounce/lib
+        )
+        target_link_options(${PROJECT_NAME} PRIVATE
+            "-Wl,-Map=${CMAKE_BINARY_DIR}/${SSB64_APP_NAME}-switch2.map"
+        )
+    endif()
     target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
         ${DEVKITPRO}/portlibs/switch/include
         ${DEVKITPRO}/portlibs/switch/include/SDL2)

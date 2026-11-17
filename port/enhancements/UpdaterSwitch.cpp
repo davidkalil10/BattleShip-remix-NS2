@@ -41,15 +41,20 @@ namespace {
 #define BATTLESHIP_CURRENT_VERSION "v1.0.0"
 #endif
 
-#if defined(REGION_REMIX)
+#if defined(__SWITCH2__)
+constexpr const char* kLatestReleaseApi =
+    "https://api.github.com/repos/davidkalil10/BattleShip-remix-NS2/releases/latest";
+constexpr const char* kZipAssetName = SSB64_APP_NAME "-switch2.zip";
+#elif defined(REGION_REMIX)
 constexpr const char* kLatestReleaseApi =
     "https://api.github.com/repos/lucasliet/BattleShip-remix/releases/latest";
+constexpr const char* kZipAssetName = SSB64_APP_NAME "-switch.zip";
 #else
 constexpr const char* kLatestReleaseApi =
     "https://api.github.com/repos/JRickey/BattleShip/releases/latest";
+constexpr const char* kZipAssetName = SSB64_APP_NAME "-switch.zip";
 #endif
 
-constexpr const char* kZipAssetName = SSB64_APP_NAME "-switch.zip";
 constexpr const char* kZipRootPrefix = "switch/" SSB64_APP_NAME "/";
 constexpr const char* kStagedNroName = SSB64_APP_NAME ".nro";
 constexpr const char* kZipPartName = "update.zip.part";
