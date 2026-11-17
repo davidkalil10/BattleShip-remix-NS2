@@ -1438,11 +1438,31 @@ int main(int argc, char* argv[]) {
 				candidates.push_back(std::string("/switch/") + SSB64_APP_NAME);
 				candidates.push_back("sdmc:/switch/BattleShip-Remix");
 				candidates.push_back("/switch/BattleShip-Remix");
+				candidates.push_back("sdmc:/switch/BattleShip-remix-NS2");
+				candidates.push_back("/switch/BattleShip-remix-NS2");
+				candidates.push_back("sdmc:/switch");
+				candidates.push_back("/switch");
+				for (const char* switchRoot : { "sdmc:/switch", "/switch" }) {
+					for (const auto& entry : std::filesystem::directory_iterator(switchRoot, ec)) {
+						if (entry.is_directory(ec)) {
+							candidates.push_back(entry.path().generic_string());
+						}
+					}
+				}
+				bool switchedDir = false;
 				for (const auto& dir : candidates) {
-					if (std::filesystem::exists(dir + "/" + SSB64_O2R_NAME, ec) ||
-					    std::filesystem::exists(dir + "/f3d.o2r", ec)) {
+					if (std::filesystem::exists(dir + "/" + SSB64_O2R_NAME, ec)) {
 						chdir(dir.c_str());
+						switchedDir = true;
 						break;
+					}
+				}
+				if (!switchedDir) {
+					for (const auto& dir : candidates) {
+						if (std::filesystem::exists(dir + "/f3d.o2r", ec)) {
+							chdir(dir.c_str());
+							break;
+						}
 					}
 				}
 			}
